@@ -20,5 +20,4 @@ docs/var/
 tools/ip_output.txt.back
 logs/*.log
 tools/logs/*.log
-htdocs/main.css
 composer.lock
