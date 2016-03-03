@@ -131,7 +131,7 @@ table.std {
 }
 table.list, table.tbl {
 /*  background-color: #a5cbf7;*/
-  background-color: none;
+  background-color: transparent;
     }
 
 table.list th, table.tbl th, table.std th  {
@@ -468,7 +468,7 @@ background-position: 55% 250px;
 }
 
 .welcomemessage {
-width:"50%";
+width: 50%;
 }
 ul#navlist
 {
@@ -512,7 +512,12 @@ td.sidenav {
     border-right: solid #6183b3 2px;
     
 }
-
+#example-navbar-collapse {
+    background-color: #ff00f1 !important;
+}
+body {
+    background-color: #cccccc !important;
+}
 .navigationBar {
     padding-left: 0;
     margin-left: 0;
@@ -574,8 +579,8 @@ h2.statsH2 {
 /* DQG jQuery things */
 .selected {
    /* background-color:#064785; */
-   background-color:#5874Ab; */
-   color:white;
+   background-color:#5874Ab;
+   color: white;
    cursor: pointer;
 }
 
@@ -634,7 +639,7 @@ top:800px;
 height: 3em;
 width: 100%;
 font-size: 14px;
-font-color #000000: 
+font-color: #000000;
 color: #000;
 text-align: center;
 vertical-align: bottom;
