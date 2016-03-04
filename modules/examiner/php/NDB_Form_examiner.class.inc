@@ -397,16 +397,13 @@ class NDB_Form_Examiner extends NDB_Form
 
         foreach ($certificationInstruments['test'] as $certificationInstrument) {
             $testName = $certificationInstrument['@']['value'];
-            if ($testName == "mullen_3_9"){
+            if ($testName == "mullen_3_9") {
                 $testID = "15_3_9";
-            }
-            else if ($testName == "mullen_12_15"){
+            } elseif ($testName == "mullen_12_15") {
                 $testID = "15_12_15";
-            }
-            else if ($testName == "mullen_24_36"){
+            } elseif ($testName == "mullen_24_36") {
                 $testID = "15_24_36";
-            }
-            else {
+            } else {
                 $testID = $DB->pselectOne(
                     "SELECT ID
                  FROM test_names
