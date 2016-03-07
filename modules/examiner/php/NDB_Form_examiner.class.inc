@@ -115,15 +115,7 @@ class NDB_Form_Examiner extends NDB_Form
             $date_cert = $values['date_cert'][$testID];
             $comment   = trim($values['comment'][$testID]);
             $visit_label = null;
-            if ($testID  == "15_3_9" ) {
-                $visit_label = '3-9mo';
-            }
-            elseif ($testID == '15_12_15') {
-                $visit_label = '12-15mo';
-            }
-            elseif ($testID == '15_24_36') {
-                $visit_label = '24-36mo';
-            }
+
             // get the examinerID - edit_examiner passes the ID through
             // the identifier, training passes it as a value
             if (!empty($values['examiner'])) {
@@ -397,13 +389,7 @@ class NDB_Form_Examiner extends NDB_Form
 
         foreach ($certificationInstruments['test'] as $certificationInstrument) {
             $testName = $certificationInstrument['@']['value'];
-            if ($testName == "mullen_3_9") {
-                $testID = "15_3_9";
-            } elseif ($testName == "mullen_12_15") {
-                $testID = "15_12_15";
-            } elseif ($testName == "mullen_24_36") {
-                $testID = "15_24_36";
-            } else {
+
                 $testID = $DB->pselectOne(
                     "SELECT ID
                  FROM test_names
@@ -411,7 +397,7 @@ class NDB_Form_Examiner extends NDB_Form
                  LIKE CONCAT('%', :testName, '%')",
                     array('testName' => $testName)
                 );
-            }
+            
             $instruments[$testID] = $certificationInstrument['#'];
         }
 
