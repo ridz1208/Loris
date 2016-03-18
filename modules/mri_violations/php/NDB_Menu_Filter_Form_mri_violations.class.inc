@@ -2,7 +2,7 @@
 /**
  * This page implements a front end which is used to unify all
  * of the different MRI violation types (could not identify scan,
- * header violation in the scan after identifying scan type, mislabeled 
+ * header violation in the scan after identifying scan type, mislabeled
  * scan, etc) and link to the appropriate module to further investigate
  * why a scan was excluded by the imaging pipeline scripts.
  *
@@ -24,7 +24,7 @@ require_once 'NDB_Menu_Filter_Form.class.inc';
  * @author   Ted Strauss <ted.strauss@mcgill.ca>
  * @license  GPLv3
  * @link     https://www.github.com/aces/Loris-Trunk/
- */      
+ */
 class NDB_Menu_Filter_Form_mri_violations extends NDB_Menu_Filter_Form
 {
     /**
@@ -39,7 +39,7 @@ class NDB_Menu_Filter_Form_mri_violations extends NDB_Menu_Filter_Form
         if (Utility::isErrorX($user)) {
             return PEAR::raiseError("User Error: ".$user->getMessage());
         }
-        $this->tpl_data['violated_scans_modifications'] 
+        $this->tpl_data['violated_scans_modifications']
             = $user->hasPermission('violated_scans_edit');
         return ($user->hasPermission('violated_scans_view_allsites'));
     }
@@ -57,9 +57,9 @@ class NDB_Menu_Filter_Form_mri_violations extends NDB_Menu_Filter_Form
         foreach ($values['resolvable'] AS $key=>$val) {
             $hash = $key;
             $row = $DB->pselectRow(
-                    "SELECT * FROM violations_resolved
+                "SELECT * FROM violations_resolved
                     WHERE hash = :hash", array('hash' => $hash));
-            
+
             //if row is found it means that resolve status was previously assigned,
             // check the value and update if needed, else break.
             if(!empty($row)){
@@ -87,7 +87,7 @@ class NDB_Menu_Filter_Form_mri_violations extends NDB_Menu_Filter_Form
                     continue;
                 }
                 $newlyResolved = array();
-                $newlyResolved['hash'] = $key;                
+                $newlyResolved['hash'] = $key;
                 $newlyResolved['Resolved'] = (string)$val;
                 $newlyResolved['User'] = $user->getUsername();
                 $newlyResolved['ChangeDate'] = date("Y-m-d H:i:s");
@@ -98,7 +98,7 @@ class NDB_Menu_Filter_Form_mri_violations extends NDB_Menu_Filter_Form
                     FROM mri_protocol_violated_scans 
                     WHERE (:hash = md5(concat_WS(':',minc_location,PatientName,SeriesUID,time_run)))",
                     array('hash' => $key)
-                    );
+                );
                 if(!empty($ID_mri_protocol_violated_scans)){
                     $newlyResolved['TypeTable'] = 'mri_protocol_violated_scans';
                     $newlyResolved['ExtID'] = $ID_mri_protocol_violated_scans;
@@ -109,36 +109,36 @@ class NDB_Menu_Filter_Form_mri_violations extends NDB_Menu_Filter_Form
                     FROM mri_violations_log
                     WHERE (:hash = md5(concat_WS(':',MincFile,PatientName,SeriesUID,TimeRun)))",
                     array('hash' => $key)
-                    );
+                );
                 //echo "ID[2] = ".$ID_mri_violations_log."\n";
                 if(!empty($ID_mri_violations_log)){
                     $newlyResolved['TypeTable'] = 'mri_violations_log';
                     $newlyResolved['ExtID'] = $ID_mri_violations_log;
-                } 
-                
+                }
+
                 // Table 3: MRICandidateErrors
                 $ID_MRICandidateErrors = $DB->pselectOne(
                     "SELECT ID
                     FROM MRICandidateErrors
                     WHERE (:hash = md5(concat_WS(':',MincFile,PatientName,SeriesUID,TimeRun)))",
                     array('hash' => $key)
-                    );
+                );
                 //echo "ID[3] = ".$ID_MRICandidateErrors."\n";
                 if(!empty($ID_MRICandidateErrors)){
                     $newlyResolved['TypeTable'] = 'MRICandidateErrors';
                     $newlyResolved['ExtID'] = $ID_MRICandidateErrors;
-                } 
+                }
                 $DB->insert('violations_resolved', $newlyResolved);
             }
         }
-        
+
         $this->tpl_data['success'] = true;
     }
 
     /**
-     * Set up the class and smarty variables to use for the menu filter to 
+     * Set up the class and smarty variables to use for the menu filter to
      * generate the proper query for the menu filter
-     * 
+     *
      * @return none
      */
     function _setupVariables()
@@ -159,11 +159,14 @@ class NDB_Menu_Filter_Form_mri_violations extends NDB_Menu_Filter_Form
             $useProjects = true;
         }
 
+        $dir_path = $config->getSetting("imagePath");
+
         $this->columns = array(
             'v.PatientName',
             'v.Site',
             'v.TimeRun',
             'v.MincFile',
+            'v.MincFileViolated',
             'v.Series_Description as Series_Description_Or_Scan_Type',
             'v.Problem',
             'v.SeriesUID',
@@ -182,6 +185,7 @@ class NDB_Menu_Filter_Form_mri_violations extends NDB_Menu_Filter_Form
                 c.ProjectID as Project,
                 s.SubprojectID as Subproject,
                 minc_location as MincFile,
+		CONCAT_WS('','" . $dir_path . "','trashbin/',SUBSTRING_INDEX(minc_location, '/', -2)) as MincFileViolated,
                 series_description as Series_Description,
                 'Could not identify scan type' as Problem,
                 SeriesUID,
@@ -206,6 +210,7 @@ class NDB_Menu_Filter_Form_mri_violations extends NDB_Menu_Filter_Form
                 c.ProjectID as Project,
                 s.SubprojectID as Subproject,
                 MincFile,
+                CONCAT_WS('','" . $dir_path . "','trashbin/',SUBSTRING_INDEX(MincFile, '/', -2)) as MincFileViolated,
                 mri_scan_type.Scan_type,
                 'Protocol Violation',
                 SeriesUID,
@@ -217,7 +222,7 @@ class NDB_Menu_Filter_Form_mri_violations extends NDB_Menu_Filter_Form
             LEFT JOIN mri_scan_type
             ON (mri_scan_type.ID=mri_violations_log.Scan_type)
             LEFT JOIN violations_resolved
-            ON (violations_resolved.ExtID=mri_violations_log.LogID 
+            ON (violations_resolved.ExtID=mri_violations_log.LogID
             AND violations_resolved.TypeTable='mri_violations_log')
             LEFT JOIN candidate c
             ON (mri_violations_log.CandID=c.CandID)
@@ -232,6 +237,7 @@ class NDB_Menu_Filter_Form_mri_violations extends NDB_Menu_Filter_Form
                 c.ProjectID as Project,
                 s.SubprojectID as Subproject,
                 MincFile,
+                CONCAT_WS('','" . $dir_path . "','trashbin/',SUBSTRING_INDEX(MincFile, '/', -2)) as MincFileViolated,
                 null,
                 Reason,
                 SeriesUID,
@@ -254,15 +260,15 @@ class NDB_Menu_Filter_Form_mri_violations extends NDB_Menu_Filter_Form
         $this->order_by = 'v.TimeRun DESC';
 
         $this->formToFilter = array(
-                'PatientName'   => 'v.PatientName',
-                'Project'       => 'v.Project',
-                'Subproject'    => 'v.Subproject',
-                'TimeRun'       => 'v.TimeRun',
-                'ProblemType'   => 'v.Problem',
-                'Filename'      => 'v.MincFile',
-                'Description'   => 'v.Series_Description',
-                'SeriesUID'     => 'v.SeriesUID',
-                'Site'          => 'v.Site',
+            'PatientName'   => 'v.PatientName',
+            'Project'       => 'v.Project',
+            'Subproject'    => 'v.Subproject',
+            'TimeRun'       => 'v.TimeRun',
+            'ProblemType'   => 'v.Problem',
+            'Filename'      => 'v.MincFile',
+            'Description'   => 'v.Series_Description',
+            'SeriesUID'     => 'v.SeriesUID',
+            'Site'          => 'v.Site',
         );
 
         $this->validFilters = array(
@@ -355,9 +361,9 @@ class NDB_Menu_Filter_Form_mri_violations extends NDB_Menu_Filter_Form
             if ($site->isStudySite()) {
                 $sites = array($user->getData('CenterID') => $user->getData('Site'));
             }
-        } 
+        }
         $this->addSelect('Site', 'Site', $sites);
-                
+
         return true;
     }
 
@@ -374,12 +380,12 @@ class NDB_Menu_Filter_Form_mri_violations extends NDB_Menu_Filter_Form
     {
         $resolve_options = array(
 
-	        'unresolved'=>'Unresolved',
-	        'reran'=>'Reran',
-	        'emailed'=>'Emailed site/pending',
-	        'inserted'=>'Inserted',
-	        'rejected'=>'Rejected',
-	        'inserted_flag'=>'Inserted with flag',
+            'unresolved'=>'Unresolved',
+            'reran'=>'Reran',
+            'emailed'=>'Emailed site/pending',
+            'inserted'=>'Inserted',
+            'rejected'=>'Rejected',
+            'inserted_flag'=>'Inserted with flag',
             'other'=>'Other');
         // project
         $list_of_projects = Utility::getProjectList();
@@ -431,7 +437,7 @@ class NDB_Menu_Filter_Form_mri_violations extends NDB_Menu_Filter_Form
                 else {
                     $this->tpl_data['items'][$x][$i]['name'] = $key;
                     $this->tpl_data['items'][$x][$i]['value'] = $val;
-                }            
+                }
                 $i++;
             }
             $x++;
