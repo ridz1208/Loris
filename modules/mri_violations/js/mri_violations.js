@@ -12,7 +12,8 @@ $(document).ready(function(){
         var submenu = $(this).attr('id');
         var form    = $('<form />', {
             "action" : "main.php?test_name=mri_violations&submenu="+submenu,
-            "method" : "post"
+            "method" : "post",
+            "target" : "_blank"
         });
         var values = {
             "reset" : "true",
@@ -28,6 +29,7 @@ $(document).ready(function(){
                 value: value
             }).appendTo(form);
         });
+
 
         form.appendTo('body').submit();
     });
