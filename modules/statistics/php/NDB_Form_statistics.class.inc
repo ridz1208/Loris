@@ -856,11 +856,16 @@ class NDB_Form_statistics extends NDB_Form
             'adi_r_proband' => 'ADI-R (Proband)',
             'adi_r_subject' => 'ADI-R (Subject)',
             'aosi' => 'AOSI',
+            'aims' => 'AIMS',
             'ados_module1' => 'ADOS (Module 1)',
             'ados_module2' => 'ADOS (Module 2)',
+            //'ados_module3' => 'ADOS (Module 3)',
+            'ados2_module1' => 'ADOS 2 (Module 1)',
+            'ados2_module2' => 'ADOS 2 (Module 2)',
+            //'ados2_module3' => 'ADOS 2 (Module 3)',
             'csbs' => 'CSBS'
         );
-        $within_cross = array('adi_r_subject', 'ados_module1', 'ados_module2', 'aosi', 'csbs');
+        $within_cross = array('adi_r_subject', 'ados_module1', 'ados_module2', 'ados_module3', 'ados2_module1', 'ados2_module2', 'ados2_module3', 'aosi', 'csbs');
         $reliable = array();
         $within_reliable = array();
         $across_reliable = array();
@@ -883,7 +888,25 @@ class NDB_Form_statistics extends NDB_Form
                         $name . " v12",
                         $inst, $thresholds[$inst],
                         " AND EXISTS (SELECT 'x' FROM flag f JOIN session s ON (s.ID=f.SessionID) WHERE f.CommentID=r.CommentID and lower(s.Visit_label)='v12')");
-                } else {
+                } else if($inst == 'ados_module1' || $inst == 'ados_module2' || $inst == 'ados_module3' || $inst == 'ados2_module1' || $inst == 'ados2_module2' || $inst == 'ados2_module3') {
+                    $within_reliable[] = $this->_getWithinSiteReliabilityData(
+                        $name . " v24",
+                        $inst, $thresholds[$inst],
+                        " AND EXISTS (SELECT 'x' FROM flag f JOIN session s ON (s.ID=f.SessionID) WHERE f.CommentID=r.CommentID and lower(s.Visit_label)='v24')");
+                    $across_reliable[] = $this->_getCrossSiteReliabilityData(
+                        $name . " v24",
+                        $inst, $thresholds[$inst],
+                        " AND EXISTS (SELECT 'x' FROM flag f JOIN session s ON (s.ID=f.SessionID) WHERE f.CommentID=r.CommentID and lower(s.Visit_label)='v24')");
+                    $within_reliable[] = $this->_getWithinSiteReliabilityData(
+                        $name . " v36",
+                        $inst, $thresholds[$inst],
+                        " AND EXISTS (SELECT 'x' FROM flag f JOIN session s ON (s.ID=f.SessionID) WHERE f.CommentID=r.CommentID and lower(s.Visit_label)='v36')");
+                    $across_reliable[] = $this->_getCrossSiteReliabilityData(
+                        $name . " v36",
+                        $inst, $thresholds[$inst],
+                        " AND EXISTS (SELECT 'x' FROM flag f JOIN session s ON (s.ID=f.SessionID) WHERE f.CommentID=r.CommentID and lower(s.Visit_label)='v36')");
+                }
+                else {
                     $within_reliable[] = $this->_getWithinSiteReliabilityData($name,
                         $inst, $thresholds[$inst]);
                     $across_reliable[] = $this->_getCrossSiteReliabilityData($name,

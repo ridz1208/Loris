@@ -333,17 +333,12 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
         $site_list = array('SEA', 'PHI', 'STL', 'UNC');
 
         foreach($site_list as $site){
-            $this->within_site_flagging("adi_r_subject", 0.1, $site, $db, 1);//
-            $this->within_site_flagging("adi_r_proband", 0.15, $site, $db, 1);//
+
+            $this->within_site_flagging("adi_r_subject", 0.1, $site, $db, 1);
+            $this->within_site_flagging("adi_r_proband", 0.15, $site, $db, 1);
             $this->within_site_flagging("csbs", 0.1, $site, $db, 1);
-            //$this->within_site_flagging("aosi", 0.1, $site, $db, 1);  // split for 0.1 v06 0.1 12
             $this->within_site_flagging_visitlevel("aosi", 0.1, $site, $db,'V06' , 1);
             $this->within_site_flagging_visitlevel("aosi", 0.1, $site, $db,'V12' , 1);
-
-            //$this->within_site_flagging("ados_module1", 0.1, $site, $db, 1);
-            //$this->within_site_flagging("ados_module2", 0.1, $site, $db, 1);
-            //$this->within_site_flagging("ados2_module1", 0.1, $site, $db, 1);
-            //ados module 2 and module module 3 also separated 24 and 36
             $this->within_site_flagging_visitlevel("ados_module1", 0.1, $site, $db,'V24' ,1);
             $this->within_site_flagging_visitlevel("ados_module1", 0.1, $site, $db,'V36' ,1);
             $this->within_site_flagging_visitlevel("ados_module2", 0.1, $site, $db,'V24' ,1);
@@ -373,18 +368,16 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
             $this->within_site_flagging_visitlevel("ados2_module1", 0.1, $site, $db,'V36' ,2);
             $this->within_site_flagging_visitlevel("ados2_module2", 0.1, $site, $db,'V24' ,2);
             $this->within_site_flagging_visitlevel("ados2_module2", 0.1, $site, $db,'V36' ,2);
-            //add module 3 same separation 24 36
-            $this->within_site_flagging_visitlevel("ados2_module3", 0.1, $site, $db,'V24',2);
-            $this->within_site_flagging_visitlevel("ados2_module3", 0.1, $site, $db,'V36',2);
+            $this->within_site_flagging_visitlevel("ados2_module3", 0.1, $site, $db,'V24' ,2);
+            $this->within_site_flagging_visitlevel("ados2_module3", 0.1, $site, $db,'V36' ,2);
         }
 
         foreach($site_list as $site){
+
             $this->cross_site_flagging("adi_r_subject", $site, array_remove($site, $site_list), $db, 1);
             $this->cross_site_flagging("aosi", $site, array("UofA"), $db, 1);
             $this->cross_site_flagging("csbs", $site, array_remove($site, $site_list), $db, 1);
 
-            //$this->cross_site_flagging("ados_module1", $site, array_remove($site, $site_list), $db, 1); //R
-            //$this->cross_site_flagging("ados_module2", $site, array_remove($site, $site_list), $db, 1); //R
             $this->cross_site_flagging_visitlevel("ados_module1", $site, array_remove($site, $site_list), $db,'V24' ,1);
             $this->cross_site_flagging_visitlevel("ados_module1", $site, array_remove($site, $site_list), $db,'V36' ,1);
             $this->cross_site_flagging_visitlevel("ados_module2", $site, array_remove($site, $site_list), $db,'V24' ,1);
@@ -397,11 +390,10 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
             $this->cross_site_flagging_visitlevel("ados2_module2", $site, array_remove($site, $site_list), $db,'V36' ,1);
             $this->cross_site_flagging_visitlevel("ados2_module3", $site, array_remove($site, $site_list), $db,'V24' ,1);
             $this->cross_site_flagging_visitlevel("ados2_module3", $site, array_remove($site, $site_list), $db,'V36' ,1);
-            //ados2 module3
 
             // IBIS2 reliability
             $this->cross_site_flagging("aosi", $site, array("UofA"), $db, 2);
-            // $this->cross_site_flagging("adi_r_subject", $site, array_remove($site, $site_list), $db, 2);
+            //$this->cross_site_flagging("adi_r_subject", $site, array_remove($site, $site_list), $db, 2);
             $this->cross_site_flagging("csbs", $site, array_remove($site, $site_list), $db, 2);
 
             $this->cross_site_flagging_visitlevel("ados2_module1", $site, array_remove($site, $site_list), $db,'V24', 2);
@@ -430,7 +422,7 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
         $total_records_count = $db->selectOne("SELECT COUNT(i.CommentID) FROM {$instrument} as i, flag as f, session as s, candidate as c WHERE i.CommentID=f.CommentID AND f.sessionID=s.ID AND s.CandID = c.CandID AND s.Current_stage<>'Recycling Bin' AND f.Data_entry='Complete' AND i.CommentID LIKE '%{$current_site}%' AND s.visit_label<>'v18' AND i.CommentID NOT LIKE 'DDE%' AND f.Administration <> 'None' AND c.ProjectID = $projectID ORDER BY RIGHT(i.CommentID, 6)");
 
 
-        #$current_count = $db->selectOne("SELECT count(*) FROM reliability WHERE CommentID LIKE '%{$current_site}%' AND Instrument='{$instrument}' AND reliability_center_id={$this->site_id[$current_site]}");
+        //$current_count = $db->selectOne("SELECT count(*) FROM reliability WHERE CommentID LIKE '%{$current_site}%' AND Instrument='{$instrument}' AND reliability_center_id={$this->site_id[$current_site]}");
         $current_count = $db->selectOne("SELECT count(*) FROM (SELECT DISTINCT r.CommentID FROM reliability as r, flag as f, session as s  WHERE r.CommentID LIKE '%{$current_site}%' AND r.Instrument='{$instrument}' AND r.reliability_center_id={$this->site_id[$current_site]} AND r.invalid = 'no' AND r.CommentID=f.CommentID AND f.sessionID=s.ID AND s.Current_stage<>'Recycling Bin') as t");
         $total_count = count($instrument_records);
         if($ratio*$total_records_count >= $total_count) {
