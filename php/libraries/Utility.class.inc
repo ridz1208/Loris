@@ -211,6 +211,27 @@ class Utility extends PEAR
         return $list;
     }
 
+    /**
+     * Returns a list of all instruments involved in the reliability module
+     *
+     *
+     * @return array an associative array("center ID" => "site name")
+     */
+    static function getReliabilityInstruments()
+    {
+        $DB =& Database::singleton();
+
+        $query = "SELECT DISTINCT Test_name FROM reliability_instruments ri JOIN test_names t ON t.ID = ri.TestID";
+
+        $result = $DB->pselect($query, array());
+        // fix the array
+        $list = array();
+        foreach ($result as $row) {
+            $list[$row["Test_name"]] = $row["Test_name"];
+        }
+        return $list;
+    }
+
 
     /**
      * Get the list of sites as an associative array
