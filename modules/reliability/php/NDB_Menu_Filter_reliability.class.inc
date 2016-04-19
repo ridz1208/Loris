@@ -1,6 +1,6 @@
 <?php
 require_once 'NDB_Menu_Filter.class.inc';
-
+require_once 'Utility.class.inc';
 /**
  * The menu for the reliability checking
  * @package mri
@@ -49,7 +49,7 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
 
     function _hasAccess() {
         $user =& User::singleton();
-        if(PEAR::isError($user)) {
+        if(Utility::isErrorX($user)) {
             return PEAR::raiseError("User Error: ".$user->getMessage());
         }
         if($user->hasPermission('access_all_profiles') || $user->hasPermission('reliability_edit_all')) {
@@ -60,14 +60,14 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
     function _setupVariables()
     {
         $user =& User::singleton();
-        if(PEAR::isError($user)) {
+        if(Utility::isErrorX($user)) {
             return PEAR::raiseError("User Error: ".$user->getMessage());
         }
 
         // create the centerID map
         $db =& Database::singleton();
         $pscRows = array();
-        $db->select("SELECT CenterID, Name FROM psc", $pscRows);
+        $pscRows = $db->pselect("SELECT CenterID, Name FROM psc");
         foreach($pscRows AS $row) {
             $this->centerIDMap[$row['CenterID']] = $row['Name'];
         }
@@ -104,7 +104,7 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
                                     'PSCID' => 'candidate.PSCID',
                                     'Gender' => 'candidate.Gender',
                                     'Visit_label' => 'session.Visit_label',
-				                    'Instrument' => 'reliability.Instrument',
+                                    'Instrument' => 'reliability.Instrument',
                                     'reliability_score'=>'reliability.Reliability_score',
                                     'Current_stage'=>'session.Current_stage',
                                     'Invalid' => 'reliability.invalid',
@@ -119,7 +119,7 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
     {
     	// create user object
         $user =& User::singleton();
-        if(PEAR::isError($user)) {
+        if(Utility::isErrorX($user)) {
             return PEAR::raiseError("User Error: ".$user->getMessage());
         }
 
@@ -127,7 +127,7 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
         if ($user->hasPermission('access_all_profiles') || $user->hasPermission('reliability_edit_all')) {
             // get the list of study sites - to be replaced by the Site object
             $list_of_sites = Utility::getSiteList(false);
-            if(PEAR::isError($list_of_sites)) {
+            if(Utility::isErrorX($list_of_sites)) {
                 return PEAR::raiseError("DB Error: ".$list_of_sites->getMessage());
             }
             if(is_array($list_of_sites)) 
@@ -148,7 +148,7 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
         else {
             // allow only to view own site data
             $site =& Site::singleton($user->getData('CenterID'));
-            if (PEAR::isError($site)) {
+            if (Utility::isErrorX($site)) {
                 return PEAR::raiseError("DB Error: ".$site->getMessage());
             }
             //if ($site->isStudySite()) {
@@ -169,11 +169,10 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
         $list_of_projects =& Utility::getProjectList();
 
         // Form Elements
-        $this->addSelect('SubprojectID', 'SubprojectID:', $subproject_options);
-        $this->addSelect('Objective', 'Objective:', $subproject_options);
+        $this->addSelect('SubprojectID','Subproject:', $subproject_options);
         $this->addSelect('CenterID', 'Site:', $list_of_sites);
         $this->addSelect('reliability_center_id', 'Site of Reliability:', $list_of_sites);
-        $this->addBasicText('DCCID', 'DCCID::', array("size"=>9, "maxlength"=>6));
+        $this->addBasicText('DCCID', 'DCCID:', array("size"=>9, "maxlength"=>6));
         $this->addBasicText('PSCID', 'PSCID:', array("size"=>9, "maxlength"=>7));
         $this->addSelect('Gender', 'Gender:', $gender_options);
         $this->addSelect('Visit_label', 'Visit Label:', $list_of_visit_labels);
@@ -623,7 +622,7 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
 
     function _swap_candidates() {
         $user =& User::singleton();
-        if(PEAR::isError($user)) {
+        if(Utility::isErrorX($user)) {
             return PEAR::raiseError("User Error: ".$user->getMessage());
         }
         if (!($user->hasPermission('reliability_swap_candidates'))) {
@@ -677,7 +676,7 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
     function _addCandidate() {
         $user =& User::singleton();
         $DB =& Database::singleton();
-        if(PEAR::isError($user)) {
+        if(Utility::isErrorX($user)) {
             return PEAR::raiseError("User Error: ".$user->getMessage());
         }
         if (!($user->hasPermission('EARLI_Reliability'))) {
