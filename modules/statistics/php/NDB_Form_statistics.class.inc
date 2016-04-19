@@ -859,10 +859,10 @@ class NDB_Form_statistics extends NDB_Form
             'aims' => 'AIMS',
             'ados_module1' => 'ADOS (Module 1)',
             'ados_module2' => 'ADOS (Module 2)',
-            //'ados_module3' => 'ADOS (Module 3)',
+            'ados_module3' => 'ADOS (Module 3)',
             'ados2_module1' => 'ADOS 2 (Module 1)',
             'ados2_module2' => 'ADOS 2 (Module 2)',
-            //'ados2_module3' => 'ADOS 2 (Module 3)',
+            'ados2_module3' => 'ADOS 2 (Module 3)',
             'csbs' => 'CSBS'
         );
         $within_cross = array('adi_r_subject', 'ados_module1', 'ados_module2', 'ados_module3', 'ados2_module1', 'ados2_module2', 'ados2_module3', 'aosi', 'csbs');
