@@ -348,8 +348,8 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
        
        
        $this->reliability_table = map_cIDs($this->reliability_table);
-       
-       // WITHIN SITE
+
+
        $siteList = Utility::getSiteList();
        foreach($siteList as $name=>$id){    
 	       $site_list[$name] = $id;
@@ -378,10 +378,32 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
         $params = array();
         $params['currentSite'] = $current_site;
         $params['instrument'] = $instrument; 
-        $instrument_records = $db->pselect("SELECT f.CommentID FROM flag as f JOIN session as s ON (f.SessionID=s.ID) WHERE f.Test_name=:instrument AND s.Current_stage<>'Recycling Bin' AND f.Data_entry='Complete' AND f.CommentID LIKE CONCAT('%',:currentSite,'%')  AND f.CommentID NOT LIKE 'DDE%' AND f.Administration <> 'None' ORDER BY RIGHT(f.CommentID, 6)", $params );
+        $instrument_records = $db->pselect("
+                  SELECT f.CommentID
+                  FROM flag as f
+                        JOIN session as s ON (f.SessionID=s.ID)
+                  WHERE f.Test_name=:instrument
+                        AND s.Current_stage<>'Recycling Bin'
+                        AND f.Data_entry='Complete'
+                        AND f.CommentID LIKE CONCAT('%',:currentSite,'%')
+                        AND f.CommentID NOT LIKE 'DDE%'
+                        AND f.Administration <> 'None'
+                  ORDER BY RIGHT(f.CommentID, 6)",
+            $params );
         $total_records_count = count($instrument_records);
         $params['currentSite_id']= NDB_Menu_Filter_reliability::getSiteID($current_site);
-        $current_count = $db->pselectOne("SELECT count(*) FROM (SELECT DISTINCT r.CommentID FROM reliability as r JOIN flag as f ON (r.CommentID=f.CommentID) JOIN session as s ON (s.ID=f.SessionID) WHERE r.CommentID LIKE CONCAT('%', :currentSite ,'%') AND r.Instrument=:instrument AND r.reliability_center_id=:currentSite_id AND r.invalid = 'no' AND s.Current_stage<>'Recycling Bin') as t",$params);
+        $current_count = $db->pselectOne("
+                  SELECT count(*)
+                  FROM (SELECT DISTINCT r.CommentID
+                        FROM reliability as r
+                            JOIN flag as f ON (r.CommentID=f.CommentID)
+                            JOIN session as s ON (s.ID=f.SessionID)
+                        WHERE r.CommentID LIKE CONCAT('%', :currentSite ,'%')
+                            AND r.Instrument=:instrument
+                            AND r.reliability_center_id=:currentSite_id
+                            AND r.invalid = 'no'
+                            AND s.Current_stage<>'Recycling Bin') as t",
+            $params);
         $total_count = count($instrument_records);
         if($ratio*$total_records_count >= $total_count) {
             $max = $total_count;
@@ -412,10 +434,32 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
         $params['currentSite'] = $current_site;
         $params['instrument'] = $instrument; 
  
-        $instrument_records = $db->pselect("SELECT f.CommentID FROM flag as f JOIN session as s ON (f.sessionID=s.ID) WHERE s.Current_stage<>'Recycling Bin' AND f.Data_entry='Complete' AND f.CommentID NOT LIKE CONCAT('%', :currentSite,'%') AND f.Test_name=:instrument AND f.CommentID NOT LIKE 'DDE%'  AND f.Administration <> 'None' ORDER BY RIGHT(f.CommentID, 6)", $params );
+        $instrument_records = $db->pselect("
+                  SELECT f.CommentID
+                  FROM flag as f
+                      JOIN session as s ON (f.sessionID=s.ID)
+                  WHERE s.Current_stage<>'Recycling Bin'
+                      AND f.Data_entry='Complete'
+                      AND f.CommentID NOT LIKE CONCAT('%', :currentSite,'%')
+                      AND f.Test_name=:instrument
+                      AND f.CommentID NOT LIKE 'DDE%'
+                      AND f.Administration <> 'None'
+                  ORDER BY RIGHT(f.CommentID, 6)",
+            $params );
         $total_records_count = count($instrument_records);
         $params['currentSite_id']= NDB_Menu_Filter_reliability::getSiteID($current_site);
-         $current_count = $db->pselectOne("SELECT count(*) FROM (SELECT DISTINCT r.CommentID FROM reliability as r JOIN flag as f ON (r.CommentID=f.CommentID) JOIN session as s ON (s.ID=f.SessionID) WHERE r.CommentID LIKE CONCAT('%',:currentSite,'%') AND r.Instrument=:instrument AND r.reliability_center_id<>:currentSite_id AND r.invalid = 'no' AND s.Current_stage<>'Recycling Bin') as t", $params);
+         $current_count = $db->pselectOne("
+                  SELECT count(*)
+                  FROM (SELECT DISTINCT r.CommentID
+                        FROM reliability as r
+                            JOIN flag as f ON (r.CommentID=f.CommentID)
+                            JOIN session as s ON (s.ID=f.SessionID)
+                        WHERE r.CommentID LIKE CONCAT('%',:currentSite,'%')
+                            AND r.Instrument=:instrument
+                            AND r.reliability_center_id<>:currentSite_id
+                            AND r.invalid = 'no'
+                            AND s.Current_stage<>'Recycling Bin') as t",
+             $params);
         $total_count = count($instrument_records);
         if($ratio*$total_records_count >= $total_count) {
             $max = $total_count;
@@ -443,7 +487,15 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
       $params['currentSite'] = $current_site;
       $params['instrument'] = $instrument; 
       $params['currentSite_id']= NDB_Menu_Filter_reliability::getSiteID($current_site);
-      $last_site = $db->pselectOne("SELECT reliability_center_id FROM reliability where ID=(select max(ID) FROM reliability WHERE CommentID LIKE CONCAT('%',:currentSite,'%') AND Instrument=:instrument AND reliability_center_id<>:currentSite_id)",$params);
+      $last_site = $db->pselectOne("
+                        SELECT reliability_center_id
+                        FROM reliability
+                        WHERE ID=(SELECT max(ID)
+                                  FROM reliability
+                                  WHERE CommentID LIKE CONCAT('%',:currentSite,'%')
+                                      AND Instrument=:instrument
+                                      AND reliability_center_id<>:currentSite_id)",
+          $params);
       if(empty($last_site)){
         return 0;
       }
