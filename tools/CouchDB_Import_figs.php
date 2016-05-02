@@ -82,6 +82,15 @@ class CouchDBFigsImporter
         $tests = array("figs_year3_relatives" => "Figs Relatives");
         $this->UpdateDataDicts($tests);
 
+
+        $this->CouchDB->beginBulkTransaction();
+
+        $results = array(
+            'new'       => 0,
+            'modified'  => 0,
+            'unchanged' => 0,
+        );
+
         // Query to retrieve figs data
         $figs_rel = $this->SQLDB->pselect("
             SELECT  c.PSCID,
@@ -89,7 +98,9 @@ class CouchDBFigsImporter
                     f.Administration,
                     f.Data_entry,
                     f.Validity,
-                    CASE WHEN EXISTS (SELECT 'x' FROM conflicts_unresolved cu WHERE fr.CommentID=cu.CommentId1 OR fr.CommentID=cu.CommentId2) THEN 'Y' ELSE 'N' END
+                    CASE WHEN EXISTS (SELECT 'x'
+                                      FROM conflicts_unresolved cu
+                                      WHERE fr.CommentID=cu.CommentId1 OR fr.CommentID=cu.CommentId2) THEN 'Y' ELSE 'N' END
                           AS Conflicts_Exist,
                     CASE f.Data_entry='Complete' WHEN 1 THEN 'Y' WHEN NULL THEN 'Y' ELSE 'N' END
                           AS DDE_Complete,
@@ -118,7 +129,7 @@ class CouchDBFigsImporter
             ));
             print "$id: $success\n";
         }
-
+        print $this->CouchDB->commitBulkTransaction();
     }
 }
 
