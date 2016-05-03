@@ -397,6 +397,7 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
         //$reliabilityInstruments = $reliabilityConfig['Instrument'];
         $reliabilityInstruments = NDB_Menu_Filter_reliability::getReliabilityInstruments();
 
+        //TODO add target site support !!
         foreach($siteList as $centreID => $site) {
             foreach ($reliabilityInstruments as $instr) {
                 $instrument = NDB_Menu_Filter_reliability::getTestName($instr["TestID"]);
@@ -499,6 +500,7 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
                             JOIN candidate c ON (c.CandID=s.CandID)
                         WHERE r.CommentID LIKE CONCAT('%', :currentSite ,'%')
                             AND r.Instrument=:instrument
+                            $extra_where
                             AND r.reliability_center_id=:currentSite_id
                             AND r.invalid = 'no'
                             AND s.Current_stage<>'Recycling Bin') as t",
@@ -517,7 +519,7 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
         } else {
             $max = floor($ratio * $total_records_count);
         }
-
+        //TODO if the table is not empty but the floor =0 ADD at least one entry ????
         //TODO Limited to 50% of the instrument records array... feature or bug ???
         for($i = 0; $i < $total_records_count && $current_count <= $max; $i += 2) {
             $commentID = $instrument_records[$i]["CommentID"];
@@ -579,6 +581,7 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
                             JOIN candidate c ON (c.CandID=s.CandID)
                         WHERE r.CommentID LIKE CONCAT('%',:currentSite,'%')
                             AND r.Instrument=:instrument
+                            $extra_where
                             AND r.reliability_center_id<>:currentSite_id
                             AND r.invalid = 'no'
                             AND s.Current_stage<>'Recycling Bin') as t",
@@ -600,7 +603,7 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
         }
 
 
-        for($i = 0; $i < count($instrument_records) && $current_count <= $max; $i += 2) {
+        for($i = 0; $i < $total_records_count && $current_count <= $max; $i += 2) {
             $commentID = $instrument_records[$i]["CommentID"];
             if(!find_cID($commentID, $this->reliability_table)) {
                 $db->insert('reliability', array('CommentID' => $instrument_records[$i]["CommentID"],
@@ -656,6 +659,7 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
                         WHERE r.CommentID LIKE CONCAT('%', :currentSite ,'%')
                             AND r.Instrument=:instrument
                             AND s.Visit_label=:visit
+                            $extra_where
                             AND r.reliability_center_id=:currentSite_id
                             AND r.invalid = 'no'
                             AND s.Current_stage<>'Recycling Bin') as t",
@@ -706,7 +710,7 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
         $params['currentSite_id']= key($current_site);
         $params['visit'] = $visit;
 
-        
+
         $extra_where="";
         if (!is_null($project) && $project!='')
         {
@@ -740,6 +744,7 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
                         WHERE r.CommentID LIKE CONCAT('%',:currentSite,'%')
                             AND r.Instrument=:instrument
                             AND s.Visit_label=:visit
+                            $extra_where
                             AND r.reliability_center_id<>:currentSite_id
                             AND r.invalid = 'no'
                             AND s.Current_stage<>'Recycling Bin') as t",
@@ -761,7 +766,7 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
         }
 
 
-        for($i = 0; $i < count($instrument_records) && $current_count <= $max; $i += 2) {
+        for($i = 0; $i < $total_records_count && $current_count <= $max; $i += 2) {
             $commentID = $instrument_records[$i]["CommentID"];
             if(!find_cID($commentID, $this->reliability_table)) {
                 $db->insert('reliability', array('CommentID' => $instrument_records[$i]["CommentID"],
