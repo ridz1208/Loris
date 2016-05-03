@@ -397,7 +397,7 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
         //$reliabilityInstruments = $reliabilityConfig['Instrument'];
         $reliabilityInstruments = NDB_Menu_Filter_reliability::getReliabilityInstruments();
 
-        //TODO add target site support !!
+
         foreach($siteList as $centreID => $site) {
             foreach ($reliabilityInstruments as $instr) {
                 $instrument = NDB_Menu_Filter_reliability::getTestName($instr["TestID"]);
@@ -409,7 +409,8 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
                             $instr["Reliability_portion"],
                             array($centreID => $site),
                             $db,
-                            $instr["ProjectID"]
+                            $instr["ProjectID"],
+                            $instr["Target_siteID"]
                         );
                     } else if (strtolower($instr["Target_scope"]) == "within") {
                         $this->within_site_flagging(
@@ -429,7 +430,8 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
                             array($centreID => $site),
                             $db,
                             $instr["ProjectID"],
-                            $instr["Visit_label"]
+                            $instr["Visit_label"],
+                            $instr["Target_siteID"]
                         );
                     } else if (strtolower($instr["Target_scope"]) == "within") {
                         $this->within_site_flagging_per_visit(
@@ -534,16 +536,21 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
         }
     }
 
-    function cross_site_flagging($instrument, $ratio=0.1, $current_site, $db, $project){
+    function cross_site_flagging($instrument, $ratio=0.1, $current_site, $db, $project, $targetID){
         $siteList = Utility::getSiteList();
         $reliability_site_index = 0;
-        // We want the site to be random, starting from 0 causes a bias towards the first entry
-        // in $reliability_sites.. so shuffle the array to eliminate the bias
+        if (is_null($targetID) || $targetID="")
+        {
+            // We want the site to be random, starting from 0 causes a bias towards the first entry
+            // in $reliability_sites.. so shuffle the array to eliminate the bias
+            unset($siteList[key($current_site)]);
+            $reliability_sites = $siteList;
+            shuffle($reliability_sites);
+        } else {
+            //TODO support for multiple site overrides
+            $reliability_sites = array($targetID);
 
-        unset($siteList[key($current_site)]);
-
-        $reliability_sites = $siteList;
-        shuffle($reliability_sites);
+        }
 
         $params = array();
         $params['currentSite'] = reset($current_site);
@@ -607,7 +614,7 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
             $commentID = $instrument_records[$i]["CommentID"];
             if(!find_cID($commentID, $this->reliability_table)) {
                 $db->insert('reliability', array('CommentID' => $instrument_records[$i]["CommentID"],
-                    'reliability_center_id' => $params['currentSite_id'],
+                    'reliability_center_id' => NDB_Menu_Filter_reliability::getSiteID($reliability_sites[$reliability_site_index]),
                     'Instrument' => $instrument
                 ));
                 $this->reliability_table[$instrument_records[$i]["CommentID"]] = $params['currentSite_id'];
@@ -693,7 +700,7 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
         }
     }
 
-    function cross_site_flagging_per_visit($instrument, $ratio=0.1, $current_site, $db, $project, $visit){
+    function cross_site_flagging_per_visit($instrument, $ratio=0.1, $current_site, $db, $project, $visit, $targetID){
         $siteList = Utility::getSiteList();
         $reliability_site_index = 0;
         // We want the site to be random, starting from 0 causes a bias towards the first entry
@@ -716,6 +723,7 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
         {
             $extra_where=" AND c.ProjectID = $project";
         }
+
 
         $instrument_records = $db->pselect("
                   SELECT f.CommentID
@@ -770,7 +778,7 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
             $commentID = $instrument_records[$i]["CommentID"];
             if(!find_cID($commentID, $this->reliability_table)) {
                 $db->insert('reliability', array('CommentID' => $instrument_records[$i]["CommentID"],
-                    'reliability_center_id' => $params['currentSite_id'],
+                    'reliability_center_id' => NDB_Menu_Filter_reliability::getSiteID($reliability_sites[$reliability_site_index]),
                     'Instrument' => $instrument
                 ));
                 $this->reliability_table[$instrument_records[$i]["CommentID"]] = $params['currentSite_id'];
@@ -781,6 +789,7 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
     }
 
     //TODO NOT USED ????
+
     function get_current_index($instrument, $current_site, $reliability_sites, $db){
         $site_name = array_flip($this->site_id);
         $params = array();
