@@ -454,19 +454,21 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
         $params = array();
         $params['currentSite'] = reset($current_site);
         $params['instrument'] = $instrument;
-        $params['currentSite_id']= key($current_site);
+
 
         $extra_where="";
         if (!is_null($project) && $project!='')
         {
             $extra_where=" AND c.ProjectID = $project ";
         }
+
+        //TODO <>v18 in original query
         $instrument_records = $db->pselect("
                   SELECT f.CommentID
                   FROM flag as f
                         JOIN session as s ON (f.SessionID=s.ID)
                         JOIN candidate c ON (c.CandID=s.CandID)
-                  WHERE f.TestName=:instrument
+                  WHERE f.Test_name=:instrument
                         AND s.Current_stage<>'Recycling Bin'
                         AND f.Data_entry='Complete'
                         AND f.CommentID LIKE CONCAT('%',:currentSite,'%')
@@ -477,7 +479,7 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
             $params );
         $total_records_count = count($instrument_records);
 
-
+        $params['currentSite_id']= key($current_site);
         $current_count = $db->pselectOne("
                   SELECT count(*)
                   FROM (SELECT DISTINCT r.CommentID
@@ -515,10 +517,10 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
         }
     }
 
-    function cross_site_flagging($instrument, $ratio=0.1, $current_site, $db, $project, $targetID){
+    function cross_site_flagging($instrument, $ratio, $current_site, $db, $project, $targetID){
         $siteList = Utility::getSiteList();
         $reliability_site_index = 0;
-
+        //error_log("Could not load Loris module $test_name.");
 
         //check for a specific target ID
         //IF null shuffle through current study sites
@@ -530,6 +532,7 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
             unset($siteList[key($current_site)]);
             $reliability_sites_keys = array_keys($siteList);
             shuffle($reliability_sites_keys);
+
         } else {
             //TODO support for multiple site overrides
             $reliability_sites_keys = array($targetID);
@@ -538,7 +541,6 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
         $params = array();
         $params['currentSite'] = reset($current_site);
         $params['instrument'] = $instrument;
-        $params['currentSite_id']= key($current_site);
 
         $extra_where="";
         if (!is_null($project) && $project!='')
@@ -553,7 +555,7 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
                       JOIN candidate c ON (c.CandID=s.CandID)
                   WHERE s.Current_stage<>'Recycling Bin'
                       AND f.Data_entry='Complete'
-                      AND f.CommentID NOT LIKE CONCAT('%', :currentSite,'%')
+                      AND f.CommentID LIKE CONCAT('%', :currentSite,'%')
                       AND f.Test_name=:instrument
                       AND f.CommentID NOT LIKE 'DDE%'
                       AND f.Administration <> 'None'
@@ -562,6 +564,8 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
             $params );
         $total_records_count = count($instrument_records);
 
+
+        $params['currentSite_id']= key($current_site);
         $current_count = $db->pselectOne("
                   SELECT count(*)
                   FROM (SELECT DISTINCT r.CommentID
@@ -585,7 +589,7 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
         } else {
             $max = floor($ratio * $total_records_count);
         }
-
+        error_log("MAXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX IS $max.");
 
         for($i = 0; $i < $total_records_count && $current_count <= $max; $i += 2) {
             $commentID = $instrument_records[$i]["CommentID"];
@@ -605,7 +609,6 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
         $params = array();
         $params['currentSite'] = reset($current_site);
         $params['instrument'] = $instrument;
-        $params['currentSite_id']= key($current_site);
         $params['visit'] = $visit;
 
         $extra_where="";
@@ -619,7 +622,7 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
                   FROM flag as f
                         JOIN session as s ON (f.SessionID=s.ID)
                         JOIN candidate c ON (c.CandID=s.CandID)
-                  WHERE f.TestName=:instrument
+                  WHERE f.Test_name=:instrument
                         AND s.Current_stage<>'Recycling Bin'
                         AND f.Data_entry='Complete'
                         AND f.CommentID LIKE CONCAT('%',:currentSite,'%')
@@ -632,7 +635,7 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
         $total_records_count = count($instrument_records);
 
 
-        //TODO need to check per visit label AND per project
+        $params['currentSite_id']= key($current_site);
         $current_count = $db->pselectOne("
                   SELECT count(*)
                   FROM (SELECT DISTINCT r.CommentID
@@ -701,7 +704,6 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
         $params = array();
         $params['currentSite'] = reset($current_site);
         $params['instrument'] = $instrument;
-        $params['currentSite_id']= key($current_site);
         $params['visit'] = $visit;
 
 
@@ -718,7 +720,7 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
                       JOIN candidate c ON (c.CandID=s.CandID)
                   WHERE s.Current_stage<>'Recycling Bin'
                       AND f.Data_entry='Complete'
-                      AND f.CommentID NOT LIKE CONCAT('%', :currentSite,'%')
+                      AND f.CommentID LIKE CONCAT('%', :currentSite,'%')
                       AND f.Test_name=:instrument
                       AND f.CommentID NOT LIKE 'DDE%'
                       AND f.Administration <> 'None'
@@ -728,6 +730,7 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
             $params );
         $total_records_count = count($instrument_records);
 
+        $params['currentSite_id']= key($current_site);
         $current_count = $db->pselectOne("
                   SELECT count(*)
                   FROM (SELECT DISTINCT r.CommentID
