@@ -1,43 +1,12 @@
 <?php
 require_once 'NDB_Menu_Filter.class.inc';
 require_once 'Utility.class.inc';
+
 /**
- * The menu for the reliability checking
- * @package mri
- * @subpackage NIHPD
+ * Class NDB_Menu_Filter_reliability
+ *
+ * @author Dave, Rida
  */
-
-function map_cIDs($array){
-    $new_array = array();
-    for($i = 0; $i < count($array); $i++){
-        $element = $array[$i];
-        $new_array[$element['CommentID']] = $element['reliability_center_id'];
-    }
-    return $new_array;
-}
-
-function find_cID($cID, $array){
-    if(empty($array)){
-        return false;
-    }
-    foreach($array as $key=>$value){
-        if($key == $cID){
-            return true;
-        }
-    }
-    return false;
-}
-
-function array_remove($item, $array){
-    $index = array_search($item, $array);
-    if($index === false){
-        return $array;
-    }else{
-        unset($array[$index]);
-        return array_values($array);
-    }
-}
-
 class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
 {
 
@@ -48,51 +17,11 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
         if(Utility::isErrorX($user)) {
             return PEAR::raiseError("User Error: ".$user->getMessage());
         }
-        if($user->hasPermission('access_all_profiles') || $user->hasPermission('reliability_edit_all')) {
+        if($user->hasPermission('access_all_profiles')
+                || $user->hasPermission('reliability_edit_all')) {
             return true;
         }
         return false;
-    }
-
-    static function getSiteID($site){
-        $siteList = Utility::getSiteList(false);
-        foreach($siteList as $id=>$name){
-            $site_id[$name] = $id;
-        }
-        $id = $site_id[$site];
-        return $id;
-    }
-    /**
-     * function getting the list of all instruments involved in the reliability module
-     *
-     * @return array rows of the reliability_instruments table
-     */
-    static function getReliabilityInstruments()
-    {
-        $DB =& Database::singleton();
-
-        $query = "SELECT * FROM reliability_instruments ri JOIN test_names t ON t.ID = ri.TestID";
-
-        $result = $DB->pselect($query, array());
-        // fix the array
-
-        return $result;
-    }
-    /**
-     * function getting the test name associated with a test ID
-     *
-     * @param $testID Id of the test for which the name is wanted
-     *
-     * @return array rows of the reliability_instruments table
-     */
-    static function getTestName($testID)
-    {
-        $DB =& Database::singleton();
-        $query = "SELECT Test_name FROM test_names WHERE ID=:ID";
-
-        $result = $DB->pselectOne($query, array('ID' => $testID));
-
-        return $result;
     }
 
 
@@ -113,30 +42,76 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
 
         $this->_populate_reliability_table();
 
-        $query = " FROM candidate, session, flag, reliability WHERE reliability.CommentID=flag.CommentID AND candidate.CandID=session.CandID AND session.ID=flag.SessionID";
+        $query = " FROM candidate, session, flag, reliability ".
+            "WHERE reliability.CommentID=flag.CommentID ".
+            "AND candidate.CandID=session.CandID AND session.ID=flag.SessionID";
 
         // only view their own profiles, unless they have permission to see all
-        if (!($user->hasPermission('reliability_edit_all') || $user->hasPermission('access_all_profiles'))) {
-            $query .= " AND candidate.centerID = '" . $user->getData('CenterID') . "' ";
+        if (!($user->hasPermission('reliability_edit_all')
+                || $user->hasPermission('access_all_profiles'))) {
+            $query .= " AND candidate.centerID = '".
+                $user->getData('CenterID') . "' ";
         }
         $config=&NDB_Config::singleton();
         $useProjects = $config->getSetting("useProjects");
         // set the class variables
-        $this->columns = array('candidate.PSCID', 'reliability.reliability_center_id AS Site', 'session.SubprojectID as Cohort', 'session.CandID AS DCCID', 'candidate.Gender', 'session.Visit_label');
+        $this->columns = array(
+            'candidate.PSCID',
+            'reliability.reliability_center_id AS Site',
+            'session.SubprojectID as Cohort',
+            'session.CandID AS DCCID',
+            'candidate.Gender',
+            'session.Visit_label'
+        );
+
         if ($useProjects === "true") {
             $this->columns[] = 'candidate.ProjectID as Project';
         }
         $this->columns=array_merge($this->columns,
-            array('reliability.CommentID','reliability.Instrument', 'reliability.Reliability_score', 'session.Current_stage', 'reliability.invalid', 'reliability.Manual_Swap' ));
+            array('reliability.CommentID',
+                'reliability.Instrument',
+                'reliability.Reliability_score',
+                'session.Current_stage',
+                'reliability.invalid',
+                'reliability.Manual_Swap' )
+        );
+
         $this->query = $query;
         $this->group_by = '';
-        $this->order_by = 'reliability.Instrument, session.CandID, session.Visit_label';
-        $this->headers = array('PSCID', 'reliability_center_id','Cohort', 'DCCID', 'Gender', 'Visit_label');
+        $this->order_by = 'reliability.Instrument, session.CandID, '.
+            'session.Visit_label';
+        $this->headers = array(
+            'PSCID',
+            'reliability_center_id',
+            'Cohort',
+            'DCCID',
+            'Gender',
+            'Visit_label'
+        );
         if ($useProjects === "true") {
             $this->headers[] = 'Project';
         }
-        $this->headers=array_merge($this->headers,array('Instrument', 'reliability_score', 'Reliable'));
-        $this->validFilters = array('reliability.CommentID','reliability.reliability_center_id', 'session.SubprojectID', 'candidate.CenterID', 'session.CandID', 'candidate.PSCID', 'candidate.Gender', 'session.Visit_label', 'candidate.ProjectID','reliability.Instrument', 'reliability.Reliability_score', 'session.Current_stage', 'reliability.invalid','candidate.CandID');
+        $this->headers=array_merge($this->headers,
+            array('Instrument',
+                'reliability_score',
+                'Reliable')
+        );
+        $this->validFilters = array(
+            'reliability.CommentID',
+            'reliability.reliability_center_id',
+            'session.SubprojectID',
+            'candidate.CenterID',
+            'session.CandID',
+            'candidate.PSCID',
+            'candidate.Gender',
+            'session.Visit_label',
+            'candidate.ProjectID',
+            'reliability.Instrument',
+            'reliability.Reliability_score',
+            'session.Current_stage',
+            'reliability.invalid',
+            'candidate.CandID'
+        );
 
         $this->formToFilter = array(
             'SubprojectID' => 'session.SubprojectID',
@@ -166,7 +141,8 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
         }
 
         // allow to view all sites data through filter
-        if ($user->hasPermission('access_all_profiles') || $user->hasPermission('reliability_edit_all')) {
+        if ($user->hasPermission('access_all_profiles')
+                || $user->hasPermission('reliability_edit_all')) {
             // get the list of study sites - to be replaced by the Site object
             $list_of_sites = Utility::getSiteList(false);
             if(Utility::isErrorX($list_of_sites)) {
@@ -187,7 +163,9 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
                 return PEAR::raiseError("DB Error: ".$site->getMessage());
             }
             //if ($site->isStudySite()) {
-            $list_of_sites = array($user->getData('CenterID') => $user->getData('Site'));
+            $list_of_sites = array(
+                $user->getData('CenterID') => $user->getData('Site')
+            );
             //}
         }
 
@@ -211,45 +189,102 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
         $config =& NDB_Config::singleton();
 
         $db =& Database::singleton();
-        $reliabilityInstruments = $db->pselect("SELECT Test_name FROM reliability_instruments ri JOIN test_names t ON t.ID = ri.TestID", array());
+        $reliabilityInstruments = $db->pselect("
+            SELECT Test_name
+            FROM reliability_instruments ri
+              JOIN test_names t ON t.ID = ri.TestID",
+            array()
+        );
+
         foreach($reliabilityInstruments as $reliabilityInstrument){
             $list_of_instruments[$reliabilityInstrument['Test_name']] = $reliabilityInstrument['Test_name'];
             $list_of_instruments_only[$reliabilityInstrument['Test_name']] = $reliabilityInstrument['Test_name'];
         }
-        /*
-        $reliabilityConfig = $config->getSetting("ReliabilityInstruments");
-        $reliabilityInstruments = $reliabilityConfig['Instrument'];
-        foreach(Utility::toArray($reliabilityInstruments) AS $reliabilityInstrument){
-          $list_of_instruments[$reliabilityInstrument['Testname']] = $reliabilityInstrument['Displayname']; 
-          $list_of_instruments_only[$reliabilityInstrument['Testname']] = $reliabilityInstrument['Displayname']; 
-        }
-        */
-        $lock_options = array(null=>'','Locked'=>'Locked','Unlocked'=>'Unlocked');
+
+        //$lock_options = array(null=>'','Locked'=>'Locked','Unlocked'=>'Unlocked');
 
         // Form Elements
-        $this->addSelect('SubprojectID','Subproject:', $subproject_options);
-        $this->addSelect('CenterID', 'Site:', $list_of_sites);
-        $this->addSelect('reliability_center_id', 'Site of Reliability:', $list_of_sites);
-        $this->addBasicText('DCCID', 'DCCID:', array("size"=>9, "maxlength"=>6));
-        $this->addBasicText('PSCID', 'PSCID:', array("size"=>9, "maxlength"=>7));
-        $this->addSelect('Gender', 'Gender:', $gender_options);
-        $this->addSelect('Visit_label', 'Visit Label:', $list_of_visit_labels);
-        $this->addSelect('Instrument', 'Instrument:', $list_of_instruments);
-        $this->addSelect('Invalid', 'Invalid Candidate:', array('' => 'All', 'yes' => 'Yes', 'no' => 'No'));
+        $this->addSelect(
+            'SubprojectID',
+            'Subproject:',
+            $subproject_options
+        );
+        $this->addSelect(
+            'CenterID',
+            'Site:',
+            $list_of_sites
+        );
+        $this->addSelect(
+            'reliability_center_id',
+            'Site of Reliability:',
+            $list_of_sites
+        );
+        $this->addBasicText(
+            'DCCID',
+            'DCCID:',
+            array("size"=>9, "maxlength"=>6)
+        );
+        $this->addBasicText(
+            'PSCID',
+            'PSCID:',
+            array("size"=>9, "maxlength"=>7)
+        );
+        $this->addSelect(
+            'Gender',
+            'Gender:',
+            $gender_options
+        );
+        $this->addSelect(
+            'Visit_label',
+            'Visit Label:',
+            $list_of_visit_labels
+        );
+        $this->addSelect(
+            'Instrument',
+            'Instrument:',
+            $list_of_instruments
+        );
+        $this->addSelect(
+            'Invalid',
+            'Invalid Candidate:',
+            array('' => 'All', 'yes' => 'Yes', 'no' => 'No')
+        );
         // $this->form->addElement('select', 'Lock_record', 'Lock_record:', $lock_options);
         //$config=&NDB_Config::singleton();
         if($config->getSetting("useProjects")=="true"){
-            $this->addSelect('ProjectID', 'Project:', $list_of_projects);
+            $this->addSelect(
+                'ProjectID',
+                'Project:',
+                $list_of_projects
+            );
         }
 
         // For swapping candidates
         if ($user->hasPermission('reliability_swap_candidates')) {
             $this->tpl_data['reliability_swap_candidates'] = true;
-            $this->addSelect('Cand1Visit_label', 'Visit Label:', $list_of_visit_labels_only);
-            $this->addBasicText('Cand1PSCID', 'PSCID:');
-            $this->addSelect('Cand2Visit_label', 'Visit Label:', $list_of_visit_labels_only);
-            $this->addBasicText('Cand2PSCID', 'PSCID:');
-            $this->addSelect('SwapInstrument', 'Instrument:', $list_of_instruments_only);
+            $this->addSelect(
+                'Cand1Visit_label',
+                'Visit Label:',
+                $list_of_visit_labels_only
+            );
+            $this->addBasicText(
+                'Cand1PSCID',
+                'PSCID:'
+            );
+            $this->addSelect(
+                'Cand2Visit_label',
+                'Visit Label:',
+                $list_of_visit_labels_only
+            );
+            $this->addBasicText(
+                'Cand2PSCID',
+                'PSCID:'
+            );
+            $this->addSelect(
+                'SwapInstrument',
+                'Instrument:',
+                $list_of_instruments_only
+            );
         } else {
             $this->tpl_data['reliability_swap_candidates'] = false;
         }
@@ -286,37 +321,26 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
     }
 
 
-    function getThreshholds() {
-        /*
-         * $db =& Database::singleton();
-        $config =& NDB_Config::singleton();
-        $reliabilityConfig = $config->getSetting("ReliabilityInstruments");
-        $reliabilityInstruments = $reliabilityConfig['Instrument'];
-        foreach(Utility::toArray($reliabilityInstruments) AS $reliabilityInstrument){
-          $list_of_thresholds[$reliabilityInstrument['Testname']] = $reliabilityInstrument['Threshold']; 
-        }
-        */
+    function getThresholds() {
 
-        /*
-        $projects = $DB->pselect("SELECT * FROM Project", array());
-        $project  = array();
-        foreach ($projects as $row) {
-            $project[$row['ProjectID']] = $row['Name'];
-        }
-        return $project;
-         */
         $db =& Database::singleton();
         $list_of_thresholds = array();
-        $thresholds = $db->pselect("SELECT Test_name, Threshold FROM reliability_instruments ri JOIN test_names t ON t.ID = ri.TestID", array());
+        $thresholds = $db->pselect("
+            SELECT Test_name, Threshold
+            FROM reliability_instruments ri
+                JOIN test_names t ON t.ID = ri.TestID",
+            array()
+        );
         foreach($thresholds as $row){
             $list_of_thresholds[$row['Test_name']] = $row['Threshold'];
         }
         return $list_of_thresholds;
     }
+
     function _setDataTableRows($count)
     {
         $projectlist=Utility::getProjectList();
-        $threshold = $this->getThreshholds();
+        $threshold = $this->getThresholds();
         // print out
         $x = 0;
         foreach ($this->list as $item) {
@@ -388,7 +412,7 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
         $this->reliability_table= $db->pselect("SELECT CommentID, reliability_center_id FROM reliability");
 
 
-        $this->reliability_table = map_cIDs($this->reliability_table);
+        $this->reliability_table = $this->map_cIDs($this->reliability_table);
 
         $siteList = Utility::getSiteList();
 
@@ -502,12 +526,13 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
         } else {
             $max = floor($ratio * $total_records_count);
         }
-        //TODO if the table is not empty but the floor =0 ADD at least one entry ????
-        //TODO Limited to 50% of the instrument records array... feature or bug ???
+        //TODO Limited to 50% of the instrument records (increments by 2) array... feature or bug ???
         for($i = 0; $i < $total_records_count && $current_count <= $max; $i += 2) {
             $commentID = $instrument_records[$i]["CommentID"];
-            if(!find_cID($commentID, $this->reliability_table)) {
-                $db->insert('reliability', array('CommentID' => $instrument_records[$i]["CommentID"],
+            if(!$this->find_cID($commentID, $this->reliability_table)) {
+                $db->insert(
+                    'reliability',
+                    array('CommentID' => $instrument_records[$i]["CommentID"],
                     'reliability_center_id' => $params['currentSite_id'],
                     'Instrument' => $instrument
                 ));
@@ -589,12 +614,13 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
         } else {
             $max = floor($ratio * $total_records_count);
         }
-        error_log("MAXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX IS $max.");
 
         for($i = 0; $i < $total_records_count && $current_count <= $max; $i += 2) {
             $commentID = $instrument_records[$i]["CommentID"];
-            if(!find_cID($commentID, $this->reliability_table)) {
-                $db->insert('reliability', array('CommentID' => $instrument_records[$i]["CommentID"],
+            if(!$this->find_cID($commentID, $this->reliability_table)) {
+                $db->insert(
+                    'reliability',
+                    array('CommentID' => $instrument_records[$i]["CommentID"],
                     'reliability_center_id' => $reliability_sites_keys[$reliability_site_index],
                     'Instrument' => $instrument
                 ));
@@ -651,13 +677,7 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
                             AND r.invalid = 'no'
                             AND s.Current_stage<>'Recycling Bin') as t",
             $params);
-        /*
-        if($ratio*$total_records_count >= $total_count) {
-            $max = $total_count;
-        } else {
-            $max = floor($ratio * $total_records_count);
-        }
-        */
+
         if ($ratio > 1)
         {
             //safeguard
@@ -669,8 +689,10 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
 
         for($i = 0; $i < $total_records_count && $current_count <= $max; $i += 2) {
             $commentID = $instrument_records[$i]["CommentID"];
-            if(!find_cID($commentID, $this->reliability_table)) {
-                $db->insert('reliability', array('CommentID' => $instrument_records[$i]["CommentID"],
+            if(!$this->find_cID($commentID, $this->reliability_table)) {
+                $db->insert(
+                    'reliability',
+                    array('CommentID' => $instrument_records[$i]["CommentID"],
                     'reliability_center_id' => $params['currentSite_id'],
                     'Instrument' => $instrument
                 ));
@@ -747,13 +769,7 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
                             AND s.Current_stage<>'Recycling Bin') as t",
             $params);
 
-        /*
-        if($ratio*$total_records_count >= $total_count) {
-            $max = $total_count;
-        } else {
-            $max = floor($ratio * $total_records_count);
-        }
-        */
+
         if ($ratio > 1)
         {
             //safeguard
@@ -765,8 +781,10 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
 
         for($i = 0; $i < $total_records_count && $current_count <= $max; $i += 2) {
             $commentID = $instrument_records[$i]["CommentID"];
-            if(!find_cID($commentID, $this->reliability_table)) {
-                $db->insert('reliability', array('CommentID' => $instrument_records[$i]["CommentID"],
+            if(!$this->find_cID($commentID, $this->reliability_table)) {
+                $db->insert(
+                    'reliability',
+                    array('CommentID' => $instrument_records[$i]["CommentID"],
                     'reliability_center_id' => $reliability_sites_keys[$reliability_site_index],
                     'Instrument' => $instrument
                 ));
@@ -778,7 +796,7 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
     }
 
     //TODO NOT USED ????
-
+    /*
     function get_current_index($instrument, $current_site, $reliability_sites, $db){
         $site_name = array_flip($this->site_id);
         $params = array();
@@ -801,7 +819,7 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
             return (array_search($site_name[$last_site], $reliability_sites) + 1) % count($reliability_sites);
         }
     }
-
+    */
     function _swap_candidates() {
         $user =& User::singleton();
         if(Utility::isErrorX($user)) {
@@ -819,53 +837,125 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
         $params_new['id_Replace']= $_POST['Cand2PSCID'];
         $params_new['id_replaceV'] = $_POST['Cand2Visit_label'];
 
-        $query="SELECT reliability.CommentID as OldID, reliability.reliability_center_id as CenterID, reliability.Reliability_score as Score, candidate.CenterID as OldCenterID  FROM candidate JOIN session ON (session.CandID = candidate.CandID) JOIN flag ON (flag.SessionID = session.ID) JOIN reliability ON ( reliability.CommentID=flag.CommentID) WHERE candidate.PSCID=:pid AND reliability.Instrument=:measure and session.Visit_label=:id_V AND flag.Data_entry IS NOT NULL and flag.Data_entry <> 'None'";
+
+        //get the candidate to swap out
+        $query="
+              SELECT r.CommentID as OldID,
+                  r.reliability_center_id as CenterID,
+                  r.Reliability_score as Score,
+                  c.CenterID as OldCenterID
+              FROM candidate c
+                  JOIN session s ON (s.CandID = c.CandID)
+                  JOIN flag f ON (f.SessionID = s.ID)
+                  JOIN reliability r ON ( r.CommentID=f.CommentID)
+              WHERE c.PSCID=:pid
+                  AND r.Instrument=:measure
+                  AND s.Visit_label=:id_V
+                  AND f.Data_entry IS NOT NULL
+                  AND f.Data_entry <> 'None'";
 
         $CommentID = $DB->pselectRow($query,$params );
+        //if candidate is not in table return an error
         if(!$CommentID) {
-            return array('error' => $params_new['id_Replace']."/".$params_new['id_replaceV']." did not complete".$params['measure']." or data not entered. Cannot swap candidates.");
+            return array(
+                'error' =>  $params_new['id_Replace']."/".
+                            $params_new['id_replaceV']." did not complete ".
+                            $params['measure']." or data not entered. Cannot swap candidates.");
 
         }
         $params_new['Instrument'] = $_POST['SwapInstrument'];
-        $query="SELECT f.CommentID as NewID, c.CenterID as NewCenterID FROM session s join flag f ON (f.SessionID=s.ID) JOIN candidate c ON (c.CandID=s.CandID)  WHERE f.Test_name=:Instrument and c.PSCID=:id_Replace AND s.Visit_label=:id_replaceV AND f.Data_entry IS NOT NULL and f.Data_entry <> 'None'";
+        //get candidate to swap in
+        $query="
+              SELECT f.CommentID as NewID,
+                  c.CenterID as NewCenterID
+              FROM session s
+                  JOIN flag f ON (f.SessionID=s.ID)
+                  JOIN candidate c ON (c.CandID=s.CandID)
+              WHERE f.Test_name=:Instrument
+              AND c.PSCID=:id_Replace
+              AND s.Visit_label=:id_replaceV
+              AND f.Data_entry IS NOT NULL
+              AND f.Data_entry <> 'None'";
         $newCommentID = $DB->pselectRow($query, $params_new);
+        //if candidate does not have entry for instrument return with error
         if(!$newCommentID) {
-            $error_msg = $params_new['id_Replace']."/".$params_new['id_replaceV']." did not complete". $params_new['Instrument']." or data not entered. Cannot swap candidates.";
+            $error_msg =    $params_new['id_Replace']."/".
+                            $params_new['id_replaceV']." did not complete ".
+                $params_new['Instrument']." or data not entered. Cannot swap candidates.";
             return array('error' => $error_msg);
         }
+        //check if both candidates are from the same site
+        //check if examiner is from the same site as candidates to swap
         if($newCommentID['NewCenterID'] !== $CommentID['OldCenterID']) {
             return array('error' => "Candidates are not from the same site. Cannot swap candidates across sites.");
         }
         elseif($user->getCenterID() != $newCommentID['NewCenterID']) {
-            $error_msg = $params_new['id_Replace']."/".$params_new['id_replaceV']." is from a different site than you. Can only swap candidates from the same site.";
+            $error_msg = $params_new['id_Replace'].
+                "/".
+                $params_new['id_replaceV'].
+                " is from a different site than you. Can only swap candidates ".
+                "from the same site.";
             return array('error' =>$error_msg);
         }
         elseif($user->getCenterID() != $CommentID['OldCenterID']) {
-            $error_msg = $params_new['id_Replace']."/".$params_new['id_replaceV']." is from a different site than you. Can only swap candidates from the same site.";
+            $error_msg = $params_new['id_Replace'].
+                "/".
+                $params_new['id_replaceV'].
+                " is from a different site than you. Can only swap candidates ".
+                "from the same site.";
             return array('error' => $error_msg);
-
         }
         $value = array('NewID'=>$newCommentID['NewID']);
-        $replacementCheck = $DB->pselectRow("SELECT CommentID FROM reliability WHERE CommentID=:NewID'",$value );
+        $replacementCheck = $DB->pselectRow("
+              SELECT CommentID
+              FROM reliability
+              WHERE CommentID=:NewID",
+            $value
+        );
+        //check if the reliability table already has the candidate being swapped in
         if(!empty($replacementCheck)) {
-            $error_msg = $params_new['id_Replace']."/".$params_new['id_replaceV']." already in reliability. Cannot swap".$params['pid']."/".$params['id_V']."for it";
+            $error_msg = $params_new['id_Replace'].
+                "/".
+                $params_new['id_replaceV'].
+                " already in reliability. Cannot swap ".
+                $params['pid'].
+                "/".
+                $params['id_V'].
+                " for it";
             return array('error' => $error_msg);
         }
-
+        //check if a reliability score has already been given to the candidate being swapped out
         $CenterID = $CommentID['CenterID'];
         if(!empty($CommentID['Score'])) {
-            return array( "error" => "Reliability score already exists for".$params['pid']."/".$params['id_V']."Can not swap candidate.");
+            return array( "error" => "Reliability score already exists for ".
+                $params['pid'].
+                "/".
+                $params['id_V'].
+                " Can not swap candidate.");
         }
-        $where_criteria = array ('CommentID'=>$CommentID['OldID'] , 'Instrument'=>$params['measure']);
+        $where_criteria = array (
+            'CommentID'=>$CommentID['OldID'] ,
+            'Instrument'=>$params['measure']
+        );
         $values = array('invalid'=>'yes', 'manual_swap'=>'yes');
-        $DB->update('reliability', $values,$where_criteria);
-        $DB->insert('reliability',array('CommentID'=>$newCommentID['NewID'],
+        $DB->update(
+            'reliability',
+            $values,
+            $where_criteria
+        );
+
+        $DB->insert(
+            'reliability',
+            array('CommentID'=>$newCommentID['NewID'],
                 'reliability_center_id'=>$CenterID,
                 'Instrument'=>$params['measure'],
                 'Manual_Swap'=>'yes')
         );
 
-        return array("message" => "Swapped candidate".$params['pid']." for".$params_new['id_Replace']);
+        return array("message" => "Swapped candidate ".
+                                $params['pid'].
+                                " for ".
+                                $params_new['id_Replace']);
     }
 
     function _addCandidate()
@@ -879,6 +969,7 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
         $params['Instrument'] = $_POST['AddInstrument'];
         $params['Visit_label'] = $_POST['AddVisit_label'];
         $params['PSCID'] = $_POST['AddPSCID'];
+
         if (!$params['Visit_label']) {
             return array("error" => "You must specify a visit label");
         }
@@ -890,9 +981,22 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
             return array("error" => "You must specify a center for reliability testing");
         }
 
-        $CommentID = $DB->pselectOne("SELECT CommentID FROM flag f JOIN session s ON (s.ID=f.SessionID) JOIN candidate c USING (CandID) WHERE f.Test_name=:Instrument AND c.PSCID=:PSCID AND s.Visit_label=:Visit_label", $params);
+        $CommentID = $DB->pselectOne("
+            SELECT CommentID
+            FROM flag f
+                JOIN session s ON (s.ID=f.SessionID)
+                JOIN candidate c USING (CandID)
+            WHERE f.Test_name=:Instrument
+                AND c.PSCID=:PSCID
+                AND s.Visit_label=:Visit_label",
+            $params
+        );
         if (!$CommentID) {
-            $error_msg = $params['PSCID'] . "/" . $params['Visit_label'] . " does not have data entered for" . $params['Instrument'];
+            $error_msg = $params['PSCID'] .
+                "/" .
+                $params['Visit_label'] .
+                " does not have data entered for " .
+                $params['Instrument'];
             return array("error" => $error_msg);
 
         }
@@ -902,8 +1006,83 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
                 'Instrument' => $params['Instrument'],
                 'Manual_Swap' => 'no')
         );
-        return array("message" => "Inserted new reliability candidate" . $params['PSCID'] . "/" . $params['Visit_label']);
+        return array("message" => "Inserted new reliability candidate " .
+            $params['PSCID'] .
+            "/" .
+            $params['Visit_label']);
     }
 
+
+    function map_cIDs($array){
+        $new_array = array();
+        for($i = 0; $i < count($array); $i++){
+            $element = $array[$i];
+            $new_array[$element['CommentID']] = $element['reliability_center_id'];
+        }
+        return $new_array;
+    }
+
+    function find_cID($cID, $array){
+        if(empty($array)){
+            return false;
+        }
+        foreach($array as $key=>$value){
+            if($key == $cID){
+                return true;
+            }
+        }
+        return false;
+    }
+    static function getSiteID($site){
+        $siteList = Utility::getSiteList(false);
+        foreach($siteList as $id=>$name){
+            $site_id[$name] = $id;
+        }
+        $id = $site_id[$site];
+        return $id;
+    }
+    /**
+     * function getting the list of all instruments involved in the reliability module
+     *
+     * @return array rows of the reliability_instruments table
+     */
+    static function getReliabilityInstruments()
+    {
+        $DB =& Database::singleton();
+
+        $query = "SELECT * FROM reliability_instruments ri JOIN test_names t ON t.ID = ri.TestID";
+
+        $result = $DB->pselect($query, array());
+        // fix the array
+
+        return $result;
+    }
+    /**
+     * function getting the test name associated with a test ID
+     *
+     * @param $testID Id of the test for which the name is wanted
+     *
+     * @return array rows of the reliability_instruments table
+     */
+    static function getTestName($testID)
+    {
+        $DB =& Database::singleton();
+        $query = "SELECT Test_name FROM test_names WHERE ID=:ID";
+
+        $result = $DB->pselectOne($query, array('ID' => $testID));
+
+        return $result;
+    }
+    /*
+    function array_remove($item, $array){
+        $index = array_search($item, $array);
+        if($index === false){
+            return $array;
+        }else{
+            unset($array[$index]);
+            return array_values($array);
+        }
+    }
+    */
 }
 ?>
