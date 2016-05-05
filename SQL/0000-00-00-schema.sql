@@ -2165,3 +2165,16 @@ CREATE TABLE `data_release_permissions` (
  CONSTRAINT `FK_userid` FOREIGN KEY (`userid`) REFERENCES `users` (`ID`),
  CONSTRAINT `FK_data_release_id` FOREIGN KEY (`data_release_id`) REFERENCES `data_release` (`id`)
 );
+
+DROP TABLE IF EXISTS `reliability_instruments`;
+CREATE TABLE `reliability_instruments` (
+  `Rel_instID` int(11) NOT NULL AUTO_INCREMENT,
+  `TestID` int(11) NOT NULL,
+  `Visit_label` varchar(255) DEFAULT NULL,
+  `Target_scope` enum('Cross','Within') NOT NULL,
+  `Target_siteID` int(11) DEFAULT NULL,
+  `Threshold` float(4,2) NOT NULL,
+  `Reliability_portion` float (2,2) NOT NULL,
+  `ProjectID`  int(11) DEFAULT NULL,
+  PRIMARY KEY (`rel_instID`)
+);
