@@ -450,7 +450,7 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
                     if (strtolower($instr["Target_scope"]) == "cross") {
                         $this->cross_site_flagging(
                             $instrument,
-                            $instr["Reliability_portion"],
+                            $instr["Reliability_ratio"],
                             array($centreID => $site),
                             $db,
                             $instr["ProjectID"],
@@ -459,7 +459,7 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
                     } else if (strtolower($instr["Target_scope"]) == "within") {
                         $this->within_site_flagging(
                             $instrument,
-                            $instr["Reliability_portion"],
+                            $instr["Reliability_ratio"],
                             array($centreID => $site),
                             $db,
                             $instr["ProjectID"]
@@ -470,7 +470,7 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
                     if (strtolower($instr["Target_scope"]) == "cross") {
                         $this->cross_site_flagging_per_visit(
                             $instrument,
-                            $instr["Reliability_portion"],
+                            $instr["Reliability_ratio"],
                             array($centreID => $site),
                             $db,
                             $instr["ProjectID"],
@@ -480,7 +480,7 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
                     } else if (strtolower($instr["Target_scope"]) == "within") {
                         $this->within_site_flagging_per_visit(
                             $instrument,
-                            $instr["Reliability_portion"],
+                            $instr["Reliability_ratio"],
                             array($centreID => $site),
                             $db,
                             $instr["ProjectID"],
