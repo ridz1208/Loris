@@ -1,18 +1,15 @@
 /*global document, $*/
-function updateCheckboxes() {
-    $('#selectall').click(function(event) {
-        if(this.checked) {
-            $('input:checkbox[id=MRIScans]').each(function() {
-                this.checked = true;
-            });
-        }else{
-            $('input:checkbox[id=MRIScans]').each(function() {
-                this.checked = false;
-            });
-        }
-    });
-
-}
+$('#selectall').click(function(event) {
+    if(this.checked) {
+        $('input:checkbox[id=MRIScans]').each(function() {
+            this.checked = true;
+        });
+    }else{
+        $('input:checkbox[id=MRIScans]').each(function() {
+            this.checked = false;
+        });
+    }
+});
 
 //freezecolumn not sufficient for complex tables
 //$(document).ready(function(){
@@ -34,8 +31,8 @@ function updateMRITab() {
         type: 'GET',
         data: 'html',
         success: function(response) {
-        $('#mri').html(response);
-        }  
-       });
-     }
+            $('#mri').html(response);
+        }
+    });
+}
 
