@@ -2503,6 +2503,52 @@ class NDB_BVL_Instrument extends NDB_Page
     {
         return $this->determineDataEntryAllowed();
     }
+    /**
+     * Check if an associated file is found in the doc repo and display
+     * a link if it is
+     *
+     */
+    function getDocRepoFile()
+    {
+        $factory = NDB_Factory::singleton();
+        $baseurl = $factory->settings()->getBaseURL();
+        $DB =& Database::singleton();
+        $session_name=$DB->pselectOne(
+            "SELECT Visit_label
+              FROM session s
+              WHERE s.ID =:sid",
+            array('sid'=>$_REQUEST['sessionID'])
+        );
+
+        if ($session_name==='Initial_Assessment_Screening')
+        {
+            $session_name='Screening';
+        }
+        $pscid=$DB->pselectOne(
+            "SELECT PSCID
+              FROM candidate c
+              WHERE c.CandID =:cid",
+            array('cid'=>$_REQUEST['candID']));
+
+        $result=$DB->pselectRow(
+            "SELECT *
+              FROM document_repository
+              WHERE PSCID=:pscid AND visitLabel=:sname AND Instrument=:instr",
+            array('pscid' => $pscid,
+                'sname'=>$session_name,
+                'instr'=>$_REQUEST['test_name'])
+        );
+
+        if(!empty($result))
+        {
+            print_r("hahahahahahahah");
+            $url=$baseurl."/document_repository/ajax/GetFile.php?File=".$result['uploaded_by']."/".$result['File_name'];
+            $this->form->addElement('link', null, 'Associated Document:' , "$url", $result['File_name']);
+        } else {
+            $this->addLabel("blabla");
+        }
+    }
+
 }
 
 /**
