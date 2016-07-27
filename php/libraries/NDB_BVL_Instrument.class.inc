@@ -2542,7 +2542,7 @@ class NDB_BVL_Instrument extends NDB_Page
         if(!empty($result))
         {
             $url=$baseurl."/document_repository/ajax/GetFile.php?File=".$result['uploaded_by']."/".$result['File_name'];
-            $this->form->addElement('link', null, 'Associated Document:' , "$url", $result['File_name']);
+            $this->form->addElement('link', null, 'Associated Document:' , "$url", $result['File_name'],array('Download'=>$result['File_name']));
         } else {
             $this->addLabel("No files Associated with this instrument");
         }
