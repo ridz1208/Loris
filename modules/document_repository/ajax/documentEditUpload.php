@@ -52,13 +52,31 @@ if ($userSingleton->hasPermission('document_repository_view') || $userSingleton-
 
         $target_path = $base_path  . $fileBase;
 
+        $insert_vars = array(
+            'File_category'=>$category,
+            'For_site'=>$site,
+            'comments'=>$comments,
+            'version'=>$version,
+            'File_name'=>$fileName,
+            'File_size'=>$fileSize,
+            'Data_dir'=>$fileBase,
+            'uploaded_by'=>$puser,
+            'Instrument'=>$instrument,
+            'PSCID'=>$pscid,
+            'visitLabel'=>$visit,
+            'File_type'=>$fileType
+        );
+        $valid_vars = array();
+        foreach($insert_vars as $key=>$value)
+        {
+            if (!is_null($value) && $value != "")
+            {
+                $valid_vars[$key]=$value;
+            }
+        }
+
         if (move_uploaded_file($_FILES["file"]["tmp_name"], $target_path)) {
-            $success = $DB->insert('document_repository',
-                            array('File_category'=>$category, 'For_site'=>$site,
-                                  'comments'=>$comments, 'version'=>$version, 'File_name'=>$fileName,
-                                  'File_size'=>$fileSize, 'Data_dir'=>$fileBase, 'uploaded_by'=>$puser,
-                                  'Instrument'=>$instrument, 'PSCID'=>$pscid, 'visitLabel'=>$visit,
-                                  'File_type'=>$fileType));
+            $success = $DB->insert('document_repository', $valid_vars);
             $msg_data['newDocument'] = $baseURL . "/document_repository/";
             $msg_data['document'] = $fileName;
             $msg_data['study'] = $config->getSetting('title');
@@ -71,6 +89,7 @@ if ($userSingleton->hasPermission('document_repository_view') || $userSingleton-
         } else {
             echo "There was an error uploading the file";
         }
+        unset($valid_vars);
     } elseif ($action == 'edit') {
         $id = $_POST['idEdit'];
         $category = $_POST['categoryEdit'];
@@ -86,12 +105,27 @@ if ($userSingleton->hasPermission('document_repository_view') || $userSingleton-
             exit;
         }
 
-        $values = array('File_category' => $category, 'Instrument' => $instrument, 'For_site' => $site,
-                        'PSCID' => $pscid, 'visitLabel' => $visit, 'comments' => $comments, 'version' => $version);
+        $update_vars = array(
+            'File_category' => $category,
+            'Instrument' => $instrument,
+            'For_site' => $site,
+            'PSCID' => $pscid,
+            'visitLabel' => $visit,
+            'comments' => $comments,
+            'version' => $version
+        );
+        $valid_vars = array();
+        foreach($update_vars as $key=>$value)
+        {
+            if (!is_null($value) && $value != "")
+            {
+                $valid_vars[$key]=$value;
+            }
+        }
         $DB->update('document_repository', $values, array('record_id'=>$id));
 
         $fileName = $DB->pselectOne("select File_name from document_repository where record_id=:record_id",
-                                     array('record_id'=>$id));
+            array('record_id'=>$id));
         $msg_data['updatedDocument'] = $baseURL . "/document_repository/";
         $msg_data['document'] = $fileName;
         $query_Doc_Repo_Notification_Emails = "SELECT Email from users where Active='Y' and Doc_Repo_Notifications='Y' and UserID<>:uid";
