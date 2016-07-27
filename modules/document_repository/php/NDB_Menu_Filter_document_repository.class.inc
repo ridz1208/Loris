@@ -65,7 +65,7 @@ class NDB_Menu_Filter_Document_Repository extends NDB_Menu_Filter
         $this->query = $query;
         $this->group_by = '';
         $this->order_by = 'v.File_name';
-        $this->headers = array('File_name', 'version', 'File_type', 'Instrument', 'uploaded_by', 'For_site', 'comments', 'Date_uploaded', 'Edit', 'Delete');
+        $this->headers = array('File_name', 'version', 'File_type', 'Instrument', 'uploaded_by', 'For_site', 'comments', 'Date_uploaded', 'Edit', 'Delete','Instrument');
         $this->validFilters = array('v.For_site', 'v.File_name', 'v.File_category', 'v.File_type', 'v.version', 'v.uploaded_by');
 
         $this->formToFilter = array(
@@ -291,6 +291,8 @@ class NDB_Menu_Filter_Document_Repository extends NDB_Menu_Filter
     {
         $DB = Database::singleton();
         $query = $this->_getPreparedQuery();
+        $factory = NDB_Factory::singleton();
+        $baseURL = $factory->settings()->getBaseURL();
         $prepared = $DB->prepare($query['query']);
         $prepared->execute($query['params']);
 
@@ -300,6 +302,10 @@ class NDB_Menu_Filter_Document_Repository extends NDB_Menu_Filter
         while ($item = $prepared->fetch(PDO::FETCH_ASSOC)) {
             $FileCategory =& $this->tpl_data['File_categories'][$item['File_category']];
             $DisplayItem = $item;
+            $instrument_info= $this->_getInstrument($item['record_id']);
+            $DisplayItem['instrument_exists']=$instrument_info['exists'];
+            $DisplayItem['no_instr']=!($instrument_info['exists']);
+            $DisplayItem['instr_url']= $baseURL."/".$item['Instrument']."/"."?commentID=".$instrument_info['commentid']."&sessionID=".$instrument_info['sid']."&candID=".$instrument_info['cid'];
             $DisplayItem['File_name'] = utf8_encode($item['File_name']);
             $DisplayItem['File_size'] = $this->format_size($item['File_size']);
             $DisplayItem['For_site']  = $site_names[$item['For_site']];
@@ -335,6 +341,37 @@ class NDB_Menu_Filter_Document_Repository extends NDB_Menu_Filter
 
         return "{$value} bytes";
 
+    }
+
+    /**
+     * Check if an item in the document repository has an associated instruemnt
+     * in LORIS for a specific candidate at a specfic time point
+     *
+     * @param   int     $recordID of the entry from the doc repo
+     * @param   string  $instrument name
+     *
+     * @return  array    boolean value and necessary info for the link
+     */
+
+    function _getInstrument($recordID)
+    {
+        $DB = Database::singleton();
+
+        $record = $DB->pselectRow("SELECT s.ID, c.CandID, f.CommentID
+                              FROM session s
+                                JOIN candidate c on (s.CandID=c.CandID)
+                                JOIN document_repository dr on (dr.PSCID=c.PSCID)
+                                JOIN flag f on (f.SessionID = s.ID AND f.Test_name=dr.Instrument)
+                              WHERE dr.record_id =:rid
+                                  AND f.CommentID NOT LIKE 'DDE_%'",
+            array('rid'=>$recordID)
+        );
+
+        if (!is_null($record) && !empty($record)) {
+            // set the SessionID for the battery
+            return array('exists'=>true,'commentid'=>$record['CommentID'],'sid'=>$record['ID'],'cid'=>$record['CandID']);
+        }
+        return array('exists'=>false);
     }
 
     /**

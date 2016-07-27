@@ -17,7 +17,7 @@
 
 <script id="dir" type="x-tmpl-mustache">
     <tr id="{{ id }}a" {{ #parentID }}class="{{ parentID }}a directoryRow" style="display:none"{{ /parentID }}>
-        <td class="fileColumn" colspan="10">
+        <td class="fileColumn" colspan="11">
             {{ #depth }}
                 {{ #first }}
                     <div class="spacer" style="border-left: none;"> </div>
@@ -85,6 +85,16 @@
         <td nowrap="nowrap">
             <a href="#" id="{{ record_id }}" class="thedeletelink">Delete</a>
         </td>
+        {{#instrument_exists}}
+            <td nowrap="nowrap">
+                <a href={{ instr_url }} id="{{ record_id }}" class="theinstrumentlink">LORIS <br>Instrument</a>
+            </td>
+        {{/instrument_exists}}
+        {{#no_instr}}
+            <td>
+                No instrument created
+            </td>
+        {{/no_instr}}
     </tr>
 </script>
 {/literal}
@@ -199,7 +209,7 @@
     <thead>
         {section name=header loop=$headers}
             <th class="info" nowrap="nowrap" class="accordionHeaders">
-                {if $headers[header].displayName == "Edit" || $headers[header].displayName == "Delete"}
+                {if $headers[header].displayName == "Edit" || $headers[header].displayName == "Delete" || $headers[header].displayName == "Instrument"}
                     {$headers[header].displayName}
                 {else}
                     <a href="{$baseurl}/document_repository/?openAccordion=true&filter[order][field]={$headers[header].name}&filter[order][fieldOrder]={$headers[header].fieldOrder}" class = "sortHeaders">
