@@ -33,7 +33,7 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
         // create the centerID map
         $db      =& Database::singleton();
         $pscRows = array();
-        $pscRows = $db->pselect("SELECT CenterID, Name FROM psc");
+        $pscRows = $db->pselect("SELECT CenterID, Name FROM psc", array());
         foreach($pscRows AS $row) {
             $this->centerIDMap[$row['CenterID']] = $row['Name'];
         }
@@ -1123,6 +1123,25 @@ class NDB_Menu_Filter_reliability extends NDB_Menu_Filter
         $result = $DB->pselectOne($query, array('ID' => $testID));
 
         return $result;
+    }
+    
+     /**
+     * Include the column formatter required to display the feedback link colours
+     * in the candidate_list menu
+     *
+     * @return array of javascript to be inserted
+     */
+    function getJSDependencies()
+    {
+        $factory = NDB_Factory::singleton();
+        $baseURL = $factory->settings()->getBaseURL();
+        $deps    = parent::getJSDependencies();
+        return array_merge(
+            $deps,
+            array(
+             $baseURL . "/reliability/js/reliability_helper.js",
+            )
+        );
     }
 }
 ?>

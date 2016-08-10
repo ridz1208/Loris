@@ -104,13 +104,19 @@
             {section name=item loop=$items}
             <tr>
                 {section name=piece loop=$items[item]}
-                    <td>
-                        {if $items[item][piece].name == "Examiner" and $certification == "1"}
+                    {if $items[item][piece].name == "Examiner" and $certification == "1"}
+                        <td nowrap="nowrap">
                             <a href="{$baseurl}/examiner/editExaminer/?identifier={$items[item][piece].ID}">{$items[item][piece].value}</a>
-                        {else}
+                        </td>
+                    {elseif $items[item][piece].name == "Site"}
+                        <td nowrap="nowrap">
                             {$items[item][piece].value}
-                        {/if}
-                    </td>
+                        </td>
+                    {else}
+                        <td>
+                            {$items[item][piece].value}
+                        </td>
+                    {/if}
                 {/section}
             </tr>
             {sectionelse}
@@ -133,7 +139,7 @@ var pageLinks = RPaginationLinks(
     RowsPerPage : {$rowsPerPage},
     Total: {$TotalItems},
     onChangePage: function(pageNum) {
-        location.href="{$baseurl}/examiner/?pageID=" + pageNum
+        location.href="{$baseurl}/examiner/?filter[order][field]={$filterfield}&filter[order][fieldOrder]={$filterfieldOrder}&pageID=" + pageNum
     },
     Active: {$pageID}
 });
