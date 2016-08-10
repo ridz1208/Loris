@@ -198,13 +198,15 @@ class NDB_Form_statistics extends NDB_Form
             "SELECT s.subprojectid as rowid,
                           count(DISTINCT(c.PSCID)) as val
                       FROM candidate as c
+                      	  LEFT JOIN participant_status ps ON (ps.CandID=c.CandID)
                           LEFT JOIN session s ON (s.CandID=c.CandID)
                       WHERE c.CenterID <> '1'
                           AND c.PSCID <> 'scanner'
                           AND c.Active='Y'
+                          AND (ps.participant_status=1 OR ps.participant_status IS NULL)
                           $Param_Project
                           $Param_Site
-                      GROUP BY s.subprojectid",
+                      GROUP BY s.subprojectid;",
             $this->params
         );
 
@@ -218,13 +220,15 @@ class NDB_Form_statistics extends NDB_Form
             "SELECT s.subprojectid as rowid,
                           count(DISTINCT(c.PSCID)) as val
                       FROM candidate as c
+                      	  LEFT JOIN participant_status ps ON (ps.CandID=c.CandID)
                           LEFT JOIN session s ON (s.CandID=c.CandID)
                       WHERE c.CenterID <> '1'
                           AND c.PSCID <> 'scanner'
-                          AND c.Active<>'Y'
+                          AND c.Active='Y'
+                          AND ps.participant_status=5
                           $Param_Project
                           $Param_Site
-                      GROUP BY s.subprojectid",
+                      GROUP BY s.subprojectid;",
             $this->params
         );
 
@@ -238,15 +242,16 @@ class NDB_Form_statistics extends NDB_Form
             "SELECT s.subprojectid as rowid,
                           count(DISTINCT(c.PSCID)) as val
                       FROM candidate as c
+                      	  LEFT JOIN participant_status ps ON (ps.CandID=c.CandID)
                           LEFT JOIN session s ON (s.CandID=c.CandID)
-                      WHERE coalesce(s.active, 'Y')='Y'
-                          AND c.CenterID <> '1'
+                      WHERE c.CenterID <> '1'
                           AND c.PSCID <> 'scanner'
                           AND c.Active='Y'
+                          AND (ps.participant_status=1 OR ps.participant_status IS NULL)
                           AND c.Gender='Male'
                           $Param_Project
                           $Param_Site
-                      GROUP BY s.subprojectid",
+                      GROUP BY s.subprojectid;",
             $this->params
         );
 
@@ -259,15 +264,16 @@ class NDB_Form_statistics extends NDB_Form
             "SELECT s.subprojectid as rowid,
                           count(DISTINCT(c.PSCID)) as val
                       FROM candidate as c
+                      	  LEFT JOIN participant_status ps ON (ps.CandID=c.CandID)
                           LEFT JOIN session s ON (s.CandID=c.CandID)
-                      WHERE coalesce(s.active, 'Y')='Y'
-                          AND c.CenterID <> '1'
+                      WHERE c.CenterID <> '1'
                           AND c.PSCID <> 'scanner'
                           AND c.Active='Y'
+                          AND (ps.participant_status=1 OR ps.participant_status IS NULL)
                           AND c.Gender='Female'
                           $Param_Project
                           $Param_Site
-                      GROUP BY s.subprojectid",
+                      GROUP BY s.subprojectid;",
             $this->params
         );
 
@@ -282,10 +288,12 @@ class NDB_Form_statistics extends NDB_Form
                           s.subprojectid as rowid,
                           AVG(DATEDIFF(c.Date_registered,c.DoB)) as age
                       FROM candidate as c
-                          JOIN session s ON (s.CandID=c.CandID)
+                      	  LEFT JOIN participant_status ps ON (ps.CandID=c.CandID)
+                          LEFT JOIN session s ON (s.CandID=c.CandID)
                       WHERE coalesce(s.active, 'Y')='Y'
                           AND c.CenterID <> '1'
                           AND c.PSCID <> 'scanner'
+                          AND (ps.participant_status=1 OR ps.participant_status IS NULL)
                           AND c.Active='Y'
                           $Param_Project
                           $Param_Site
