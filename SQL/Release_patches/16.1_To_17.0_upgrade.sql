@@ -3,6 +3,9 @@ CREATE TABLE `ImagingFileTypes` (
  `type` varchar(255) NOT NULL PRIMARY KEY
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+-- necessary to avoid foreign key errors for empty strings
+UPDATE files SET FileType=NULL WHERE FileType = '';
+
 INSERT INTO `ImagingFileTypes` VALUES
             ('mnc'),
             ('obj'),
