@@ -1118,6 +1118,7 @@ class Utility
      */
     static function getVisitInstruments($visit_label)
     {
+        //TODO VISITS
         $DB =& Database::singleton();
 
         if ($DB->ColumnExists('test_battery', 'Test_name_display')) {

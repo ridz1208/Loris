@@ -151,7 +151,7 @@ class Create_Timepoint extends \NDB_Form
         // visit label
         $visitLabelSettings = $config->getSetting('visitLabel');
         $visitLabelAdded    = false;
-
+//TODO keep get setting just change where it gets the "labelset" from
         foreach (\Utility::toArray($visitLabelSettings) as $visitLabel) {
             if ($visitLabel['@']['subprojectID']==$this->subprojectID) {
                 if ($visitLabel['generation'] == 'user') {

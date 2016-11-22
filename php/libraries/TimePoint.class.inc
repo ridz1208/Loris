@@ -376,6 +376,7 @@ class TimePoint
      */
     function getVisitStatus()
     {
+        //TODO VISITS
         return $this->_timePointInfo["Visit"];
     }
 

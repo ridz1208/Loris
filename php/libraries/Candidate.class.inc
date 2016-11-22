@@ -576,6 +576,7 @@ class Candidate
      */
     public function getNextVisitLabel()
     {
+        //TODO VISITS
         $factory = NDB_Factory::singleton();
         $config  = $factory->config();
 
