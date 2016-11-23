@@ -14,7 +14,7 @@ CREATE TABLE `visits` (
 DROP TABLE IF EXISTS `visits_subproject_project_rel`;
 CREATE TABLE `visits_subproject_project_rel` (
   `VisitID` int(10) unsigned NOT NULL,
-  `SubprojectID` int(10) unsigned DEFAULT NULL,
+  `SubprojectID` int(10) unsigned NOT NULL,
   `ProjectID` int(2) DEFAULT NULL,
   PRIMARY KEY  (`visitID`,`subprojectID`),
   KEY `FK_visits_subproject_rel_1` (`subprojectID`),
