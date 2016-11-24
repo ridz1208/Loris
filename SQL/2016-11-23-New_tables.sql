@@ -22,3 +22,14 @@ CREATE TABLE `visits_subproject_project_rel` (
   CONSTRAINT `FK_visits_subproject_rel_3` FOREIGN KEY (`SubprojectID`) REFERENCES `subproject` (`SubprojectID`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `FK_visits_subproject_rel_4` FOREIGN KEY (`ProjectID`) REFERENCES `Project` (`ProjectID`) ON DELETE CASCADE ON UPDATE CASCADE
   )ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- add column to session to use visits ID
+ALTER TABLE session ADD COLUMN VisitID int(10) unsigned;
+UPDATE session s SET VisitID=(SELECT ID from visits v WHERE v.legacy_label=s.Visit_label);
+ALTER TABLE session ADD CONSTRAINT `FK_visits_session_rel_1` FOREIGN KEY (`VisitID`) REFERENCES `visits` (`ID`);
+
+-- add column to Visit_Windows to use visit ID
+ALTER TABLE Visit_Windows ADD COLUMN VisitID int(10) unsigned NOT NULL;
+UPDATE Visit_Windows vw SET VisitID=(SELECT ID from visits v WHERE v.legacy_label=vw.Visit_label);
+ALTER TABLE Visit_Windows ADD CONSTRAINT `FK_visits_Visit_Windows_rel_1` FOREIGN KEY (`VisitID`) REFERENCES `visits` (`ID`);
+
