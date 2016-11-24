@@ -521,6 +521,9 @@ class Candidate
      */
     public function getListOfVisitLabels()
     {
+        //TODO VISITS -> need a new function to get all visits in cases where
+        //candidate has some "user" input visits and some "sequence" input
+        //
         $factory = NDB_Factory::singleton();
         //make sure it returns an array
         $visitLabelArray = array();
@@ -540,6 +543,33 @@ class Candidate
             $visitLabelArray[$row["ID"]] = $row["Visit_label"];
         }
         return $visitLabelArray;
+    }
+
+    /**
+     * Returns the list of visit IDs w/ corresponding SessionID as key
+     *
+     * @return array Associative array in the format SessionID=>VisitID
+     * @throws DatabaseException
+     */
+    public function getListOfVisitID()
+    {
+        $factory = NDB_Factory::singleton();
+        //make sure it returns an array
+        $visitLabelArray = array();
+
+        $candID = $this->getCandID();
+
+        $db = $factory->database();
+
+        $query  = "SELECT ID, VisitID FROM session
+            WHERE CandID=:Candidate AND Active='Y' ORDER BY ID";
+        $result = $db->pselect($query, array('Candidate' => $candID));
+
+        // map the array [VisitNo]=>Visit_label
+        foreach ($result as $row) {
+            $visitIDArray[$row["ID"]] = $row["VisitID"];
+        }
+        return $visitIDArray;
     }
 
     /**
@@ -576,7 +606,7 @@ class Candidate
      */
     public function getNextVisitLabel()
     {
-        //TODO VISITS
+        //TODO VISITS --> No need to change this because its the behavior only when user is selected
         $factory = NDB_Factory::singleton();
         $config  = $factory->config();
 
