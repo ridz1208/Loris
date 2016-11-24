@@ -75,7 +75,8 @@ class Create_Timepoint extends \NDB_Form
         $success = \TimePoint::createNew(
             $this->identifier,
             $values['subprojectID'],
-            $values['visitLabel']
+            $values['visitLabel'],
+            $values['visitID']
         );
 
         $this->tpl_data['success'] = true;
@@ -150,8 +151,8 @@ class Create_Timepoint extends \NDB_Form
 
         // visit label
         $visitLabelSettings = $config->getSetting('visitLabel');
+
         $visitLabelAdded    = false;
-//TODO keep get setting just change where it gets the "labelset" from
         foreach (\Utility::toArray($visitLabelSettings) as $visitLabel) {
             if ($visitLabel['@']['subprojectID']==$this->subprojectID) {
                 if ($visitLabel['generation'] == 'user') {
@@ -165,22 +166,25 @@ class Create_Timepoint extends \NDB_Form
                     );
                     $visitLabelAdded = true;
                 } elseif ($visitLabel['generation'] == 'sequence') {
-                    $labelOptions[''] = null;
-                    $items            = \Utility::toArray(
-                        $visitLabel['labelSet']['item']
-                    );
-                    foreach ($items as $item) {
-                        $labelOptions[$item['@']['value']] = $item['#'];
-                    }
-                    $this->addSelect('visitLabel', 'Visit label', $labelOptions);
-                    $visitLabelAdded = true;
+                    //Addition used to avoid re-indexing array as it is done \
+                    //by array_merge
+                    $visitList=
+                        array(''=>null) +
+                        \Utility::getVisitsForSubproject($this->subprojectID);
+                    $this->addSelect('visitID', 'Visit label', $visitList);
+                    $visitIDAdded = true;
                 }
             }
         }
 
         // label rules
         if ($visitLabelAdded) {
+            $this->tpl_data['labelAdded']=true;
             $this->addRule('visitLabel', 'Visit label is required', 'required');
+        } elseif ($visitIDAdded) {
+            $this->tpl_data['idAdded']=true;
+            $this->addRule('visitID', 'Visit label is required', 'required');
+
         }
 
         $this->form->addFormRule(array(&$this, '_validate'));
@@ -211,7 +215,7 @@ class Create_Timepoint extends \NDB_Form
         // This can happen if the user quickly clicks "Create Time Point" before the
         // page has loaded and the Visit Label dropdown hasn't been selected yet.
         // The page will create "V1" when this is the case without this check.
-        if (empty($values['visitLabel'])) {
+        if (empty($values['visitLabel']) && empty($values['visitID'])) {
             $errors['visitLabel']
                 = 'A visit label is required for creating a timepoint.';
         }
@@ -224,12 +228,26 @@ class Create_Timepoint extends \NDB_Form
         }
 
         $candidate =& \Candidate::singleton($this->identifier);
+        if ($visitLabelSettings['generation'] == 'user') {
+            $timePointLabelArray = $candidate->getListOfVisitLabels();
+            $presetVisits= \Utility::getVisitList();
+            //If the visitLabel is already in use then let the user pick another
+            foreach ($timePointLabelArray AS $used_label) {
+                if (strcasecmp($values['visitLabel'], $used_label) == 0) {
+                    $errors['visitLabel'] = 'This visit label is not unique.';
+                }
+                // make sure label is not named exactly like visits from visits table
+                foreach ($presetVisits AS $key=>$preset_label) {
+                    if (strcasecmp($values['visitLabel'],$preset_label) ==0) {
+                        $errors['visitLabel'] = 'This visit label is already defined'.
+                        ' in the default visits.';
+                    }
+                }
+            }
 
-        $timePointArray = $candidate->getListOfVisitLabels();
-
-        //If the visitLabel is already in use then let the user pick another
-        foreach ($timePointArray AS $used_label) {
-            if (strcasecmp($values['visitLabel'], $used_label) == 0) {
+        } else if ($visitLabelSettings['generation'] == 'sequence') {
+            $timePointIDArray = $candidate->getListOfVisitID();
+            if (in_array($values['visitID'], $timePointIDArray)) {
                 $errors['visitLabel'] = 'This visit label is not unique.';
             }
         }
