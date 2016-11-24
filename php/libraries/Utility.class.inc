@@ -245,13 +245,62 @@ class Utility
     {
         $DB =& Database::singleton();
 
-        $query = "SELECT Visit_label from Visit_Windows ORDER BY Visit_label";
+        $query = "SELECT ID, label from visits";
 
         $result = $DB->pselect($query, array());
 
         $list = array();
         foreach ($result as $row) {
-            $list[$row["Visit_label"]] = ucfirst($row["Visit_label"]);
+            $list[$row["ID"]] = ($row["label"]);
+        }
+        return $list;
+    }
+
+    /**
+     *
+     */
+    Static function getVisitIDFromLabel($visit_label)
+    {
+        $DB =& Database::singleton();
+
+        $query = "SELECT ID FROM visits WHERE legacy_label=:vl";
+
+        $result = $DB->pselectOne($query, array("vl"=>$visit_label));
+
+        return $result;
+    }
+
+    /**
+     *
+     */
+    Static function getVisitLabelFromID($id)
+    {
+        $DB =& Database::singleton();
+
+        $query = "SELECT label FROM visits WHERE ID=:id";
+
+        $result = $DB->pselectOne($query, array("id"=>$id));
+
+        return $result;
+    }
+
+    /**
+     *
+     */
+    Static function getVisitsForSubproject ($subprojectID)
+    {
+        $DB =& Database::singleton();
+
+        $query = "SELECT v.ID, v.label 
+                  FROM visits v
+                    JOIN visits_subproject_project_rel vsr ON (v.ID=vsr.VisitID)
+                  WHERE vsr.SubprojectID=:sid";
+
+        $result = $DB->pselect($query, array("sid"=>$subprojectID));
+
+        $list = array();
+        foreach ($result as $row) {
+            $list[$row["ID"]] = $row["label"];
         }
         return $list;
     }
