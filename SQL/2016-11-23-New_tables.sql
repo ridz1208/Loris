@@ -1,3 +1,14 @@
+-- Cleanup TO DELETE
+ALTER TABLE session DROP FOREIGN KEY `FK_visits_session_rel_1`;
+ALTER TABLE Visit_Windows DROP FOREIGN KEY `FK_visits_Visit_Windows_rel_1`;
+ALTER TABLE session DROP COLUMN VisitID;
+ALTER TABLE Visit_Windows DROP COLUMN VisitID;
+DROP TABLE IF EXISTS `visits_subproject_project_rel`;
+DROP TABLE IF EXISTS `visits`;
+
+
+
+
 -- Create a table for visits where ID is the primary key, 
 -- legacy_label being the currently used "visit_label",
 -- label being the front end presentation of the visit
@@ -22,6 +33,11 @@ CREATE TABLE `visits_subproject_project_rel` (
   CONSTRAINT `FK_visits_subproject_rel_3` FOREIGN KEY (`SubprojectID`) REFERENCES `subproject` (`SubprojectID`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `FK_visits_subproject_rel_4` FOREIGN KEY (`ProjectID`) REFERENCES `Project` (`ProjectID`) ON DELETE CASCADE ON UPDATE CASCADE
   )ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+-- POPULATE TABLES USING SCRIPT
+
+
 
 -- add column to session to use visits ID
 ALTER TABLE session ADD COLUMN VisitID int(10) unsigned;
