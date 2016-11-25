@@ -245,7 +245,11 @@ class Utility
     {
         $DB =& Database::singleton();
 
-        $query = "SELECT ID, label from visits";
+        $query = "SELECT DISTINCT 
+                      IFNULL(v.ID,s.Visit_label) AS ID, 
+                      IFNULL(v.label,s.Visit_label) AS label
+                  FROM session s 
+                      LEFT JOIN visits v ON (v.ID=s.VisitID)";
 
         $result = $DB->pselect($query, array());
 
@@ -303,6 +307,34 @@ class Utility
             $list[$row["ID"]] = $row["label"];
         }
         return $list;
+    }
+
+    /**
+     * Returns the visit labels that a given test_name exists in
+     *
+     * @param string $test_name The instrument that we want to know
+     *                          which visit labels exist in.
+     *
+     * @return Array of the form array(0 => array('Visit_label' => VL))
+     *         where VL is the value returned from the database.
+     *
+     * @note    This should be moved out of the Utility class into whatever
+     *       module uses it. (Data team helper?)
+     * @note    Function comment written by Dave, not the author of this function.
+     * @cleanup
+     */
+    static function getVisitLabelUsingTestName($test_name)
+    {
+        $db    =& Database::singleton();
+        $query = "SELECT DISTINCT s.visit_label FROM session s
+            JOIN flag f ON (s.ID = f.SessionID)
+            JOIN candidate c ON (c.Candid = s.Candid)
+            JOIN psc ON (s.CenterID = psc.CenterID)
+            WHERE s.Active = 'Y' AND c.Active= 'Y' 
+            AND f.Test_name = :tn AND psc.Centerid!= '1'";
+
+        $visitlabels = $db->pselect($query, array('tn' => $test_name));
+        return $visitlabels;
     }
 
     /**
@@ -932,34 +964,6 @@ class Utility
             return true;
         }
         return false;
-    }
-
-    /**
-     * Returns the visit labels that a given test_name exists in
-     *
-     * @param string $test_name The instrument that we want to know
-     *                          which visit labels exist in.
-     *
-     * @return Array of the form array(0 => array('Visit_label' => VL))
-     *         where VL is the value returned from the database.
-     *
-     * @note    This should be moved out of the Utility class into whatever
-     *       module uses it. (Data team helper?)
-     * @note    Function comment written by Dave, not the author of this function.
-     * @cleanup
-     */
-    static function getVisitLabelUsingTestName($test_name)
-    {
-        $db    =& Database::singleton();
-        $query = "SELECT DISTINCT s.visit_label FROM session s
-            JOIN flag f ON (s.ID = f.SessionID)
-            JOIN candidate c ON (c.Candid = s.Candid)
-            JOIN psc ON (s.CenterID = psc.CenterID)
-            WHERE s.Active = 'Y' AND c.Active= 'Y' 
-            AND f.Test_name = :tn AND psc.Centerid!= '1'";
-
-        $visitlabels = $db->pselect($query, array('tn' => $test_name));
-        return $visitlabels;
     }
 
     /**
