@@ -109,10 +109,10 @@ function uploadFile()
     $sessionID = $db->pselectOne(
         "SELECT s.ID as session_id FROM candidate c " .
         "LEFT JOIN session s USING(CandID) WHERE c.PSCID = :v_pscid AND " .
-        "s.Visit_label = :v_visit_label AND s.CenterID = :v_center_id",
+        "s.VisitID = :v_visit_id AND s.CenterID = :v_center_id",
         [
          'v_pscid'       => $pscid,
-         'v_visit_label' => $visit,
+         'v_visit_id'    => $visit,
          'v_center_id'   => $site,
         ]
     );
@@ -176,11 +176,14 @@ function getUploadFields()
     // Build array of session data to be used in upload media dropdowns
     $sessionData    = [];
     $sessionRecords = $db->pselect(
-        "SELECT c.PSCID, s.Visit_label, s.CenterID " .
-        "FROM candidate c LEFT JOIN session s USING(CandID) ORDER BY c.PSCID ASC",
+        "SELECT c.PSCID, CONCAT(IFNULL(s.VisitID,s.Visit_label),' - ', IFNULL(v.label, s.Visit_label)) AS Visit_label, IFNULL(s.VisitID, s.Visit_label) AS VisitID, s.CenterID, f.Test_name " .
+        "FROM candidate c ".
+          "LEFT JOIN session s USING(CandID) ".
+          "LEFT JOIN visits v ON (v.ID=s.VisitID) ".
+          "LEFT JOIN flag f ON (s.ID=f.SessionID) ".
+        "ORDER BY c.PSCID ASC",
         []
     );
-
     foreach ($sessionRecords as $record) {
 
         // Populate sites
@@ -207,8 +210,22 @@ function getUploadFields()
             true
         )
         ) {
-            $sessionData[$record["PSCID"]]['visits'][$record["Visit_label"]]
+            $sessionData[$record["PSCID"]]['visits'][$record["VisitID"]]
                 = $record["Visit_label"];
+        }
+
+        //populate instruments
+        if (!isset($sessionData[$record["PSCID"]][$record["VisitID"]]['instruments'])) {
+            $sessionData[$record["PSCID"]][$record["VisitID"]]['instruments'] = [];
+        }
+        if ($record["Test_name"] !== null && !in_array(
+                $record["Test_name"],
+                $sessionData[$record["PSCID"]][$record["VisitID"]]['instruments'],
+                true
+            )
+        ) {
+            $sessionData[$record["PSCID"]][$record["VisitID"]]['instruments'][$record["Test_name"]]
+                = $record["Test_name"];
         }
     }
 
