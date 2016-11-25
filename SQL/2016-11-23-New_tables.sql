@@ -17,6 +17,7 @@ CREATE TABLE `visits` (
 	`ID` int(10) unsigned NOT NULL auto_increment,
 	`label` varchar(255) NOT NULL,
 	`legacy_label` varchar(255) DEFAULT NULL,
+	`imaging` enum('Y','N') DEFAULT 'N' NOT NULL,
   PRIMARY KEY (`ID`),
   UNIQUE KEY (`legacy_label`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
