@@ -113,7 +113,15 @@ class VisitsPopulator
                 if (!empty($visit)) {
                     $this->insertVisitIfMissing($visit,$label,$sid);
                 }
-            };
+            }
+        }
+        $query="SELECT DISTINCT Visit_label, SubprojectID FROM session";
+        $sessionLabels= $this->DB->pselect($query,array());
+        foreach ($sessionLabels as $k=>$row) {
+            $visit=$row['Visit_label'];
+            $label=$row['Visit_label'];
+            $sid=$row['SubprojectID'];
+            $this->insertVisitIfMissing($visit,$label,$sid);
         }
     }
 }
