@@ -119,12 +119,13 @@ class TimePoint
 
         // get user data from database
         $query = "SELECT s.ID AS SessionID, s.CandID, p.Name AS PSC, s.CenterID,
-                         s.VisitNo, s.Visit_label, s.SubprojectID, s.Submitted,
+                         s.VisitNo, IFNULL (v.label, s.Visit_label) AS Visit_label, s.VisitID, s.SubprojectID, s.Submitted,
                          s.Current_stage, s.Screening, s.Date_screening, s.Visit,
                          s.Date_visit, s.Approval, s.Date_approval, s.Active,
                          s.registeredBy, s.UserID, u.Real_name, s.Hardcopy_request,
                          s.BVLQCStatus, s.BVLQCType, s.BVLQCExclusion, s.Scan_done
                     FROM session AS s
+                        LEFT JOIN visits AS v ON (s.VisitID = v.ID)
                         LEFT JOIN psc AS p USING (CenterID)
                         LEFT JOIN users AS u on (s.registeredBy=u.UserID)
                     WHERE s.ID = :SID AND s.Active = 'Y'";
@@ -168,10 +169,9 @@ class TimePoint
                             w.WindowMinDays AND w.WindowMaxDays
                         ) as Permitted
                     FROM session s
+                        JOIN visits AS v ON (s.VisitID = v.ID)
                         JOIN candidate c USING (CandID)
-                        JOIN Visit_Windows w ON (
-                            LOWER(w.Visit_label)=LOWER(s.Visit_label)
-                        )
+                        JOIN Visit_Windows w ON (v.ID=w.VisitID)
                     WHERE s.ID=:sessionID",
                 array(":sessionID" => $sessionID)
             );
@@ -187,10 +187,11 @@ class TimePoint
      * @param integer $candID         6 digit CandID having a timepoint created.
      * @param integer $SubprojectID   The subprojectID of the new timepoint
      * @param string  $nextVisitLabel The visit label of the timepoint being created
+     * @param int     $VisitID        ID of the visit references visits table
      *
      * @return A new TimePoint instance.
      */
-    static function createNew($candID, $SubprojectID, $nextVisitLabel = null)
+    static function createNew($candID, $SubprojectID, $nextVisitLabel = null, $VisitID = null)
     {
         // insert into session set CandID=$candID,
         // SubprojectID=$SubprojectID, VisitNo=nextVisitNumber(),
@@ -219,9 +220,9 @@ class TimePoint
 
         // generate today's date for the Date registered field
         $today = date("Y-m-d");
-
+        // TODO VISITS -> this does not seem to be working the suggestion/auto creation: investigate
         // setup the insert data array
-        $VisitLabel = $nextVisitLabel == null
+        $VisitLabel = $nextVisitLabel == null && $VisitID == null
             ? 'V' . $row['nextVisitNo']
             : $nextVisitLabel;
         $insertData = array(
@@ -229,6 +230,7 @@ class TimePoint
                        'SubprojectID'    => $SubprojectID,
                        'VisitNo'         => $row['nextVisitNo'],
                        'Visit_label'     => $VisitLabel,
+                       'VisitID'         => $VisitID,
                        'CenterID'        => $row['CenterID'],
                        'Current_stage'   => 'Not Started',
                        'Submitted'       => 'N',
@@ -376,6 +378,7 @@ class TimePoint
      */
     function getVisitStatus()
     {
+        //TODO VISITS
         return $this->_timePointInfo["Visit"];
     }
 
