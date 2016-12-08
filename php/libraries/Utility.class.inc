@@ -246,8 +246,8 @@ class Utility
         $DB =& Database::singleton();
 
         $query = "SELECT DISTINCT 
-                      IFNULL(v.ID,s.Visit_label) AS ID, 
-                      IFNULL(v.label,s.Visit_label) AS label
+                      v.ID AS ID, 
+                      v.label AS label
                   FROM session s 
                       LEFT JOIN visits v ON (v.ID=s.VisitID)";
 
