@@ -176,7 +176,7 @@ function getUploadFields()
     // Build array of session data to be used in upload media dropdowns
     $sessionData    = [];
     $sessionRecords = $db->pselect(
-        "SELECT c.PSCID, CONCAT(IFNULL(s.VisitID,s.Visit_label),' - ', IFNULL(v.label, s.Visit_label)) AS Visit_label, IFNULL(s.VisitID, s.Visit_label) AS VisitID, s.CenterID, f.Test_name " .
+        "SELECT c.PSCID, CONCAT(s.VisitID,' - ', v.label) AS Visit_label, s.VisitID AS VisitID, s.CenterID, f.Test_name " .
         "FROM candidate c ".
           "LEFT JOIN session s USING(CandID) ".
           "LEFT JOIN visits v ON (v.ID=s.VisitID) ".

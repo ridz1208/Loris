@@ -116,7 +116,7 @@ class NDB_Menu_Filter_Media extends NDB_Menu_Filter
             = [
                'm.file_name',
                '(SELECT PSCID from candidate WHERE CandID=s.CandID) as pscid',
-               'IFNULL (v.label, s.Visit_label) as visit_label',
+               'v.label as visit_label',
                '(SELECT Full_name FROM test_names WHERE Test_name=m.instrument)',
                '(SELECT name FROM psc WHERE CenterID=s.CenterID) as site',
                'm.uploaded_by',
