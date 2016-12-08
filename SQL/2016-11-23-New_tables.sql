@@ -6,7 +6,12 @@ ALTER TABLE Visit_Windows DROP COLUMN VisitID;
 DROP TABLE IF EXISTS `visits_subproject_project_rel`;
 DROP TABLE IF EXISTS `visits`;
 
-
+-- TABLES ARE REQUIRED TO BE INNODB
+-- subproject
+-- Project
+-- visits
+-- session
+-- visit windows
 
 
 -- Create a table for visits where ID is the primary key, 
