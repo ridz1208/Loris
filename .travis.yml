@@ -80,3 +80,9 @@ script:
 
     # Run unit tests to make sure functions still do what they should.
     - vendor/bin/phpunit --configuration test/phpunit.xml
+<<<<<<< 1be7e686dac9bf443d8337343172e441480f53dc
+=======
+
+after_success:
+    - bash <(curl -s https://codecov.io/bash)
+>>>>>>> Remove Xdebug as it was causing segmentation faults (#2461)
