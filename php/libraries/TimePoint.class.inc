@@ -220,16 +220,11 @@ class TimePoint
 
         // generate today's date for the Date registered field
         $today = date("Y-m-d");
-        // TODO VISITS -> this does not seem to be working the suggestion/auto creation: investigate
         // setup the insert data array
-        $VisitLabel = $nextVisitLabel == null && $VisitID == null
-            ? 'V' . $row['nextVisitNo']
-            : $nextVisitLabel;
         $insertData = array(
                        'CandID'          => $candID,
                        'SubprojectID'    => $SubprojectID,
                        'VisitNo'         => $row['nextVisitNo'],
-                       'Visit_label'     => $VisitLabel,
                        'VisitID'         => $VisitID,
                        'CenterID'        => $row['CenterID'],
                        'Current_stage'   => 'Not Started',
@@ -351,6 +346,15 @@ class TimePoint
         return $this->_timePointInfo["Visit_label"];
     }
 
+    /**
+     * Returns the visit ID of this timepoint.
+     *
+     * @return int the visit ID
+     */
+    function getVisitID()
+    {
+        return $this->_timePointInfo["VisitID"];
+    }
     /**
      * Returns the SubprojectID of this timepoint.
      *
@@ -565,6 +569,8 @@ class TimePoint
      * battery, its status updated, and sent to DCC
      *
      * @param string $stage A study stage, from the field session.Current_stage
+     *
+     * @throws
      *
      * @return bool
      */

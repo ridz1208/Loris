@@ -161,9 +161,11 @@ class Candidate
 
         // get Time Point SessionIDs for the $candID
         // select ALL of them - later you can filter out cancelled and inactive ones
-        $query = "SELECT s.ID FROM session as s
-            WHERE s.CandID=:Candidate AND s.Active='Y'
-            ORDER BY ID";
+        $query = "SELECT s.ID 
+                  FROM session as s
+                    LEFT JOIN visits as v ON (v.ID=s.VisitID)
+                  WHERE s.CandID=:Candidate AND s.Active='Y'
+                  ORDER BY ID";
         $row   = $db->pselect($query, $CandArray);
 
         // store user data in object property
@@ -516,14 +518,11 @@ class Candidate
     /**
      * Returns the list of visit labels w/ corresponding SessionID as key
      *
-     * @return array Associative array in the format SessionID=>Visit_label
+     * @return array Associative array in the format SessionID=>label
      * @throws DatabaseException
      */
     public function getListOfVisitLabels()
     {
-        //TODO VISITS -> need a new function to get all visits in cases where
-        //candidate has some "user" input visits and some "sequence" input
-        //
         $factory = NDB_Factory::singleton();
         //make sure it returns an array
         $visitLabelArray = array();
@@ -534,13 +533,14 @@ class Candidate
         //
         $db = $factory->database();
 
-        $query  = "SELECT ID, Visit_label FROM session
-            WHERE CandID=:Candidate AND Active='Y' ORDER BY ID";
+        $query  = "SELECT s.ID, v.label 
+                   FROM session s
+                      LEFT JOIN visits v ON (v.ID =s.VisitID)
+                   WHERE CandID=:Candidate AND Active='Y' ORDER BY ID";
         $result = $db->pselect($query, array('Candidate' => $candID));
 
-        // map the array [VisitNo]=>Visit_label
         foreach ($result as $row) {
-            $visitLabelArray[$row["ID"]] = $row["Visit_label"];
+            $visitLabelArray[$row["ID"]] = $row["label"];
         }
         return $visitLabelArray;
     }
@@ -561,11 +561,13 @@ class Candidate
 
         $db = $factory->database();
 
-        $query  = "SELECT ID, VisitID FROM session
-            WHERE CandID=:Candidate AND Active='Y' ORDER BY ID";
+        $query  = "SELECT ID, VisitID 
+                   FROM session
+                   WHERE CandID=:Candidate 
+                      AND Active='Y' 
+                   ORDER BY ID";
         $result = $db->pselect($query, array('Candidate' => $candID));
 
-        // map the array [VisitNo]=>Visit_label
         foreach ($result as $row) {
             $visitIDArray[$row["ID"]] = $row["VisitID"];
         }
@@ -692,7 +694,7 @@ class Candidate
 
         $candID = $this->getCandID();
 
-        $query  = "SELECT Visit_label
+        $query  = "SELECT s.VisitID
             FROM session s JOIN candidate c ON (c.CandID = s.CandID)
             WHERE c.CandID=:cid AND Date_Visit IS NOT NULL
             ORDER BY Date_Visit";

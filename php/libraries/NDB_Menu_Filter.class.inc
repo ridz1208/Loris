@@ -439,8 +439,6 @@ class NDB_Menu_Filter extends NDB_Menu
 
             if (in_array($field, $this->CheckboxFilters) && $val) {
                 $query .= " AND $field";
-            } elseif (strtolower(substr($field, -7)) == 'visitid') {
-                $query .= " AND ($field = :v_$prepared_key OR s.Visit_label LIKE :v_$prepared_key)";
             } elseif (strtolower(substr($field, -8)) == 'centerid'
                 || strtolower(substr($field, -10)) == 'categoryid'
                 || strtolower(substr($field, -6)) == 'gender'
