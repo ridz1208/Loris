@@ -37,7 +37,7 @@ class VisitsPopulator
      * Constructor function. Instantiates references to database and
      * config class.
      *
-     * @return VisitWindowPopulator
+     * @return VisitsPopulator
      */
     function __construct()
     {
@@ -61,7 +61,7 @@ class VisitsPopulator
             "SELECT ID FROM visits WHERE legacy_label=:VL",
             array('VL' => $visit)
         );
-        if (!empty($vid)) {
+        if (!empty($vid) && !empty($subprojectID)) {
             $this->insertRelIfMissing($vid,$subprojectID);
             return;
         }
@@ -72,7 +72,9 @@ class VisitsPopulator
             "SELECT ID FROM visits WHERE legacy_label=:VL",
             array('VL' => $visit)
         );
-        $this->insertRelIfMissing($vid,$subprojectID);
+        if (!empty($subprojectID)){
+            $this->insertRelIfMissing($vid,$subprojectID);
+        }
     }
 
     /**
@@ -103,6 +105,8 @@ class VisitsPopulator
      */
     function run()
     {
+        /*
+        // populate from config tables for preset visits
         // Can't use Utility::getVisits() because that uses the Visit_Window table..
         $vls = $this->Config->getSetting("visitLabel");
         foreach (Utility::toArray($vls) as $visits) {
@@ -115,6 +119,8 @@ class VisitsPopulator
                 }
             }
         }
+
+        // populate from seesion table for custom visit labels
         $query="SELECT DISTINCT Visit_label, SubprojectID FROM session";
         $sessionLabels= $this->DB->pselect($query,array());
         foreach ($sessionLabels as $k=>$row) {
@@ -122,6 +128,15 @@ class VisitsPopulator
             $label=$row['Visit_label'];
             $sid=$row['SubprojectID'];
             $this->insertVisitIfMissing($visit,$label,$sid);
+        }
+*/
+        //populate from Visit_Windows in case of discrepencies
+        $query="SELECT DISTINCT Visit_label FROM Visit_Windows";
+        $Visit_Windows_Labels= $this->DB->pselect($query,array());
+        foreach ($Visit_Windows_Labels as $k=>$row) {
+            $visit=$row['Visit_label'];
+            $label=$row['Visit_label'];
+            $this->insertVisitIfMissing($visit,$label,null);
         }
     }
 }

@@ -40,18 +40,33 @@ CREATE TABLE `visits_subproject_project_rel` (
   CONSTRAINT `FK_visits_subproject_rel_4` FOREIGN KEY (`ProjectID`) REFERENCES `Project` (`ProjectID`) ON DELETE CASCADE ON UPDATE CASCADE
   )ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-
--- POPULATE TABLES USING SCRIPT
-
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+-- POPULATE TABLES USING SCRIPT --
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 -- add column to session to use visits ID
 ALTER TABLE session ADD COLUMN VisitID int(10) unsigned;
 UPDATE session s SET VisitID=(SELECT ID from visits v WHERE v.legacy_label=s.Visit_label);
 ALTER TABLE session ADD CONSTRAINT `FK_visits_session_rel_1` FOREIGN KEY (`VisitID`) REFERENCES `visits` (`ID`);
+ALTER TABLE session DROP COLUMN Visit_label;
+-- removed visit_label, good riddance
 
 -- add column to Visit_Windows to use visit ID
 ALTER TABLE Visit_Windows ADD COLUMN VisitID int(10) unsigned NOT NULL;
 UPDATE Visit_Windows vw SET VisitID=(SELECT ID from visits v WHERE v.legacy_label=vw.Visit_label);
 ALTER TABLE Visit_Windows ADD CONSTRAINT `FK_visits_Visit_Windows_rel_1` FOREIGN KEY (`VisitID`) REFERENCES `visits` (`ID`);
+ALTER TABLE test_battery DROP COLUMN Visit_label;
+
+-- add column to session to use visits ID
+ALTER TABLE test_battery ADD COLUMN VisitID int(10) unsigned;
+UPDATE test_battery tb SET VisitID=(SELECT ID from visits v WHERE v.legacy_label=tb.Visit_label);
+-- TODO VISITS WHAT HAPPENS IF tb.Visit_label is NULL
+ALTER TABLE test_battery ADD CONSTRAINT `FK_visits_test_battery_rel_1` FOREIGN KEY (`VisitID`) REFERENCES `visits` (`ID`);
+ALTER TABLE test_battery DROP COLUMN Visit_label;
+-- removed visit_label, good riddance
 
