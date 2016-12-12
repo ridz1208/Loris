@@ -5,6 +5,7 @@ ALTER TABLE session DROP COLUMN VisitID;
 ALTER TABLE Visit_Windows DROP COLUMN VisitID;
 DROP TABLE IF EXISTS `visits_subproject_project_rel`;
 DROP TABLE IF EXISTS `visits`;
+UPDATE LorisMenu SET Visible=true WHERE Visible=false;
 
 -- TABLES ARE REQUIRED TO BE INNODB
 -- subproject
@@ -34,10 +35,11 @@ CREATE TABLE `visits_subproject_project_rel` (
   `SubprojectID` int(10) unsigned NOT NULL,
   `ProjectID` int(2) DEFAULT NULL,
   PRIMARY KEY  (`visitID`,`subprojectID`),
-  KEY `FK_visits_subproject_rel_1` (`subprojectID`),
-  CONSTRAINT `FK_visits_subproject_rel_2` FOREIGN KEY (`VisitID`) REFERENCES `visits` (`ID`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `FK_visits_subproject_rel_3` FOREIGN KEY (`SubprojectID`) REFERENCES `subproject` (`SubprojectID`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `FK_visits_subproject_rel_4` FOREIGN KEY (`ProjectID`) REFERENCES `Project` (`ProjectID`) ON DELETE CASCADE ON UPDATE CASCADE
+  CONSTRAINT `FK_visits_subproject_project_rel_1` UNIQUE (`VisitID`,`SubprojectID`,`ProjectID`),
+  CONSTRAINT `FK_visits_subproject_project_rel_2` FOREIGN KEY (`VisitID`) REFERENCES `visits` (`ID`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `FK_visits_subproject_project_rel_3` FOREIGN KEY (`SubprojectID`) REFERENCES `subproject` (`SubprojectID`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `FK_visits_subproject_project_rel_4` FOREIGN KEY (`ProjectID`) REFERENCES `Project` (`ProjectID`) ON DELETE CASCADE ON UPDATE CASCADE
+
   )ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -60,13 +62,36 @@ ALTER TABLE session DROP COLUMN Visit_label;
 ALTER TABLE Visit_Windows ADD COLUMN VisitID int(10) unsigned NOT NULL;
 UPDATE Visit_Windows vw SET VisitID=(SELECT ID from visits v WHERE v.legacy_label=vw.Visit_label);
 ALTER TABLE Visit_Windows ADD CONSTRAINT `FK_visits_Visit_Windows_rel_1` FOREIGN KEY (`VisitID`) REFERENCES `visits` (`ID`);
-ALTER TABLE test_battery DROP COLUMN Visit_label;
+ALTER TABLE Visit_Windows DROP COLUMN Visit_label;
 
--- add column to session to use visits ID
+-- add column to test_battery to use visits ID
 ALTER TABLE test_battery ADD COLUMN VisitID int(10) unsigned;
 UPDATE test_battery tb SET VisitID=(SELECT ID from visits v WHERE v.legacy_label=tb.Visit_label);
--- TODO VISITS WHAT HAPPENS IF tb.Visit_label is NULL
+-- TODO VISITS WHAT HAPPENS IF Visit_label is NULL
 ALTER TABLE test_battery ADD CONSTRAINT `FK_visits_test_battery_rel_1` FOREIGN KEY (`VisitID`) REFERENCES `visits` (`ID`);
 ALTER TABLE test_battery DROP COLUMN Visit_label;
 -- removed visit_label, good riddance
 
+-- add column to certification to use visits ID
+ALTER TABLE certification ADD COLUMN VisitID int(10) unsigned;
+UPDATE certification c SET VisitID=(SELECT ID from visits v WHERE v.legacy_label=c.visit_label);
+-- TODO VISITS WHAT HAPPENS IF Visit_label is NULL
+ALTER TABLE certification ADD CONSTRAINT `FK_visits_certification_rel_1` FOREIGN KEY (`VisitID`) REFERENCES `visits` (`ID`);
+ALTER TABLE certification DROP COLUMN visit_label;
+-- removed visit_label, good riddance
+
+-- add column to certification to use visits ID
+ALTER TABLE certification_history ADD COLUMN VisitID int(10) unsigned;
+UPDATE certification_history ch SET VisitID=(SELECT ID from visits v WHERE v.legacy_label=ch.visit_label);
+-- TODO VISITS WHAT HAPPENS IF Visit_label is NULL
+ALTER TABLE certification_history ADD CONSTRAINT `FK_visits_certification_history_rel_1` FOREIGN KEY (`VisitID`) REFERENCES `visits` (`ID`);
+ALTER TABLE certification_history DROP COLUMN visit_label;
+-- removed visit_label, good riddance
+
+-- add column to certification to use visits ID
+ALTER TABLE document_repository ADD COLUMN VisitID int(10) unsigned;
+UPDATE document_repository dr SET VisitID=(SELECT ID from visits v WHERE v.legacy_label=dr.visitLabel);
+-- TODO VISITS WHAT HAPPENS IF Visit_label is NULL
+ALTER TABLE document_repository ADD CONSTRAINT `FK_visits_document_repository_rel_1` FOREIGN KEY (`VisitID`) REFERENCES `visits` (`ID`);
+ALTER TABLE document_repository DROP COLUMN visitLabel;
+-- removed visit_label, good riddance
