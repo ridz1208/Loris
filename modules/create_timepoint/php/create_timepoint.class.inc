@@ -152,7 +152,7 @@ class Create_Timepoint extends \NDB_Form
         if (!empty($this->subprojectID)){
             // visit label
             $visitList= array(''=>null) +
-                \Utility::getVisitsForSubproject($this->subprojectID);
+                \Utility::getVisitsForSubprojectProject($this->subprojectID);
             $this->addSelect('visitID', 'Visit label', $visitList);
 
             // label rules

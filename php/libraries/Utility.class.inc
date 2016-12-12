@@ -237,19 +237,18 @@ class Utility
 
     /**
      * Gets a list of visits used by the database as specified from
-     * the Visit_Windows table
+     * the visits table
      *
-     * @return associative array of the form VisitID=> label
+     * @return array associative array of the form VisitID=>label
      */
     static function getVisitList()
     {
+        //TODO VISITS SHOULD THIS BE FROM session OR visits??
         $DB =& Database::singleton();
 
-        $query = "SELECT DISTINCT 
-                      v.ID AS ID, 
-                      v.label AS label
-                  FROM session s 
-                      LEFT JOIN visits v ON (v.ID=s.VisitID)";
+        $query = "SELECT v.ID AS ID, 
+                         v.label AS label
+                  FROM visits v";
 
         $result = $DB->pselect($query, array());
 
@@ -261,6 +260,35 @@ class Utility
     }
 
     /**
+     * Gets a list of visits used by the database as specified from
+     * the visits table
+     *
+     * @return array associative array of the form VisitID=>label
+     */
+    static function getImagingVisitList()
+    {
+        //TODO VISITS SHOULD THIS BE FROM session OR visits??
+
+        $DB =& Database::singleton();
+
+        $query = "SELECT v.ID AS ID, 
+                         v.label AS label
+                  FROM visits v
+                  WHERE v.imaging='Y'";
+
+        $result = $DB->pselect($query, array());
+
+        $list = array();
+        foreach ($result as $row) {
+            $list[$row["ID"]] = ($row["label"]);
+        }
+        return $list;
+    }
+
+    /**
+     * Gets visit ID from the old visit_label used before 17.0 LORIS
+     *
+     * @return int visitID assiciated with the given legacy_label
      *
      */
     Static function getVisitIDFromLegacyLabel($legacy_label)
@@ -275,7 +303,9 @@ class Utility
     }
 
     /**
+     * Gets the UI label associated with a visitID
      *
+     * @return  string   Front-End visit label
      */
     Static function getVisitLabelFromID($id)
     {
@@ -289,18 +319,45 @@ class Utility
     }
 
     /**
+     * Gets the visits associated with a project AND/OR subproject.
+     * The "null" option for either of the parameters is considered as "all"
      *
+     * @param   int  $projectID        ProjectID from project table
+     * @param   int  $subprojectID     SubprojectID from subproject table
+     *
+     * @return array associative array in the form (VisitID=>label)
+     *
+     * @note This function checks for useProject configuration and ignores any entry
+     *       in the $projectID parameter if useProject=false
+     * @note writtten by author
      */
-    Static function getVisitsForSubproject ($subprojectID)
+    Static function getVisitsForSubprojectProject ($subprojectID=null, $projectID=null)
     {
         $DB =& Database::singleton();
+        $config =& NDB_Config::singleton();
+        $useProjects = $config->getSetting("useProjects");
 
-        $query = "SELECT v.ID, v.label 
+        $params = array();
+        $query_where='';
+
+        if ($useProjects !== "false" && !empty($projectID)) {
+            $params['pid']=$projectID;
+            $query_where .= ' AND vsr.ProjectID=:pid';
+        }
+        if (!empty($subprojectID)) {
+            $params['sid']=$subprojectID;
+            $query_where .= ' AND vsr.SubprojectID=:sid';
+        }
+
+        $query = "SELECT DISTINCT 
+                    v.ID, 
+                    v.label 
                   FROM visits v
                     JOIN visits_subproject_project_rel vsr ON (v.ID=vsr.VisitID)
-                  WHERE vsr.SubprojectID=:sid";
+                  WHERE 1=1 
+                  $query_where";
 
-        $result = $DB->pselect($query, array("sid"=>$subprojectID));
+        $result = $DB->pselect($query, $params);
 
         $list = array();
         foreach ($result as $row) {
