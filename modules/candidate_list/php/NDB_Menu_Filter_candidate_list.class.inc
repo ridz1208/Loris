@@ -255,7 +255,7 @@ class NDB_Menu_Filter_Candidate_List extends NDB_Menu_Filter
                         );
         // Get visits
         $visits = Utility::getVisitList();
-        $visits = array_merge(array('' => 'All'), $visits);
+        $visits = array('' => 'All') + $visits;
 
         // add form elements
         $this->addSelect('centerID', 'Site', $list_of_sites);

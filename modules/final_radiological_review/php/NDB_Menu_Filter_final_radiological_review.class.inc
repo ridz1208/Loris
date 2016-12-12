@@ -143,6 +143,7 @@ class NDB_Menu_Filter_final_radiological_review extends NDB_Menu_Filter
             LEFT JOIN final_radiological_review r ON (r.CommentID=orig.CommentID)
             JOIN flag f ON (f.CommentID=orig.CommentID)
             JOIN session s ON (s.ID=f.SessionID)
+            LEFT JOIN visits v ON (v.ID=s.VisitID)
             JOIN candidate c ON (c.CandID=s.CandID)
             LEFT JOIN Project pjct ON (pjct.ProjectID=c.ProjectID)
             LEFT JOIN psc ON (c.CenterID=psc.CenterID)
@@ -165,7 +166,7 @@ class NDB_Menu_Filter_final_radiological_review extends NDB_Menu_Filter
         $this->columns = array(
             'c.PSCID as PSCID',
             'c.CandID as DCCID',
-            's.visit_label as Visit_Label',
+            'v.label as Visit_Label',
         );
         if($useProjects) {
             $this->columns[] = 'pjct.Name as Project';
@@ -222,7 +223,7 @@ class NDB_Menu_Filter_final_radiological_review extends NDB_Menu_Filter
         $this->tpl_data['hiddenHeaders'] = json_encode(['T1_Inserted','CommentID','Conflict2','SessionID','CandID']);
         $this->validFilters = array('c.CandID',
             'r.DICOM_ID',
-            's.visit_label',
+            's.VisitID',
             'c.PSCID',
             'r.Final_Review_Results',
             "COALESCE(r.Review_Done, 'no')",
@@ -244,8 +245,8 @@ class NDB_Menu_Filter_final_radiological_review extends NDB_Menu_Filter
         $this->formToFilter = array (
                                     'dccid'       => 'c.CandID',
                                     'site'        => 'c.CenterID',
-                                    'Visit_label' => 's.visit_label',
-                                    'Project'   => 'c.ProjectID',
+                                    'Visit_label' => 's.VisitID',
+                                    'Project'     => 'c.ProjectID',
                                     'pscid'       => 'c.PSCID',
                                     'Review_Done' => "COALESCE(r.Review_Done, 0)",
                                     'Results'     => 'r.Final_Review_Results',
