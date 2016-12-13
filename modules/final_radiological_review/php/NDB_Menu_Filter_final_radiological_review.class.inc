@@ -277,10 +277,10 @@ class NDB_Menu_Filter_final_radiological_review extends NDB_Menu_Filter
             $useProjects = false;
         }
 
-        $list_of_visit_labels = array(null => 'All' );
+        $list_of_visits = array(null => 'All' );
         $visitList = Utility::getVisitList();
         foreach ($visitList as $key=>$value) {
-            $list_of_visit_labels[$key] = $value;
+            $list_of_visits[$key] = $value;
         }
         $list_of_sites = array(null =>'All');
         $sitesList = Utility::getSiteList(false);
@@ -325,7 +325,7 @@ class NDB_Menu_Filter_final_radiological_review extends NDB_Menu_Filter
         );
         $this->addBasicText('pscid', 'PSCID:', array("size"=>9, "maxlength"=>11));
         $this->addBasicText('dccid', 'DCCID:', array("size"=>9, "maxlength"=>6));
-        $this->addSelect('Visit_label', 'Visit Label:', $list_of_visit_labels);
+        $this->addSelect('Visit_label', 'Visit Label:', $list_of_visits);
         $this->addSelect('site', 'Site', $list_of_sites);
         $this->addSelect('Review_Done', 'Review Done:', $options_boolean);
         $this->addSelect(
