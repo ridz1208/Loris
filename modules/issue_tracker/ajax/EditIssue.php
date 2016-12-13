@@ -394,7 +394,7 @@ function getComments($issueID)
                 "SELECT v.label 
                  FROM session s 
                  LEFT JOIN visits v ON (v.ID=s.VisitID)
-                 WHERE ID=:sessionID",
+                 WHERE s.ID=:sessionID",
                 array('sessionID' => $comment['newValue'])
             );
             $comment['newValue'] = $visitLabel;
@@ -489,7 +489,12 @@ function getIssueFields()
     $db   =& Database::singleton();
     $user =& User::singleton();
 
+    // Get visits
+    $visits = Utility::getVisitList();
+
+
     //get field options
+    $sites=array();
     if ($user->hasPermission('access_all_profiles')) {
         // get the list of study sites - to be replaced by the Site object
         $sites = Utility::getAssociativeSiteList();
@@ -651,6 +656,7 @@ ORDER BY dateAdded",
                'priorities'        => $priorities,
                'categories'        => $categories,
                'modules'           => $modules,
+               'visits'            => $visits,
                'otherWatchers'     => $otherWatchers,
                'issueData'         => $issueData,
                'hasEditPermission' => $user->hasPermission(
