@@ -1193,9 +1193,10 @@ class Utility
         } else {
             $ExtraProject_Criteria ='';
         }
+
         $query ="SELECT DISTINCT v.ID, v.label
                  FROM session s
-                    LEFT JOIN visits ON (v.ID=s.VisitID)
+                    LEFT JOIN visits v ON (v.ID=s.VisitID)
                     JOIN candidate c ON (s.CandID = c.Candid)
                     JOIN psc ON (s.CenterID = psc.CenterID)
                  WHERE c.Active = 'Y'
@@ -1207,8 +1208,8 @@ class Utility
 
         $visitlabels = $db->pselect($query, $params);
         $visits      = array();
-        foreach ($visitlabels as $vid=>$label) {
-            $visits[$visitlabels['ID']]=$visitlabels['label'];
+        foreach ($visitlabels as $k=>$row) {
+            $visits[$row['ID']]=$row['label'];
         }
         return $visits;
     }
