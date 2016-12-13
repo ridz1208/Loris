@@ -95,3 +95,11 @@ UPDATE document_repository dr SET VisitID=(SELECT ID from visits v WHERE v.legac
 ALTER TABLE document_repository ADD CONSTRAINT `FK_visits_document_repository_rel_1` FOREIGN KEY (`VisitID`) REFERENCES `visits` (`ID`);
 ALTER TABLE document_repository DROP COLUMN visitLabel;
 -- removed visit_label, good riddance
+
+-- add column to certification to use visits ID
+ALTER TABLE mri_violations_log ADD COLUMN VisitID int(10) unsigned;
+UPDATE mri_violations_log mvl SET VisitID=(SELECT ID from visits v WHERE v.legacy_label=mvl.visitLabel);
+-- TODO VISITS WHAT HAPPENS IF Visit_label is NULL
+ALTER TABLE mri_violations_log ADD CONSTRAINT `FK_visits_mri_violations_log_rel_1` FOREIGN KEY (`VisitID`) REFERENCES `visits` (`ID`);
+ALTER TABLE mri_violations_log DROP COLUMN Visit_label;
+-- removed visit_label, good riddance
