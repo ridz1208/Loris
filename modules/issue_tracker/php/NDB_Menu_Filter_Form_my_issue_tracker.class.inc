@@ -47,6 +47,7 @@ class NDB_Menu_Filter_Form_My_Issue_Tracker extends NDB_Menu_Filter_Form
             "LEFT JOIN psc p ON (i.centerID=p.CenterID) ".
             "LEFT JOIN LorisMenu l on (i.module=l.ID) ".
             "LEFT JOIN session s ON (i.sessionID = s.ID) ".
+            "LEFT JOIN visits v ON (v.ID=s.VisitID) ".
             "LEFT JOIN issues_watching w ON (i.issueID = w.issueID) ".
             "LEFT JOIN issues_comments ic ON(i.issueID = ic.issueID) ".
             "WHERE i.status != 'closed' ".
@@ -67,7 +68,7 @@ class NDB_Menu_Filter_Form_My_Issue_Tracker extends NDB_Menu_Filter_Form
                           'i.priority as Priority',
                           'p.Name as Site',
                           'c.PSCID as PSCID',
-                          's.Visit_label as Visit_Label',
+                          'v.label as Visit_Label',
                           'i.lastUpdate as Last_Update',
                          );
 
@@ -94,7 +95,7 @@ class NDB_Menu_Filter_Form_My_Issue_Tracker extends NDB_Menu_Filter_Form
                                'l.Label',
                                'i.category',
                                'c.PSCID',
-                               's.Visit_label',
+                               's.VisitID',
                                'i.reporter',
                                'i.centerID',
                                'w.userID',
@@ -111,7 +112,7 @@ class NDB_Menu_Filter_Form_My_Issue_Tracker extends NDB_Menu_Filter_Form
                                'category'               => 'i.category',
                                'module'                 => 'l.Label',
                                'PSCID'                  => 'c.PSCID',
-                               'visitLabel'             => 's.Visit_label',
+                               'visitLabel'             => 's.VisitID',
                                'reporter'               => 'i.reporter',
                                'site'                   => 'i.centerID',
                                'watching'               => 'w.userID',
@@ -175,8 +176,9 @@ class NDB_Menu_Filter_Form_My_Issue_Tracker extends NDB_Menu_Filter_Form
 
         //modules
         $modules_expanded = $db->pselect(
-            "SELECT DISTINCT Label, ID FROM LorisMenu 
-WHERE Parent IS NOT NULL ORDER BY Label",
+            "SELECT DISTINCT Label, ID 
+             FROM LorisMenu 
+             WHERE Parent IS NOT NULL ORDER BY Label",
             []
         );
         $modules          = $this->reorganizeQueryResults(
@@ -222,6 +224,11 @@ WHERE Parent IS NOT NULL ORDER BY Label",
                         'addEmptyOption' => true,
                        );
 
+        // Get visits
+        $visits = Utility::getVisitList();
+        $visits = array('' => 'All') + $visits;
+
+
         $this->addBasicText(
             'keyword',
             'Keyword',
@@ -248,13 +255,10 @@ WHERE Parent IS NOT NULL ORDER BY Label",
              "maxlength" => 25,
             )
         );
-        $this->addBasicText(
+        $this->addSelect(
             'visitLabel',
             'Visit Label',
-            array(
-             'size'      => "5",
-             "maxlength" => "15",
-            )
+            $visits
         );
         $this->addSelect('site', 'Site', $list_of_sites);
         $this->addSelect('reporter', 'Reporter', $reporters);
