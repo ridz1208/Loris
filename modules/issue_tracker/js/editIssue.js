@@ -426,9 +426,11 @@ var IssueEditForm = React.createClass({
             React.createElement(
               "div",
               { "class": "row" },
-              React.createElement(TextboxElement, {
+              React.createElement(SelectElement, {
                 name: "visitLabel",
                 label: "Visit Label",
+                emptyOption: true,
+                options: this.state.Data.visits,
                 onUserInput: this.setFormData,
                 ref: "visitLabel",
                 disabled: !hasEditPermission,

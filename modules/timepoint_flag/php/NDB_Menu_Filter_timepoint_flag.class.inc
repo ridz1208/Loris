@@ -263,8 +263,10 @@ class NDB_Menu_Filter_Timepoint_Flag extends NDB_Menu_Filter
             // DCCID / Visit
             // this query includes only the subject w/ existing flags
             $params = array();
-            $query  = "SELECT c.CandID, s.Visit_label, s.ID
-            FROM candidate AS c, session AS s, parameter_timepoint_flag_session as p
+            $query  = "SELECT c.CandID, s.VisitID, s.ID
+            FROM candidate AS c, 
+            session AS s, 
+            parameter_timepoint_flag_session as p
             WHERE c.CandID = s.CandID AND p.SessionID = s.ID 
             AND c.Entity_type = 'Human' AND c.Active = 'Y'";
             if (!empty($_REQUEST['centerID'])) {
@@ -283,8 +285,8 @@ class NDB_Menu_Filter_Timepoint_Flag extends NDB_Menu_Filter
             } elseif ($_REQUEST['last_change'] == 'non_reviewed') {
                 $query .= " AND s.BVLQCExclusion IS NULL AND p.Flag_status IS NULL";
             }
-            $query .= " GROUP BY c.CandID, s.Visit_label ORDER BY c.CandID DESC,"
-                . " s.Visit_label";
+            $query .= " GROUP BY c.CandID, s.VisitID ORDER BY c.CandID DESC,"
+                . " s.VisitID";
 
             $result = $db->pselect($query, $params);
 
@@ -310,7 +312,8 @@ class NDB_Menu_Filter_Timepoint_Flag extends NDB_Menu_Filter
 
                 // assign subject data
                 $candIdOptions[$row['CandID']]            = $row['CandID'];
-                $visitOptions[$row['CandID']][$row['ID']] = $row['Visit_label'];
+                //TODO VISITS what does this change visit_label -> visitID
+                $visitOptions[$row['CandID']][$row['ID']] = $row['VisitID'];
                 // build the subject array
                 $this->subjectFilterArray[] = $row['CandID'];
             }
