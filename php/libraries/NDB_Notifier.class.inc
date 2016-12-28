@@ -25,34 +25,59 @@ class NDB_Notifier extends NDB_Page
     /**
      * @var string    get the current logged in user issuing the notification.
      */
-    var $notifier;
+    private $notifier;
 
     /**
      * @var array     get list of users to be notified from database.
      */
-    var $notified=array();
+    private $notified=array();
+
+
+
+
+
+
+
+
 
     /**
-     * Function to be overridden by module using the notification system
+     * NDB_Notifier constructor.
      *
+     * @param string $module_name    module issuing notification
      * @param string $operation_type operation triggering notification
      *
-     * @return void
-     *
-     * @throws LorisException when notify is not personalized
+     * @throws LorisException Exception thrown if module is not supported
+     *                        by the notifier.
      */
-    function _notify($operation_type){
-        throw new LorisException(
-            "Notification has not been defined for this module."
-        );
+    public function __construct($module_name, $operation_type){
+        switch ($module_name) {
+            case 'media':
+                _notifyMedia($operation_type);
+                break;
+            case 'bvl_feedback':
+                _notifyBVLFeedback($operation_type);
+                break;
+            default:
+                throw new LorisException(
+                    "Notification has not been defined for this module."
+                );
+        }
+        return;
     }
+
+
+
+
+
+
+
 
     /**
      * getter for user issuing notification
      *
      * @return string   User issuing notification
      */
-    function _getNotifier(){
+    public function getNotifier(){
         return $this->notifier;
     }
 
@@ -61,8 +86,38 @@ class NDB_Notifier extends NDB_Page
      *
      * @return array    Users receiving notifications from this module
      */
-    function _getNotified(){
+    public function getNotified(){
         return $this->notified;
     }
 
+    /**
+     * setter setting notifier as administrators
+     *
+     * @return void
+     * TODO
+     */
+    private function _setNotifierAdmin() {
+
+        $this->notifier;
+    }
+
+    /**
+     *
+     */
+    private function _get2DListNotified() {
+        $DB     = Database::singleton();
+        $query = "SELECT ";
+        $params = array();
+        $result = $DB->pselect($query,$params);
+    }
+
+
+    /**
+     * Function to be overridden by module using the notification system
+     *
+     * @return void
+     */
+    public function notify() {
+
+    }
 }
