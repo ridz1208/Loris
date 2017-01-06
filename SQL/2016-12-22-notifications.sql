@@ -1,5 +1,4 @@
 -- PRE-REQS
-ALTER TABLE LorisMenu ADD KEY(`Label`); -- necessary for notification_modules
 ALTER TABLE users ADD COLUMN `Phone` varchar(15) default NULL;
 
 
