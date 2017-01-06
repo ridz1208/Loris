@@ -1,7 +1,5 @@
 <?php
 /**
- *
- *
  * PHP Version 7
  *
  * @category Imaging
@@ -15,7 +13,6 @@
  * A class allowing to issue notification using several services including sms,
  * phone, email and loris in-site notifications.
  *
- *
  * @category Imaging
  * @package  Imaging
  * @author   Loris Team <loris.mni@bic.mni.mcgill.ca>
@@ -25,101 +22,127 @@
 class NDB_Notifier
 {
     /**
-     * @var string    get the current logged in user issuing the notification.
+     * Get the current logged in user issuing the notification.
+     *
+     * @var string
      */
-    private $notifier;
+    private $_notifier;
 
     /**
-     * @var string    get the admin user issuing the notification.
+     * Get the admin user issuing the notification.
+     *
+     * @var string
      */
-    private $adminNotifier;
+    private $_adminNotifier;
 
     /**
-     * @var array     get list of users to be notified and notification methods.
+     * Get list of users to be notified and notification methods.
+     *
+     * @var array
      */
-    private $notified=array();
+    private $_notified =array();
 
     /**
-     * @var string    Module for which the notifier is setup
+     * Module for which the notifier is setup
+     *
+     * @var string
      */
-    private $module;
+    private $_module;
 
     /**
-     * @var string    Operation for which the notifier is setup
+     * Operation for which the notifier is setup
+     *
+     * @var string
      */
-    private $operation;
+    private $_operation;
 
     /**
-     * @var string    Template to use for email/sms/phone
+     * Template to use for email/sms/phone
+     *
+     * @var string
      */
-    private $template;
+    private $_template;
 
+    /**
+     * Data to be sent to the template fo filling
+     *
+     * @var array
+     */
+    private $_tpl_data =array();
 
     /**
      * NDB_Notifier constructor.
      *
      * @param string $module_name    module issuing notification
      * @param string $operation_type operation triggering notification
+     * @param array  $extra_tpl_data additional variables to be sent to the tpl.
      *
      * @throws LorisException Exception thrown if module is not supported
      *                        by the notifier.
      */
-    public function __construct($module_name,$operation_type){
-        $this->module=$module_name;
-        $this->operation=$operation_type;
-        $this->notified=$this->_get2DListToNotify();
-        $this->notifier=$this->_getLoggedInUser();
-        $this->adminNotifier=$this->_getAdminUser();
+    public function __construct(
+        $module_name,
+        $operation_type,
+        $extra_tpl_data=array()
+    ) {
+        $this->_module        =$module_name;
+        $this->_operation     =$operation_type;
+        $this->_notified      =$this->_get2DListToNotify();
+        $this->_notifier      =$this->_getLoggedInUser();
+        $this->_adminNotifier =$this->_getAdminUser();
+        $this->_tpl_data      = $this->_tpl_data + $extra_tpl_data;
 
         switch ($module_name) {
-            case 'media':
-                if ($operation_type==='download') {
-                    $this->template="notifier_media_download.tpl";
-                    break;
-                } elseif ($operation_type==='upload') {
-                    $this->template="notifier_media_upload.tpl";
-                    break;
-                } else {
-                    throw new LorisException(
-                        "Notifications have not been defined for the ".
-                        "$module_name $operation_type operation."
-                    );
-                    break;
-                }
-            case 'bvl_feedback':
-                if ($operation_type==='newTicket') {
-                    break;
-                } else {
-                    throw new LorisException(
-                        "Notifications have not been defined for the ".
-                        "$module_name $operation_type operation."
-                    );
-                    break;
-                }
-            default:
+        case 'media':
+            if ($operation_type==='download') {
+                $this->_template ="notifier_media_download.tpl";
+                break;
+            } elseif ($operation_type==='upload') {
+                $this->_template ="notifier_media_upload.tpl";
+                break;
+            } else {
                 throw new LorisException(
-                    "Notifications have not been defined for this module and operation."
+                    "Notifications have not been defined for the ".
+                    "$module_name $operation_type operation."
                 );
+                break;
+            }
+        case 'bvl_feedback':
+            if ($operation_type==='newTicket') {
+                break;
+            } else {
+                throw new LorisException(
+                    "Notifications have not been defined for the ".
+                    "$module_name $operation_type operation."
+                );
+                break;
+            }
+        default:
+            throw new LorisException(
+                "Notifications have not been defined for this module and operation."
+            );
                 break;
         }
     }
 
     /**
-     * getter for user issuing notification
+     * Getter for user issuing notification
      *
      * @return string   User issuing notification
      */
-    public function getNotifier(){
-        return $this->notifier;
+    public function getNotifier()
+    {
+        return $this->_notifier;
     }
 
     /**
-     * getter for users receiving notification
+     * Getter for users receiving notification
      *
      * @return array    Users receiving notifications from this module
      */
-    public function getNotified(){
-        return $this->notified;
+    public function getNotified()
+    {
+        return $this->_notified;
     }
 
     /**
@@ -127,9 +150,10 @@ class NDB_Notifier
      *
      * @return string   string in the form `First Last <email@domain.com>`
      */
-    private function _getLoggedInUser(){
-        $user =& User::singleton();
-        $concat_name= $user->getFullname().' <'.$user->getData('Email').'>';
+    private function _getLoggedInUser()
+    {
+        $user        =& User::singleton();
+        $concat_name = $user->getFullname().' <'.$user->getData('Email').'>';
         return $concat_name;
     }
 
@@ -138,13 +162,14 @@ class NDB_Notifier
      *
      * @return string   string in the form `First Last <email@domain.com>`
      */
-    private function _getAdminUser(){
-        $DB     = Database::singleton();
-        $result = $DB->pselectRow(
+    private function _getAdminUser()
+    {
+        $DB          = Database::singleton();
+        $result      = $DB->pselectRow(
             "SELECT Real_name, Email FROM users WHERE UserID='admin'",
             array()
         );
-        $concat_name= $result['Real_name'].' <'.$result['Email'].'>';
+        $concat_name = $result['Real_name'].' <'.$result['Email'].'>';
         return $concat_name;
     }
 
@@ -155,12 +180,14 @@ class NDB_Notifier
      * @return array   2D list of user emails and/or phone numbers grouped by
      *                 available service.
      */
-    private function _get2DListToNotify() {
-        $DB     = Database::singleton();
+    private function _get2DListToNotify()
+    {
+        $DB   = Database::singleton();
         $user =& User::singleton();
-        $site_concerned=  $user->getCenterID();
+        $site_concerned =  $user->getCenterID();
         // query needs to take into account the notified user permissions.
-        $query = "SELECT 
+        $query  = "SELECT 
+                    u.Real_name as name
                     u.Email as emailAddress, 
                     u.Phone as phoneNum, 
                     unr.email, 
@@ -179,23 +206,23 @@ class NDB_Notifier
                     AND (unr.email ='Y' OR unr.sms='Y' OR unr.phone='Y')
                     ";
         $params = array(
-            "nm"=>$this->module,
-            "ot"=>$this->operation,
-            "cid"=>$site_concerned
-        );
-        $result = $DB->pselect($query,$params);
+                   "nm"  => $this->_module,
+                   "ot"  => $this->_operation,
+                   "cid" => $site_concerned,
+                  );
+        $result = $DB->pselect($query, $params);
 
         //parse $result and create 2D array
-        $notification_list=array();
+        $notification_list =array();
         foreach ($result as $k=>$row) {
             if ($row['email']==='Y') {
-                $notification_list['email'][] = $row['emailAddress'];
+                $notification_list['email'][$row['name']] = $row['emailAddress'];
             }
             if ($row['sms']==='Y') {
-                $notification_list['sms'][] = $row['phoneNum'];
+                $notification_list['sms'][$row['name']] = $row['phoneNum'];
             }
             if ($row['phone']==='Y') {
-                $notification_list['phone'][] = $row['phoneNum'];
+                $notification_list['phone'][$row['name']] = $row['phoneNum'];
             }
         }
         return $notification_list;
@@ -205,27 +232,34 @@ class NDB_Notifier
     /**
      * Function to be overridden by module using the notification system
      *
-     * @param bool $adminNotifier when true, sends notification as if triggered
-     *                            by administrator not user.
+     * @param bool   $adminNotifier  when true, sends notification as if
+     *                  triggered by administrator not user.
      * @param string $custom_message message overriding module-defined message
+     * @param array  $extra_tpl_data additional variables to be sent to the template.
      *
      * @return void
      */
-    public function notify($adminNotifier=false, $custom_mesage=null) {
+    public function notify(
+        $adminNotifier=false,
+        $custom_message=null,
+        $extra_tpl_data=array()
+    ) {
+        $this->_tpl_data = $this->_tpl_data + $extra_tpl_data;
+
         if (!empty($custom_message)) {
-            $this->template="notifier_custom.tpl";
+            $this->_template ="notifier_custom.tpl";
         }
         if ($adminNotifier) {
-            $this->notifier=$this->adminNotifier;
+            $this->_notifier =$this->_adminNotifier;
         }
 
-        if (!empty($this->notified['email'])){
+        if (!empty($this->_notified['email'])) {
             $this->_sendEmails();
         }
-        if (!empty($this->notified['sms'])){
+        if (!empty($this->_notified['sms'])) {
             $this->_sendSMS();
         }
-        if (!empty($this->notified['phone'])){
+        if (!empty($this->_notified['phone'])) {
             $this->_sendPhone();
         }
     }
@@ -235,9 +269,42 @@ class NDB_Notifier
      *
      * @return void
      *
+     * TODO add validation for email sent/failed
+     */
+    private function _sendEmails()
+    {
+        foreach ($this->_notified['email'] as $name=>$email) {
+            $this->_tpl_data['notified_user'] =$name." <".$email.">";
+            $this->_tpl_data['notifier_user'] =$this->_notifier;
+            Email::send(
+                $email,
+                $this->_template,
+                $this->_tpl_data
+            );
+        }
+    }
+
+    /**
+     * Send sms to concerned users.
+     *
+     * @return void
+     *
      * TODO add validation
      */
-    private function _sendEmails() {
+    private function _sendSMS()
+    {
+
+    }
+
+    /**
+     * Send phone call to concerned users.
+     *
+     * @return void
+     *
+     * TODO add validation
+     */
+    private function _sendPhone()
+    {
 
     }
 }
