@@ -9,6 +9,8 @@
  * @link     https://www.github.com/aces/Loris/
  */
 
+require_once "Email.class.inc";
+
 /**
  * A class allowing to issue notification using several services including sms,
  * phone, email and loris in-site notifications.
@@ -187,7 +189,7 @@ class NDB_Notifier
         $site_concerned =  $user->getCenterID();
         // query needs to take into account the notified user permissions.
         $query  = "SELECT 
-                    u.Real_name as name
+                    u.Real_name as name,
                     u.Email as emailAddress, 
                     u.Phone as phoneNum, 
                     unr.email, 
@@ -276,11 +278,16 @@ class NDB_Notifier
         foreach ($this->_notified['email'] as $name=>$email) {
             $this->_tpl_data['notified_user'] =$name." <".$email.">";
             $this->_tpl_data['notifier_user'] =$this->_notifier;
-            Email::send(
-                $email,
-                $this->_template,
-                $this->_tpl_data
-            );
+            if ($this->_tpl_data['notified_user']=== $this->_notifier) {
+                // TODO send confirmation email instead
+            } else {
+                error_log(implode("   ->   ", $this->_tpl_data));
+                Email::send(
+                    $email,
+                    $this->_template,
+                    $this->_tpl_data
+                );
+            }
         }
     }
 

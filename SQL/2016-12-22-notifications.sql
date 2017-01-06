@@ -15,8 +15,7 @@ CREATE TABLE `notification_modules` (
       `phone_service` enum('Y','N') default 'N' NOT NULL,
       PRIMARY KEY (`ID`),
       KEY (`module_name`),
-      UNIQUE(module_name,operation_type),
-      CONSTRAINT `FK_notificationModules_LorisMenu_rel_1` FOREIGN KEY (`module_name`) REFERENCES `LorisMenu` (`Label`) ON DELETE CASCADE ON UPDATE CASCADE
+      UNIQUE(module_name,operation_type)
 ) ENGINE=InnoDB DEFAULT CHARSET='utf8';
 
 -- saves users preferences for notification type
