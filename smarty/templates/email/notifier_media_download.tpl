@@ -1,8 +1,8 @@
-Subject: Media file downloaded
+Subject: [LORIS Notification] Media file downloaded
 
-Hello {$target_user},
+Hello {$notified_user},
 
-{$trigger_user} has downloaded the file `{$file}` from the Media module.
+{$notifier_user} has downloaded the file `{$file}` from the Media module.
 
 Thank you,
 Loris Team

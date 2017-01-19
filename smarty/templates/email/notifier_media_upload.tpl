@@ -1,4 +1,4 @@
-Subject: New Media file uploaded
+Subject: [LORIS Notification] New Media file uploaded
 
 Hello {$target_user},
 

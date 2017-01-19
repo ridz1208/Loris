@@ -1,4 +1,4 @@
-Subject: Loris Notification
+Subject: [LORIS Notification] {$subject}
 
 Hello {$target_user},
 

@@ -87,12 +87,17 @@ class NDB_Notifier
         $operation_type,
         $extra_tpl_data=array()
     ) {
+        $config =& NDB_Config::singleton();
+
         $this->_module        =$module_name;
         $this->_operation     =$operation_type;
         $this->_notified      =$this->_get2DListToNotify();
         $this->_notifier      =$this->_getLoggedInUser();
         $this->_adminNotifier =$this->_getAdminUser();
         $this->_tpl_data      = $this->_tpl_data + $extra_tpl_data;
+        $this->_tpl_data['study_logo'] = $config->getSetting('studylogo');
+        $this->_tpl_data['baseurl'] = $config->getSetting('url');
+
 
         switch ($module_name) {
         case 'media':
@@ -276,12 +281,11 @@ class NDB_Notifier
     private function _sendEmails()
     {
         foreach ($this->_notified['email'] as $name=>$email) {
-            $this->_tpl_data['notified_user'] =$name." <".$email.">";
+            $this->_tpl_data['notified_user'] =$name;
             $this->_tpl_data['notifier_user'] =$this->_notifier;
             if ($this->_tpl_data['notified_user']=== $this->_notifier) {
                 // TODO send confirmation email instead
             } else {
-                error_log(implode("   ->   ", $this->_tpl_data));
                 Email::send(
                     $email,
                     $this->_template,
