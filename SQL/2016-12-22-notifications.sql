@@ -21,12 +21,12 @@ CREATE TABLE `notification_modules` (
 DROP TABLE IF EXISTS `users_notifications_rel`;
 CREATE TABLE `users_notifications_rel` (
       -- `ID` int(10) unsigned NOT NULL auto_increment,
-      `UserID` int(10) unsigned NOT NULL,
-      `NotificationID` int(10) unsigned NOT NULL,
+      `user_id` int(10) unsigned NOT NULL,
+      `notification_id` int(10) unsigned NOT NULL,
       `email` enum('Y','N') default 'N' NOT NULL,
       `sms` enum('Y','N') default 'N' NOT NULL,
       `phone` enum('Y','N') default 'N' NOT NULL,
-      PRIMARY KEY (`UserID`,`NotificationID`),
-      CONSTRAINT `FK_notifications_users_rel_1` FOREIGN KEY (`UserID`) REFERENCES `users` (`ID`),
-      CONSTRAINT `FK_notifications_users_rel_2` FOREIGN KEY (`NotificationID`) REFERENCES `notification_modules` (`ID`)
+      PRIMARY KEY (`user_id`,`notification_id`),
+      CONSTRAINT `FK_notifications_users_rel_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`ID`),
+      CONSTRAINT `FK_notifications_users_rel_2` FOREIGN KEY (`notification_id`) REFERENCES `notification_modules` (`ID`)
 ) ENGINE=InnoDB DEFAULT CHARSET='utf8';

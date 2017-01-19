@@ -1,10 +1,10 @@
 Subject: [LORIS Notification] {$subject}
 
-Hello {$target_user},
+Hello {$notified_user},
 
-{$custom message}
+{$custom_message}
 
-USER: {$trigger_user}.
+USER: {$notifier_user}.
 
 Thank you,
 Loris Team

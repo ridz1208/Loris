@@ -1,8 +1,8 @@
 Subject: [LORIS Notification] New Media file uploaded
 
-Hello {$target_user},
+Hello {$notified_user},
 
-{$trigger_user} has uploaded the file `{$file}` to the Media module.
+{$notifier_user} has uploaded the file `{$file}` to the Media module.
 
 Thank you,
 Loris Team

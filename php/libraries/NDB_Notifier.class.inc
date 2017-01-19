@@ -201,9 +201,9 @@ class NDB_Notifier
                     unr.sms, 
                     unr.phone 
                   FROM users u 
-                    JOIN users_notifications_rel unr ON (u.ID = unr.UserID) 
-                    JOIN notification_modules nm ON (nm.ID=unr.NotificationID)
-                    LEFT JOIN user_perm_rel upr ON (u.ID=upr.userID)
+                    JOIN users_notifications_rel unr ON (u.ID = unr.user_id) 
+                    JOIN notification_modules nm ON (nm.ID=unr.notification_id)
+                    LEFT JOIN user_perm_rel upr ON (u.ID=upr.user_id)
                   WHERE nm.module_name=:nm
                     AND nm.operation_type=:ot
                     AND (u.CenterID=:cid OR upr.permID=(SELECT permID 
@@ -253,8 +253,10 @@ class NDB_Notifier
     ) {
         $this->_tpl_data = $this->_tpl_data + $extra_tpl_data;
 
+
         if (!empty($custom_message)) {
             $this->_template ="notifier_custom.tpl";
+            $this->_tpl_data['custom_message']=$custom_message;
         }
         if ($adminNotifier) {
             $this->_notifier =$this->_adminNotifier;
