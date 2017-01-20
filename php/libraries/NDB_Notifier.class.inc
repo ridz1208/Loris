@@ -97,6 +97,7 @@ class NDB_Notifier
         $this->_tpl_data      = $this->_tpl_data + $extra_tpl_data;
         $this->_tpl_data['study_logo'] = $config->getSetting('studylogo');
         $this->_tpl_data['baseurl'] = $config->getSetting('url');
+        $this->_tpl_data['study_name'] = $config->getSetting('title');
 
 
         switch ($module_name) {
@@ -247,8 +248,8 @@ class NDB_Notifier
      * @return void
      */
     public function notify(
-        $adminNotifier=false,
         $custom_message=null,
+        $adminNotifier=false,
         $extra_tpl_data=array()
     ) {
         $this->_tpl_data = $this->_tpl_data + $extra_tpl_data;
