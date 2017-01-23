@@ -96,9 +96,8 @@ class NDB_Notifier
         $this->_adminNotifier =$this->_getAdminUser();
         $this->_tpl_data      = $this->_tpl_data + $extra_tpl_data;
         $this->_tpl_data['study_logo'] = $config->getSetting('studylogo');
-        $this->_tpl_data['baseurl'] = $config->getSetting('url');
+        $this->_tpl_data['baseurl']    = $config->getSetting('url');
         $this->_tpl_data['study_name'] = $config->getSetting('title');
-
 
         switch ($module_name) {
         case 'media':
@@ -240,9 +239,9 @@ class NDB_Notifier
     /**
      * Function to be overridden by module using the notification system
      *
+     * @param string $custom_message message overriding module-defined message
      * @param bool   $adminNotifier  when true, sends notification as if
      *                  triggered by administrator not user.
-     * @param string $custom_message message overriding module-defined message
      * @param array  $extra_tpl_data additional variables to be sent to the template.
      *
      * @return void
@@ -254,10 +253,9 @@ class NDB_Notifier
     ) {
         $this->_tpl_data = $this->_tpl_data + $extra_tpl_data;
 
-
         if (!empty($custom_message)) {
             $this->_template ="notifier_custom.tpl";
-            $this->_tpl_data['custom_message']=$custom_message;
+            $this->_tpl_data['custom_message'] =$custom_message;
         }
         if ($adminNotifier) {
             $this->_notifier =$this->_adminNotifier;
