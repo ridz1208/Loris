@@ -3,15 +3,19 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <body bgcolor="#FFFFFF">
 
-<table width="100%" bgcolor="#00CDFF">
+<table width="75%" align="center" bgcolor="#053665">
     <tbody><tr>
         <td></td>
         <td>
             <div>
-                <table width="100%" bgcolor="#00CDFF">
+                <table width="100%" bgcolor="#053665">
                     <tbody><tr>
-                        <td ><h3>{$study_name}</h3></td>
+                        <td></td>
+                        <td >
+                            <h3 style="color:white;">{$study_name}</h3>
+                        </td>
                         <td align="right"><img src="{$baseurl}/images/LORIS_logo.png" height="25%"></td>
+                        <td></td>
                     </tr>
                     </tbody></table>
             </div>
@@ -20,7 +24,7 @@
     </tr>
     </tbody>
 </table>
-<table align="center">
+<table width="75%" align="center">
     <tbody>
     <tr>
         <td></td>
