@@ -159,6 +159,8 @@ class NDB_Form_Candidate_Parameters extends NDB_Form
              $baseURL . "/candidate_parameters/js/familyInfo.js",
              $baseURL . "/candidate_parameters/js/participantStatus.js",
              $baseURL . "/candidate_parameters/js/consentStatus.js",
+             $baseURL . "/candidate_parameters_project/js/monitoring.js",
+
             )
         );
     }

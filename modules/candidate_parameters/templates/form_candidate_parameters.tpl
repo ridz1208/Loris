@@ -30,6 +30,11 @@
             </a>
         </li>
     {/if}
+        <li role="presentation">
+            <a href="#monitoring-status" aria-controls="upload" role="tab" data-toggle="tab" id="monitoring-status-tab">
+                Monitoring
+            </a>
+        </li>
 </ul>
 
 <!-- Tab panes -->
@@ -55,70 +60,81 @@
         Consent Status info
     </div>
 
+    <div role="tabpanel" class="tab-pane" id="monitoring-status">
+        Monitoring info
+    </div>
+
 </div>
 
 <script>
 
-    var candidateInfo = RCandidateInfo({
-        "dataURL": "{$baseurl}/candidate_parameters/ajax/getData.php?data=candidateInfo&candID=" + {$smarty.get.candID},
-        "action": "{$baseurl}/candidate_parameters/ajax/formHandler.php",
-        "tabName": "candidateInfo"
+  var candidateInfo = RCandidateInfo({
+    "dataURL": "{$baseurl}/candidate_parameters/ajax/getData.php?data=candidateInfo&candID=" + {$smarty.get.candID},
+    "action": "{$baseurl}/candidate_parameters/ajax/formHandler.php",
+    "tabName": "candidateInfo"
+  });
+  ReactDOM.render(candidateInfo, document.getElementById("cand-info"));
+
+  if (loris.config('useProband') === "true") {
+    var probandInfo = RProbandInfo({
+      "dataURL": "{$baseurl}/candidate_parameters/ajax/getData.php?data=probandInfo&candID=" + {$smarty.get.candID},
+      "action": "{$baseurl}/candidate_parameters/ajax/formHandler.php",
+      "tabName": "probandInfo"
     });
-    ReactDOM.render(candidateInfo, document.getElementById("cand-info"));
+    ReactDOM.render(probandInfo, document.getElementById("proband-info"));
+  }
+  else {
+    $('#proband-info-tab').hide();
+  }
 
-    if (loris.config('useProband') === "true") {
-        var probandInfo = RProbandInfo({
-            "dataURL": "{$baseurl}/candidate_parameters/ajax/getData.php?data=probandInfo&candID=" + {$smarty.get.candID},
-            "action": "{$baseurl}/candidate_parameters/ajax/formHandler.php",
-            "tabName": "probandInfo"
-        });
-        ReactDOM.render(probandInfo, document.getElementById("proband-info"));
-    }
-    else {
-        $('#proband-info-tab').hide();
-    }
-
-    if (loris.config('useFamilyID') === "true") {
-        var familyInfo = RFamilyInfo({
-            "dataURL": "{$baseurl}/candidate_parameters/ajax/getData.php?data=familyInfo&candID=" + {$smarty.get.candID},
-            "action": "{$baseurl}/candidate_parameters/ajax/formHandler.php",
-            "tabName": "familyInfo"
-        });
-        ReactDOM.render(familyInfo, document.getElementById("family-info"));
-    }
-    else {
-        $('#family-info-tab').hide();
-    }
-
-    var participantStatus = RParticipantStatus({
-        "dataURL": "{$baseurl}/candidate_parameters/ajax/getData.php?data=participantStatus&candID=" + {$smarty.get.candID},
-        "action": "{$baseurl}/candidate_parameters/ajax/formHandler.php",
-        "tabName": "participantStatus"
+  if (loris.config('useFamilyID') === "true") {
+    var familyInfo = RFamilyInfo({
+      "dataURL": "{$baseurl}/candidate_parameters/ajax/getData.php?data=familyInfo&candID=" + {$smarty.get.candID},
+      "action": "{$baseurl}/candidate_parameters/ajax/formHandler.php",
+      "tabName": "familyInfo"
     });
+    ReactDOM.render(familyInfo, document.getElementById("family-info"));
+  }
+  else {
+    $('#family-info-tab').hide();
+  }
 
-    ReactDOM.render(participantStatus, document.getElementById("participant-status"));
+  var participantStatus = RParticipantStatus({
+    "dataURL": "{$baseurl}/candidate_parameters/ajax/getData.php?data=participantStatus&candID=" + {$smarty.get.candID},
+    "action": "{$baseurl}/candidate_parameters/ajax/formHandler.php",
+    "tabName": "participantStatus"
+  });
 
-{if $useConsent === "true"}
-    var consentStatus = RConsentStatus({
-        "dataURL": "{$baseurl}/candidate_parameters/ajax/getData.php?data=consentStatus&candID=" + {$smarty.get.candID},
-        "action": "{$baseurl}/candidate_parameters/ajax/formHandler.php",
-        "tabName": "consentStatus"
+  ReactDOM.render(participantStatus, document.getElementById("participant-status"));
+
+  {if $useConsent === "true"}
+  var consentStatus = RConsentStatus({
+    "dataURL": "{$baseurl}/candidate_parameters/ajax/getData.php?data=consentStatus&candID=" + {$smarty.get.candID},
+    "action": "{$baseurl}/candidate_parameters/ajax/formHandler.php",
+    "tabName": "consentStatus"
+  });
+  ReactDOM.render(consentStatus, document.getElementById("consent-status"));
+  {/if}
+
+  var monitoringStatus = RMonitoringStatus({
+    "dataURL": "{$baseurl}/candidate_parameters_project/ajax/getProjectData.php?data=monitoringStatus&candID=" + {$smarty.get.candID},
+    "action": "{$baseurl}/candidate_parameters_project/ajax/formProjectHandler.php",
+    "tabName": "monitoringStatus"
+  });
+  ReactDOM.render(monitoringStatus, document.getElementById("monitoring-status"));
+
+  // Adds tab href to url + opens tab based on hash on page load
+  // See: http://bit.ly/292MDI8
+  $(function(){
+    var hash = window.location.hash;
+    hash && $('ul.nav a[href="' + hash + '"]').tab('show');
+
+    $('.nav-tabs a').click(function (e) {
+      $(this).tab('show');
+      var scrollmem = $('body').scrollTop() || $('html').scrollTop();
+      window.location.hash = this.hash;
+      $('html,body').scrollTop(scrollmem);
     });
-    ReactDOM.render(consentStatus, document.getElementById("consent-status"));
-{/if}
-
-    // Adds tab href to url + opens tab based on hash on page load
-    // See: http://bit.ly/292MDI8
-    $(function(){
-        var hash = window.location.hash;
-        hash && $('ul.nav a[href="' + hash + '"]').tab('show');
-
-        $('.nav-tabs a').click(function (e) {
-            $(this).tab('show');
-            var scrollmem = $('body').scrollTop() || $('html').scrollTop();
-            window.location.hash = this.hash;
-            $('html,body').scrollTop(scrollmem);
-        });
-    });
+  });
 
 </script>
