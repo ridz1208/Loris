@@ -181,6 +181,30 @@ class Utility
     }
 
     /**
+     * Returns a list of consents in the database
+     *
+     * @return array an associative array(
+     *                  "ConsentTypeID" => array(['Name']  => "Name",
+     *                                           ['Label'] => "Label"))
+     */
+    static function getConsentList()
+    {
+        $DB =& Database::singleton();
+
+        $query = "SELECT * FROM consent_type";
+
+        $result = $DB->pselect($query, array());
+
+        // fix the array
+        $list = array();
+        foreach ($result as $row) {
+            $list[$row["ConsentTypeID"]] = $row;
+            unset($list[$row["ConsentTypeID"]]["ConsentTypeID"]);
+        }
+        return $list;
+    }
+
+    /**
      * Returns a list of sites in the database
      *
      * @param bool $study_site If true only return sites that are
