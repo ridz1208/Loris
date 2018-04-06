@@ -2,11 +2,12 @@
 /**
  * This file contains the Permission class.
  *
- * PHP Version 5-7
+ * PHP Version 7
  *
  * @category Main
  * @package  Loris
  * @author   Rida Abou-Haidar <rida.loris@gmail.com>
+ *           Tara Campbell <tara.campbell@mail.mcgill.ca>
  * @license  http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
  * @link     https://www.github.com/aces/Loris/
  */
@@ -17,199 +18,202 @@
  * @category Main
  * @package  Loris
  * @author   Rida Abou-Haidar <rida.loris@gmail.com>
+ *           Tara Campbell <tara.campbell@mail.mcgill.ca>
  * @license  http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
  * @link     https://www.github.com/aces/Loris/
  */
-class Permission
+class Permission implements EntityObjectInterface
 {
     /**
-     * Stores Database being used
-     *
-     * @var    $DB Database
-     * @access private
+     * @var $ID int Identifier of the permission
      */
-    var $DB;
+    private $ID;
 
     /**
-     * Permission constructor.
-     *
-     * @param Database $Database database
+     * @var $name string Shorthand Name of the permission
      */
-    function __construct($Database)
-    {
-        $this->DB = $Database;
-    }
-
+    private $name;
 
     /**
-     * Gets the list of permissions in the database.
-     *
-     * @return array Associative array in the form $permissionID=>$permissionName
+     * @var $label string Front-end Name of the permission
      */
-    function getPermissions()
-    {
-        $permissions = $this->DB->pselectColWithIndexKey(
-            "SELECT permID, code
-         FROM permissions",
-            array(),
-            "permID"
-        );
-
-        return $permissions;
-    }
+    private $label;
 
     /**
-     * Gets the list of permission labels in the database.
-     *
-     * @return array Associative array in the form $permissionID=>$permissionLabel
+     * @var $roles array All roles this permission is affiliated with
      */
-    function getPermissionLabels()
-    {
-        $permissions = $this->DB->pselectColWithIndexKey(
-            "SELECT permID, description
-         FROM permissions",
-            array(),
-            "permID"
-        );
+    private $roles;
 
-        return $permissions;
+    /**
+     * @var $users array All users this permission is affiliated with
+     */
+    private $users;
+
+    /**
+     * Getter for the Identifier
+     *
+     * @return int $ID the Identifier
+     */
+    function getID() {
+        return $this->ID;
     }
 
     /**
-     * Checks if the string is a permission within the database
+     * Setter for the Identifier
      *
-     * @param string $permissionName the permission to be checked
+     * @param $ID int Identifier
      *
-     * @return boolean
+     * @throws LorisException when the field is already set to avoid user altering
+     *                        its value and trying to update or deleting it.
+     *
+     * @return void
      */
-    function isPermission($permissionName)
-    {
-        $permissions = $this->getPermissions();
-        if (in_array($permissionName, $permissions, true)) {
-            return true;
-        }
-        return false;
-    }
+    function setID(int $ID) {
+        // Limit accessibility to this value.
+        // Prevent setting it to null or changing its value once it has been set,
+        // this will prevent a user from modifying the ID before running it through
+        // the update and/or delete functions.
 
-    /**
-     * Gets the ID of a permission given its name
-     *
-     * @param string $permissionName the permission name for which the ID is needed
-     *
-     * @throws LorisException if permission does not exist
-     *
-     * @return int
-     */
-    function getPermissionIDFromName($permissionName)
-    {
-        if (!$this->isPermission($permissionName)) {
+        if (isset($this->ID)) {
             throw new LorisException(
-                "Could not retrieve the permission ID for 
-                permission '$permissionName'"
+                "The ID field can not be altered once it is set"
             );
         }
-
-        $permissionID = $this->DB->pselectOne(
-            "SELECT permID
-         FROM permissions
-         WHERE code=:PN",
-            array("PN" => $permissionName)
-        );
-        return $permissionID;
+        $this->ID = $ID;
     }
 
     /**
-     * Gets the NAME of a permission given its ID
+     * Getter for the Name
      *
-     * @param int $permissionID the permission ID for which the name is needed
+     * @return string $name Name of the permission
+     */
+    function getName() {
+        return $this->name;
+    }
+
+    /**
+     * Setter for the Name
      *
-     * @throws LorisException if permission ID does not exist
+     * @param $name string Name of the permission
+     *
+     * @return void
+     */
+    function setName(string $name) {
+        $this->name = $name;
+    }
+
+    /**
+     * Getter for the Label
+     *
+     * @return string $label label of the permission
+     */
+    function getLabel() {
+        return $this->label;
+    }
+
+    /**
+     * Setter for the Label
+     *
+     * @param string $label Label of the permission
+     *
+     * @return void
+     */
+    function setLabel(string $label) {
+        $this->label = $label;
+    }
+
+    /**
+     * Getter for the Roles
+     *
+     * @return array $roles all roles affiliated with this permission
+     */
+    function getRoles() {
+        return $this->roles;
+    }
+
+    /**
+     * Setter for the Roles
+     *
+     * @param array $roles all roles affiliated with this permission
+     *
+     * @return void
+     */
+    function setRoles(array $roles) {
+        $this->roles = $roles;
+    }
+
+    /**
+     * Getter for the Users
+     *
+     * @return array $users all users affiliated with this permission
+     */
+    function getUsers() {
+        return $this->users;
+    }
+
+    /**
+     * Setter for the Roles
+     *
+     * @param array $users all users affiliated with this permission
+     *
+     * @return void
+     */
+    function setUsers(array $users) {
+        $this->users = $users;
+    }
+
+    /**
+     * Implements the php Magic Method __toString()
      *
      * @return string
      */
-    function getPermissionNameFromID($permissionID)
+    function __toString() : string
     {
-        $permissionName = $this->DB->pselectOne(
-            "SELECT code
-         FROM permissions
-         WHERE permID=:PID",
-            array("PID" => $permissionID)
-        );
+        $description =
+            "This permission has 
+                ID: $this->ID, 
+                Name: $this->name, 
+                Label: $this->label.";
 
-        if (empty($permissionName)) {
-            throw new LorisException(
-                "Could not retrieve the permission name for 
-                permission ID '$permissionID'"
-            );
+        if (!empty($this->roles)) {
+            //Should never get stuck in infinite loop if children are always
+            //instantiated lazily
+            $description .= "\nRoles affiliated with this permission are: \n";
+            $description .= print_r($this->roles,true);
         }
-        return $permissionName;
-    }
-
-    /**
-     * Gets the roles associated to a permission
-     *
-     * @param int $permissionID the permission
-     *
-     * @return array non-associative with values being the permission IDs
-     */
-    function getPermissionRoleIDs($permissionID)
-    {
-        $roles = $this->DB->pselectCol(
-            "SELECT RoleID
-         FROM role_permission_rel
-         WHERE PermissionID=:PID",
-            array("PID" => $permissionID)
-        );
-
-        return $roles;
-    }
-
-    /**
-     * Returns all the users with the permission
-     *
-     * @param int $permissionID the permission
-     *
-     * @return array Associative array ($userID=>$RealName) that have the permission
-     */
-    function getPermissionUsers($permissionID)
-    {
-        $usersWithPermission = $this->DB->pselectColWithIndexKey(
-            "SELECT upr.userID, u.Real_name
-            FROM user_perm_rel upr 
-              JOIN users u ON u.ID=upr.userID
-              WHERE upr.permId=:PID",
-            array("PID" => $permissionID),
-            "userID"
-        );
-        return $usersWithPermission;
-    }
-
-    /**
-     * Gets all the users' permissions based on their roles
-     *
-     * @param array $roleIDs role set associated with a user
-     *
-     * @return array associative array ($permissionID=>$permissionName) of
-     *               permissions associated with the given permission set
-     */
-    function getPermissionsFromRoles($roleIDs)
-    {
-        $roleObject  = new \Role($this->DB);
-        $permissions = $this->getPermissions();
-
-        $userPermissions = array();
-
-        foreach ($roleIDs as $roleID) {
-            $rolePermissions = $roleObject->getRolePermissionIDs($roleID);
-            foreach ($rolePermissions as $permissionID) {
-                //if permissions overlap between roles, this will
-                //just overwrite data with the same data
-                $userPermissions[$permissionID] = $permissions[$permissionID];
-            }
+        if (!empty($this->users)) {
+            //Should never get stuck in infinite loop if children are always
+            //instantiated lazily
+            $description .= "\nUsers affiliated with this permission are: \n";
+            $description .= print_r($this->users,true);
         }
-
-        return $userPermissions;
+        return $description;
     }
 
+    /**
+     * Implements the php Magic Method __clone()
+     *
+     * @return void
+     */
+    function __clone()
+    {
+        // No deep clones necessary for permissions
+    }
 
+    /**
+     * Implements JsonSerializable::jsonSerialize to serialize the entire object
+     *
+     * @return array
+     */
+    function jsonSerialize() : array
+    {
+        $data = array();
+        $data['ID'] = $this->ID;
+        $data['name'] = $this->name;
+        $data['label'] = $this->label;
+        $data['roles'] = $this->roles;
+        $data['users'] = $this->users;
+
+        return $data;
+    }
 }

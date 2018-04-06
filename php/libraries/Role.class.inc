@@ -17,6 +17,7 @@
  * @category Main
  * @package  Loris
  * @author   Rida Abou-Haidar <rida.loris@gmail.com>
+ *           Tara Campbell <tara.campbell@mail.mcgill.ca>
  * @license  http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
  * @link     https://www.github.com/aces/Loris/
  */
@@ -28,14 +29,14 @@ class Role
      * @var    $DB Database
      * @access private
      */
-    var $DB;
+    private $DB;
 
     /**
      * Role constructor.
      *
      * @param Database $Database database
      */
-    function __construct($Database)
+    function __construct(Database $Database)
     {
         $this->DB = $Database;
     }
