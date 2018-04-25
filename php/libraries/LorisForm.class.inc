@@ -639,8 +639,10 @@ class LorisForm
                 // Check all elements of the current group for the element
                 foreach ($element['elements'] as $groupElement) {
                     // Check if name is right
-                    if ($groupElement['name'] == $elementName) {
-                        return $groupElement['type'] == 'advcheckbox';
+                    if (isset($groupElement['name'])) {
+                        if ($groupElement['name'] == $elementName) {
+                            return $groupElement['type'] == 'advcheckbox';
+                        }
                     }
                 }
             }

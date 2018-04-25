@@ -105,11 +105,14 @@ class UserPermissions
     /**
      * Determines if the user has a permission
      *
-     * @param string $code The permission code
+     * @param string $code            The permission code
+     * @param bool   $superuserIgnore Flag to check if the user actually has a
+     *                                certain permission, ignoring the superuser
+     *                                override
      *
      * @return bool
      */
-    function hasPermission($code)
+    function hasPermission($code, $superuserIgnore = false)
     {
         if (!isset($this->permissions[$code])) {
             throw new ConfigurationException("Invalid permission code $code");
@@ -118,10 +121,12 @@ class UserPermissions
             return true;
         }
 
-        if (isset($this->permissions['superuser'])
-            && $this->permissions['superuser'] == true
-        ) {
-            return true;
+        if (!$superuserIgnore) {
+            if (isset($this->permissions['superuser'])
+                && $this->permissions['superuser'] == true
+            ) {
+                return true;
+            }
         }
         return false;
     }
@@ -248,10 +253,9 @@ class UserPermissions
         // create DB object
         $DB =& Database::singleton();
 
-        $query   = "SELECT p.permID, p.code, p.description, pc.Description as type
+        $query   = "SELECT p.permID, p.code, p.description
             FROM permissions p
                 JOIN user_perm_rel up ON (p.permID=up.PermID)
-                LEFT JOIN permissions_category pc ON (pc.ID=p.categoryID)
             WHERE up.userID = :UID
                 ORDER BY p.categoryID, p.description";
         $results = $DB->pselect($query, array('UID' => $this->userID));
