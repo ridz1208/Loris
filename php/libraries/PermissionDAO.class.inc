@@ -72,7 +72,7 @@ class PermissionDAO extends EntityDAOAbstract
      * Gets the full list of permissions from the database eagerly
      * The eager instantiation instantiates the following objects:
      *  - roles affiliated with permission
-     *  - users affiliated with permission (as IDs temporarily)
+     *  - users affiliated with permission
      *
      * @return array Permission objects instantiated from database query
      */
@@ -110,11 +110,12 @@ class PermissionDAO extends EntityDAOAbstract
             }
 
             //load users
-            // TODO: USER - Replace IDs with objects when user class is updated
             $users=array();
             foreach ($DBPermissionUsers as $row) {
                 if ($row['permID']===$newPermission->getID()) {
-                    $users[] = $row['userID'];
+                    $users[] = User::factory(
+                        User::getUsernameFromID($row['userID'])
+                    );
                 }
             }
 
@@ -157,7 +158,7 @@ class PermissionDAO extends EntityDAOAbstract
      * Gets the permission with ID specified in the parameter
      * The eager instantiation instantiates the following objects:
      *  - roles affiliated with permission
-     *  - users affiliated with permission (as IDs temporarily)
+     *  - users affiliated with permission
      *
      * @param int $permissionID unique Identifier for the permission
      *
@@ -186,10 +187,9 @@ class PermissionDAO extends EntityDAOAbstract
         }
 
         //load users
-        // TODO: USER - Replace IDs with objects when user class is updated
         $users=array();
         foreach ($DBPermissionUsers as $row) {
-            $users[] = $row['userID'];
+            $users[] = User::factory(User::getUsernameFromID($row['userID']));
         }
 
         $permission->setRoles($roles);
@@ -263,7 +263,7 @@ class PermissionDAO extends EntityDAOAbstract
 
         //TODO: USER - change to proper OOP when user class is updated
         foreach ($permission->getUsers() as $user) {
-            $newRow['userID'] = $user;
+            $newRow['userID'] = $user->getId();
             $newRow['permID'] = $insertionID;
             try {
                 $this->DB->insert($permissionUserTable, $newRow);
