@@ -561,5 +561,67 @@ class User extends UserPermissions
         return $this->hasPermission($code)
             && $this->hasCenter($center_id);
     }
+
+    /**
+     * Gets the username (database: `userID`) for a userid (database: `ID`)
+     * This function is here to simplify the transition to the new data access
+     * model.
+     *
+     * @param int $userID identifier for which the username is required
+     *                    (ID in the database)
+     *
+     * @throws LorisException when ID is not in the database
+     *
+     * @return string username for given userID
+     */
+    static function getUsernameFromID(int $userID) {
+        // create DB object
+        $DB =& Database::singleton();
+
+        $result = $DB->pselectOne(
+            "SELECT UserID FROM users WHERE ID=:ID",
+            array("ID"=>$userID)
+        );
+
+        if (empty($result)) {
+            throw new LorisException(
+                "User::getUserNameFromID() expects the identifier to be exist
+                in the database."
+            );
+        }
+
+        return $result;
+    }
+
+    /**
+     * Gets the userid (database: `ID`) for a username (database: `userID`)
+     * This function is here to simplify the transition to the new data access
+     * model.
+     *
+     * @param string $username username for which the ID is required
+     *                         (UserID value in the database)
+     *
+     * @throws LorisException when username is not in the database
+     *
+     * @return int userID for given username
+     */
+    static function getIDFromUsername(string $username) {
+        // create DB object
+        $DB =& Database::singleton();
+
+        $result = $DB->pselectOne(
+            "SELECT ID FROM users WHERE UserID=:UN",
+            array("UN"=>$username)
+        );
+
+        if (empty($result)) {
+            throw new LorisException(
+                "User::getUserNameFromID() expects the username to be exist
+                in the database."
+            );
+        }
+
+        return $result;
+    }
 }
 ?>
