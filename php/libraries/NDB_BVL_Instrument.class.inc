@@ -1478,13 +1478,11 @@ class NDB_BVL_Instrument extends NDB_Page
             return 'Complete';
         }
 
-        $db = \Database::singleton();
-
         $allData = $this->loadInstanceData($this);
         foreach ($this->_requiredElements as $field) {
             // this shouldn't be just empty() b/c 0 is a valid
             // value for some required fields
-            if (is_null($field) || $field === "") {
+            if (is_null($allData[$field]) || $allData[$field] === "") {
                 return 'Incomplete';
             }
         }
@@ -1989,7 +1987,6 @@ class NDB_BVL_Instrument extends NDB_Page
      */
     function _nullScores(array $scoreCols): void
     {
-        $db = \Database::singleton();
         $data = $this->loadInstanceData($this);
 
         // set the scoring cols to NULL
