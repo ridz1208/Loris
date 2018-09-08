@@ -21,7 +21,7 @@ INSERT INTO Visit_Windows (Visit_label,  WindowMinDays, WindowMaxDays, OptimumMi
 If age is a not critical factor in study visit scheduling, define Min value as 0, and Max value as 2147483647 (this is the maximum integer size).
 
 ### API
- _not yet available. See [API documentation](../../../../API/) for latest additions_
+ _not yet available. See [API documentation](../../../API/) for latest additions_
  
 ## Interaction With LORIS
 

@@ -63,4 +63,4 @@ PSCIDs can be created for new subjects in one of 3 ways: *sequentially generated
   - `alphanumeric`: defines a string, must be associated with a `minLength` element.
          
 ### Adding subprojects from the API
- _not yet available. See [API documentation](../../../../API/) for latest additions_
+ _not yet available. See [API documentation](../../../API/) for latest additions_

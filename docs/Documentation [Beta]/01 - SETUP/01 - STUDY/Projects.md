@@ -27,7 +27,7 @@ INSERT INTO Project (Name, recruitmentTarget) VALUES('%PROJECT_NAME%', NULL);
 
 
 ### API
- _not yet available. See [API documentation](../../../../API/) for latest additions_
+ _not yet available. See [API documentation](../../../API/) for latest additions_
  
 ## Interaction With LORIS
 _none_

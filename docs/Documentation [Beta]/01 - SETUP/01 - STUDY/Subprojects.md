@@ -26,7 +26,7 @@ VALUES('SCI', 0, NULL, NULL);
 
 
 ### API
- _not yet available. See [API documentation](../../../../API/) for latest additions_
+ _not yet available. See [API documentation](../../../API/) for latest additions_
  
 
 ## Interaction With LORIS
