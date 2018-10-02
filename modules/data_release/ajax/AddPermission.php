@@ -21,7 +21,8 @@ $baseURL  = $settings->getBaseURL();
 $DB       = $factory->database();
 
 if ($_POST['action'] == 'addpermission'
-    && $user->hasPermission('data_release_edit_file_access')) {
+    && $user->hasPermission('data_release_edit_file_access')
+) {
     if (!empty($_POST['data_release_id']) && empty($_POST['data_release_version'])) {
         $userid          = $_POST['userid'];
         $data_release_id = $_POST['data_release_id'];

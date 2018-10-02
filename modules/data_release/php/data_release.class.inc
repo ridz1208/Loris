@@ -68,7 +68,7 @@ class Data_Release extends \NDB_Menu_Filter
                                'upload_date' => 'upload_date',
                               );
 
-        $userUpload = $user->hasPermission("data_release_upload");
+        $userUpload     = $user->hasPermission("data_release_upload");
         $userEditAccess = $user->hasPermission("data_release_edit_file_access");
 
         $userids = $DB->pselectColWithIndexKey(
@@ -107,8 +107,8 @@ class Data_Release extends \NDB_Menu_Filter
             $manage_permissions[$row['UserID']] = $version;
         }
 
-        $this->tpl_data['user_upload']    = $userUpload;
-        $this->tpl_data['user_edit_access']      = $userEditAccess;
+        $this->tpl_data['user_upload']      = $userUpload;
+        $this->tpl_data['user_edit_access'] = $userEditAccess;
         $this->tpl_data['userids']          = $userids;
         $this->tpl_data['data_release_ids'] = $data_release_ids;
         $this->tpl_data['data_release_versions'] = $data_release_versions;
