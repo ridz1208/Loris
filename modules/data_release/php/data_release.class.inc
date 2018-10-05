@@ -68,25 +68,14 @@ class Data_Release extends \NDB_Menu_Filter
                                'upload_date' => 'upload_date',
                               );
 
-        $user_ID   = $DB->pselectOne(
-            "SELECT ID FROM users WHERE userid=:UserID",
-            array('UserID' => $user->getUsername())
-        );
-        $superuser = $DB->pselectOne(
-            "SELECT true FROM users WHERE ID IN "
-            . "(SELECT userid FROM user_perm_rel WHERE "
-            . "permid=1 AND userid=:UserID)",
-            array('UserID' => $user_ID)
-        );
+        $userUpload     = $user->hasPermission("data_release_upload");
+        $userEditAccess = $user->hasPermission("data_release_edit_file_access");
 
-        $results = $DB->pselect(
+        $userids = $DB->pselectColWithIndexKey(
             "SELECT ID, UserID FROM users",
-            array()
+            array(),
+            "ID"
         );
-        $userids = array();
-        foreach ($results as $row) {
-            $userids[$row['ID']] =$row['UserID'];
-        }
 
         $results          = $DB->pselect(
             "SELECT id, file_name, version FROM data_release",
@@ -100,12 +89,14 @@ class Data_Release extends \NDB_Menu_Filter
         }
 
         $results = $DB->pselect(
-            "SELECT DISTINCT users.UserID, version FROM users"
-             . " LEFT JOIN data_release_permissions"
-             . " ON (users.ID=data_release_permissions.userid)"
-             . " LEFT JOIN data_release"
-             . " ON (data_release_permissions.data_release_id=data_release.id)"
-             . " ORDER BY users.UserID, version",
+            "SELECT 
+                DISTINCT users.UserID, 
+                version 
+             FROM users u
+                LEFT JOIN data_release_permissions drp ON (u.ID=drp.userid) 
+                LEFT JOIN data_release dr ON (drp.data_release_id=dr.id)
+             ORDER BY users.UserID, 
+                version",
             array()
         );
         foreach ($results as $row) {
@@ -116,7 +107,8 @@ class Data_Release extends \NDB_Menu_Filter
             $manage_permissions[$row['UserID']] = $version;
         }
 
-        $this->tpl_data['superuser']        = $superuser;
+        $this->tpl_data['user_upload']      = $userUpload;
+        $this->tpl_data['user_edit_access'] = $userEditAccess;
         $this->tpl_data['userids']          = $userids;
         $this->tpl_data['data_release_ids'] = $data_release_ids;
         $this->tpl_data['data_release_versions'] = $data_release_versions;
