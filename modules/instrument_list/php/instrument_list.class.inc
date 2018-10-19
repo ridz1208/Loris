@@ -17,6 +17,10 @@
  */
 namespace LORIS\instrument_list;
 
+use \Psr\Http\Message\ServerRequestInterface;
+use \Psr\Http\Server\RequestHandlerInterface;
+use \Psr\Http\Message\ResponseInterface;
+
 /**
  * Instrument_List
  *
@@ -31,6 +35,43 @@ namespace LORIS\instrument_list;
 class Instrument_List extends \NDB_Menu_Filter
 {
     /**
+     * The timepoint to which the instrument list belongs to.
+     *
+     * @var \TimePoint
+     */
+    protected $timePoint;
+
+    /**
+     * The candidate to which the instrument list belongs to.
+     *
+     * @var \Candidate
+     */
+    protected $candidate;
+
+    /**
+     * Sets the timepoint that is being accessed on this page.
+     *
+     * @param \TimePoint $timepoint The timepoint object.
+     *
+     * @return void
+     */
+    public function setTimePoint(\TimePoint $timepoint)
+    {
+        $this->timePoint = $timepoint;
+    }
+
+    /**
+     * Sets the candidate that is being accessed on this page.
+     *
+     * @param \Candidate $candidate The candidate object.
+     *
+     * @return void
+     */
+    public function setCandidate(\Candidate $candidate)
+    {
+        $this->candidate = $candidate;
+    }
+    /**
     * Checking permissions
     *
     * @return bool
@@ -38,26 +79,60 @@ class Instrument_List extends \NDB_Menu_Filter
     function _hasAccess()
     {
         // create user object
-        $user =& \User::singleton();
+        $user      =& \User::singleton();
+        $timePoint = $this->timePoint;
+        if ($timePoint === null) {
+            throw new \LorisException("Page requires a timepoint to load");
+        }
+        $candidate = $this->candidate;
+        if ($candidate === null) {
+            throw new \LorisException("Page requires a candidate to load");
+        }
 
-        $timePoint =& \TimePoint::singleton($_REQUEST['sessionID']);
-        $candID    = $timePoint->getCandID();
-
-        $candidate =& \Candidate::singleton($candID);
-
-        // check user permissions
+        //These variable are only for checking the permissions.
         return ($user->hasPermission('access_all_profiles')
-                || (in_array(
-                    $candidate->getData('CenterID'),
-                    $user->getData('CenterIDs')
-                )
-                   )
-                || (in_array(
-                    $timePoint->getData('CenterID'),
-                    $user->getData('CenterIDs')
-                )
-                   )
+            || (in_array(
+                $candidate->getData('CenterID'),
+                $user->getData('CenterIDs')
+            )) || (in_array(
+                $timePoint->getData('CenterID'),
+                $user->getData('CenterIDs')
+            )
+            )
         );
+    }
+
+    /**
+     * Instrument_list overrides the page PSR15 middleware to ensure that page setup
+     * is done and appropriate variables are set before the PageDecorationMiddleware
+     * is called.
+     *
+     * Due to an unfortunate series of historical accidents, getControlPanel (which
+     * depends on $this->TimePoint being valid) is called by the middleware before
+     * the handler, so this needs to be done in process.
+     *
+     * FIXME: The longterm solution is to remove the getControlPanel call from the
+     * middleware, but the few pages that use it need to be updated to properly
+     * reflect their control panel in the templates in a sane way first.
+     *
+     * @param ServerRequestInterface  $request The incoming PSR7 request
+     * @param RequestHandlerInterface $handler The PSR15 request handler when
+     *                                         acting as a middleware.
+     *
+     * @return ResponseInterface The outgoing PSR7 response
+     */
+    public function process(
+        ServerRequestInterface $request,
+        RequestHandlerInterface $handler
+    ) : ResponseInterface {
+        $this->candidate = $request->getAttribute("Candidate");
+        $this->timePoint = $request->getAttribute("timePoint");
+        if ($this->candidate === null || $this->timePoint === null) {
+            // This shouldn't happen, the module level router verifies that
+            // the candidate exists before getting here.
+            throw new \LorisException("Timepoint list requires a timepoint.");
+        }
+        return parent::process($request, $handler);
     }
 
     /**
@@ -68,17 +143,14 @@ class Instrument_List extends \NDB_Menu_Filter
     function getControlPanel()
     {
         $controlPanel = new Instrument_List_ControlPanel(
-            $_REQUEST['sessionID']
+            $this->timePoint->getSessionID()
         );
         // save possible changes from the control panel...
         $success = $controlPanel->save();
 
         // display the control panel
         $html = $controlPanel->display();
-        // I don't know why this is here, but it
-        // was in main.php, so moved it to be safe.
-        $timePoint =& \TimePoint::singleton($_REQUEST['sessionID']);
-        $timePoint->select($_REQUEST['sessionID']);
+
         return $html;
     }
 
@@ -92,12 +164,12 @@ class Instrument_List extends \NDB_Menu_Filter
         // Don't call parent setup, we don't want it to try to run any SQL
 
         // set template data
-        $this->tpl_data['candID']    = $_REQUEST['candID'];
-        $this->tpl_data['sessionID'] = $_REQUEST['sessionID'];
+        $this->tpl_data['candID']    = $this->candidate->getCandID();
+        $this->tpl_data['sessionID'] = $this->timePoint->getSessionID();
 
         // get behavioral battery for this visit (time point)
         $battery = new \NDB_BVL_Battery;
-        $success = $battery->selectBattery($_REQUEST['sessionID']);
+        $success = $battery->selectBattery($this->timePoint->getSessionID());
 
         $this->tpl_data['stage']        = \Utility::getStageUsingCandID(
             $this->tpl_data['candID']
@@ -210,13 +282,8 @@ class Instrument_List extends \NDB_Menu_Filter
             }
         }
 
-        $timePoint =& \TimePoint::singleton($_REQUEST['sessionID']);
-        $candID    = $timePoint->getCandID();
-
-        $candidate =& \Candidate::singleton($candID);
-
         $this->tpl_data['display']
-            = array_merge($candidate->getData(), $timePoint->getData());
+            = array_merge($this->candidate->getData(), $this->timePoint->getData());
     }
 
     /**
@@ -252,8 +319,8 @@ class Instrument_List extends \NDB_Menu_Filter
         $DB = \Database::singleton();
 
         // assert that a battery has already been selected
-        if (is_null($_REQUEST['sessionID'])) {
-            throw new Exception("No battery selected");
+        if (is_null($this->timePoint)) {
+            throw new \Exception("No battery selected");
         }
 
         // craft the select query
@@ -271,7 +338,7 @@ class Instrument_List extends \NDB_Menu_Filter
             	JOIN test_names t ON (f.Test_name=t.Test_name)
             	JOIN test_subgroups ts ON (ts.ID = t.Sub_group)
             	LEFT JOIN session s ON (s.ID=f.SessionID) ";
-        $qparams = array('SID' => $_REQUEST['sessionID']);
+        $qparams = array('SID' => $this->timePoint->getSessionID());
 
         if (!is_null($stage)) {
             $query .= "
@@ -320,5 +387,33 @@ class Instrument_List extends \NDB_Menu_Filter
             )
         );
     }
+
+    /**
+     * Generate a breadcrumb trail for this page.
+     *
+     * @return \LORIS\BreadcrumbTrail
+     */
+    public function getBreadcrumbs(): \LORIS\BreadcrumbTrail
+    {
+        $candid     = $this->candidate->getCandID();
+        $pscid      = $this->candidate->getPSCID();
+        $sessionid  = $this->timePoint->getSessionID();
+        $visitlabel = $this->timePoint->getVisitLabel();
+
+        return new \LORIS\BreadcrumbTrail(
+            new \LORIS\Breadcrumb(
+                'Access Profile',
+                '/candidate_list'
+            ),
+            new \LORIS\Breadcrumb(
+                "Candidate Profile $candid / $pscid",
+                "/$candid"
+            ),
+            new \LORIS\Breadcrumb(
+                "TimePoint $visitlabel Details",
+                "/instrument_list/?candID=$candid&sessionID=$sessionid"
+            )
+        );
+    }
+
 }
-?>

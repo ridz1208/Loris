@@ -111,7 +111,7 @@ class InstrumentData extends \Loris\API\Candidates\Candidate\Instruments
     /**
      * Handle a GET request
      *
-     * @return none, but populate $this->JSON
+     * @return void (but modifies $this->JSON)
      */
     function handleGET()
     {
@@ -127,10 +127,12 @@ class InstrumentData extends \Loris\API\Candidates\Candidate\Instruments
         if (!$this->bFlags) {
             $Values = \NDB_BVL_Instrument::loadInstanceData($this->Instrument);
 
-            unset($Values['CommentID']);
-            unset($Values['UserID']);
-            unset($Values['Testdate']);
-            unset($Values['Data_entry_completion_status']);
+            unset(
+                $Values['CommentID'],
+                $Values['UserID'],
+                $Values['Testdate'],
+                $Values['Data_entry_completion_status']
+            );
 
             $this->JSON[$this->Instrument->testName] = $Values;
         } else {
@@ -150,20 +152,20 @@ class InstrumentData extends \Loris\API\Candidates\Candidate\Instruments
     /**
      * Handle an OPTIONS request
      *
-     * @return none, but modifies HTTP headers sent
+     * @return void (but modifies HTTP headers sent)
      */
     function handleOPTIONS()
     {
         $this->Header(
             "Access-Control-Allow-Methods: ".
-            join($this->AllowedMethods, ",")
+            join(",", $this->AllowedMethods)
         );
     }
 
     /**
      * Handle a PUT request
      *
-     * @return none, but populates $this->JSON and writes to database
+     * @return void (but populates $this->JSON and writes to database)
      */
     function handlePUT()
     {
@@ -195,7 +197,7 @@ class InstrumentData extends \Loris\API\Candidates\Candidate\Instruments
     /**
      * Handle a PUT request
      *
-     * @return none, but populates $this->JSON and writes to database
+     * @return void (but populates $this->JSON and writes to database)
      */
     function handlePATCH()
     {

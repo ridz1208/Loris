@@ -1,12 +1,13 @@
-# Data Release Module
+# Data Release
 
-The Data Release Module can be used to easily distribute packaged data releases of your study.
 
-## Features:
+## Purpose
 
-- Upload new releases through the front-end web interface
-- Differentiate releases using (optionally unique) versioning tag
-- Assign permissions for each release to any specific user
+The Data Release module can be used to distribute packaged data releases 
+of the study to the analysis team. This module can be used by projects 
+which desire to publish based on the exact same set of data referred
+as data release. Along the lifespan of a study, several data releases might
+be made available as the dataset grows.
 
 ## Intended users
 
@@ -55,3 +56,4 @@ can easily be symlinked to another location if necessary, but please create and
 make sure it is writable by your web server
 - Remove permissions by deleting rows in the data_release_permissions table
 - Upload date will automatically be added during file upload
+

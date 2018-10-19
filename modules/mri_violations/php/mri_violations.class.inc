@@ -43,9 +43,9 @@ class Mri_Violations extends \NDB_Menu_Filter_Form
     /**
      * Process function
      *
-     * @param string $values the value of values
+     * @param array $values the values being processed
      *
-     * @return boolean true if the user is permitted to see violated scans
+     * @return bool true if the user is permitted to see violated scans
      */
     function _process($values)
     {
@@ -154,7 +154,7 @@ class Mri_Violations extends \NDB_Menu_Filter_Form
      * Set up the class and smarty variables to use for the menu filter to
      * generate the proper query for the menu filter
      *
-     * @return none
+     * @return void
      */
     function _setupVariables()
     {
@@ -231,17 +231,19 @@ class Mri_Violations extends \NDB_Menu_Filter_Form
                 SeriesUID,
                 md5(concat_WS(':',minc_location,PatientName,SeriesUID,time_run))
                   as hash,
-                mri_protocol_violated_scans.ID as join_id,
+                mpvs.ID as join_id,
                 p.CenterID as Site,
                 violations_resolved.Resolved as Resolved
-            FROM mri_protocol_violated_scans
+            FROM mri_protocol_violated_scans AS mpvs
             LEFT JOIN violations_resolved
-            ON (violations_resolved.ExtID=mri_protocol_violated_scans.ID
+            ON (violations_resolved.ExtID=mpvs.ID
             AND violations_resolved.TypeTable='mri_protocol_violated_scans')
             LEFT JOIN candidate c
-            ON (mri_protocol_violated_scans.CandID = c.CandID)
+            ON (mpvs.CandID = c.CandID)
             LEFT JOIN session s
-            ON (mri_protocol_violated_scans.CandID = s.CandID)
+            ON (SUBSTRING_INDEX(mpvs.PatientName,'_',-1) = s.Visit_label 
+                AND mpvs.CandID = s.CandID
+            )
             LEFT JOIN psc p
             ON (p.CenterID = c.CenterID)
             WHERE Resolved is NULL"
@@ -261,27 +263,27 @@ class Mri_Violations extends \NDB_Menu_Filter_Form
                               TimeRun
                    )
                 ) as hash,
-                mri_violations_log.LogID as join_id,
+                mrl.LogID as join_id,
                 p.CenterID as Site,
                 violations_resolved.Resolved as Resolved
-            FROM mri_violations_log
+            FROM mri_violations_log AS mrl
             LEFT JOIN mri_scan_type
-            ON (mri_scan_type.ID=mri_violations_log.Scan_type)
+            ON (mri_scan_type.ID=mrl.Scan_type)
             LEFT JOIN violations_resolved
-            ON (violations_resolved.ExtID=mri_violations_log.LogID 
+            ON (violations_resolved.ExtID=mrl.LogID 
             AND violations_resolved.TypeTable='mri_violations_log')
             LEFT JOIN candidate c
-            ON (mri_violations_log.CandID=c.CandID)
+            ON (mrl.CandID=c.CandID)
             LEFT JOIN session s
-            ON (mri_violations_log.CandID = s.CandID)
+            ON (mrl.Visit_label = s.Visit_label AND mrl.CandID=s.CandID)
             LEFT JOIN psc p
             ON (p.CenterID = c.CenterID)
             WHERE Resolved is NULL"
             . " UNION " .
             "SELECT PatientName,
                 TimeRun,
-                c.ProjectID as Project,
-                s.SubprojectID as Subproject,
+                null,
+                null,
                 MincFile,
                 null,
                 Reason,
@@ -294,18 +296,12 @@ class Mri_Violations extends \NDB_Menu_Filter_Form
                    )
                 ) as hash,
                 MRICandidateErrors.ID as join_id,
-                p.CenterID as Site,
+                null,
                 violations_resolved.Resolved as Resolved
             FROM MRICandidateErrors
             LEFT JOIN violations_resolved
             ON (violations_resolved.ExtID=MRICandidateErrors.ID 
             AND violations_resolved.TypeTable='MRICandidateErrors')
-            LEFT JOIN candidate c
-            ON (SUBSTRING_INDEX(MRICandidateErrors.PatientName,'_',1)=c.PSCID)
-            LEFT JOIN session s
-            ON (c.CandID = s.CandID)
-            LEFT JOIN psc p
-            ON (p.CenterID = c.CenterID)
             WHERE Resolved is NULL)
             as v LEFT JOIN psc site ON (site.CenterID = v.Site) 
             LEFT JOIN Project as pjct ON (v.Project = pjct.ProjectID)
@@ -339,7 +335,6 @@ class Mri_Violations extends \NDB_Menu_Filter_Form
                               );
 
         $this->EqualityFilters[] = 'v.Site';
-        return true;
     }
 
     /**
@@ -347,7 +342,7 @@ class Mri_Violations extends \NDB_Menu_Filter_Form
      * that are common to every type of page. May be overridden by a specific
      * page or specific page type.
      *
-     * @return none
+     * @return void
      */
     function setup()
     {
@@ -440,6 +435,22 @@ class Mri_Violations extends \NDB_Menu_Filter_Form
             array(
              $baseurl . "/mri_violations/js/columnFormatterUnresolved.js",
             )
+        );
+    }
+
+    /**
+     * Include additional CSS files
+     *
+     * @return array of CSS to be inserted
+     */
+    function getCSSDependencies()
+    {
+        $factory = \NDB_Factory::singleton();
+        $baseURL = $factory->settings()->getBaseURL();
+        $deps    = parent::getCSSDependencies();
+        return array_merge(
+            $deps,
+            array($baseURL . "/mri_violations/css/mri_violations.css")
         );
     }
 }

@@ -28,12 +28,13 @@
 });
 </script>
 {/literal}
-<form method="post" name="edit_user">
+<form method="post" name="edit_user" autocomplete="new-password">
     {if $form.errors}
     <div class="alert alert-danger" role="alert">
         The form you submitted contains data entry errors
     </div>
     {/if}
+
     <div class="panel panel-default">
       <div class="panel-body">
        <h3>Password Rules</h3>
@@ -306,6 +307,7 @@
         </div>
         {/if}
     </div>
+    {if $form.examiner_sites}
     {if $form.errors.examiner_sites}
     <div class="row form-group form-inline form-inline has-error">
         {else}
@@ -323,7 +325,8 @@
             </div>
             {/if}
         </div>
-    </div>
+    {/if}
+      {if $form.examiner_group}
     {if $form.errors.examiner_group}
     <div class="row form-group form-inline form-inline has-error">
         {else}
@@ -333,7 +336,7 @@
                 {$form.examiner_group.label}
             </label>
             <div class="col-sm-10">
-                <b>{$form.examiner_group.html}<b>
+                <b>{$form.examiner_group.html}</b>
                 </div>
                 {if $form.errors.examiner_group}
                 <div class="col-sm-offset-2 col-xs-12">
@@ -341,8 +344,8 @@
                 </div>
                 {/if}
             </div>
-        </div>
-        <div class="row form-group form-inline">
+      {/if}
+      <div class="row form-group form-inline">
            <label class="col-sm-2">
               {$form.Active.label}
           </label>
@@ -350,6 +353,41 @@
               {$form.Active.html}
           </div>
       </div>
+
+
+	{if $form.errors.active_timeWindows}
+	    <div class="alert alert-danger" role="alert">
+		{$form.errors.active_timeWindows}
+	    </div>
+    	{/if}
+
+
+	
+	{if $form.errors.active_timeWindows}
+		<div class="row form-group form-inline form-inline has-error">
+	{else}
+		<div class="row form-group form-inline">
+	{/if}
+		<label class="col-sm-2">
+			{$form.active_from.label}
+		 </label>
+		 <div class="col-sm-10">
+			{$form.active_from.html}
+		 </div>
+	</div>
+	{if $form.errors.active_timeWindows}
+		<div class="row form-group form-inline form-inline has-error">
+	{else}
+		<div class="row form-group form-inline">
+	{/if}
+		<label class="col-sm-2">
+			{$form.active_to.label}
+		 </label>
+		 <div class="col-sm-10">
+			{$form.active_to.html}
+		 </div>
+	</div>
+
       <div class="row form-group form-inline">
        <label class="col-sm-2">
           {$form.Pending_approval.label}
@@ -392,30 +430,7 @@
 
 <div class="col-sm-2">
     <input type=hidden id ="UserID" value="{$form.UserID.html}">
-    <input type=hidden id = "baseurl" value="{$baseurl}">
     <input class="btn btn-sm btn-primary col-xs-12" value="Reject User" type="button" id="btn_reject"/>
-    {literal}
-    <script type="text/javascript">
-        $(document).ready(
-            function(){
-                $("#btn_reject").click(
-                    function(){
-                        var userID = document.getElementById("UserID").value;
-                        var baseurl = document.getElementById("baseurl").value;
-                        $.ajax(baseurl+'/user_accounts/ajax/rejectUser.php', {
-                            type:'POST',
-                            data: {identifier: userID},
-                            success: function(data, textStatus){
-                                location.href=baseurl+'/user_accounts/';
-                            },
-                            error: function(jqXHR, textStatus, errorThrown){
-                                alert(textStatus, errorThrown);
-                           }
-                       });       
-                    });
-            });
-        </script>
-        {/literal}
     </div>
     {/if}
 </div>

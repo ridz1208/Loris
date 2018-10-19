@@ -14,6 +14,8 @@
  * @link       https://www.github.com/aces/Loris-Trunk/
  */
 namespace LORIS\issue_tracker;
+use \Psr\Http\Message\ServerRequestInterface;
+use \Psr\Http\Message\ResponseInterface;
 
 /**
  * Creates the form for NDB_Form_issue_tracker
@@ -28,27 +30,19 @@ namespace LORIS\issue_tracker;
 class Issue extends \NDB_Form
 {
 
-    /**
-    * Override default behaviour, since the page is loaded from issueIndex.js
-    *
-    * @return void
-    * @access public
-    */
-    function display()
-    {
-        return null;
-    }
+    protected $issueID;
+    public $skipTemplate = true;
 
     /**
      * Sets up the smarty menu filter items
      *
-     * @return none
+     * @return void
      */
     function setup()
     {
         parent::setup();
         $user    =& \User::singleton();
-        $issueID = $_GET['issueID'];
+        $issueID = $this->issueID;
 
         if ((empty($issueID)
             || !isset($issueID))
@@ -78,11 +72,11 @@ class Issue extends \NDB_Form
     /**
     * Gets control panel
     *
-    * @return $controlPanel
+    * @return string ($controlPanel)
     */
     function getControlPanel()
     {
-        $controlPanel = new issue_tracker_ControlPanel($_GET['issueID']);
+        $controlPanel = new issue_tracker_ControlPanel($this->issueID);
         return $controlPanel->display();
     }
 
@@ -108,13 +102,13 @@ class Issue extends \NDB_Form
      * Does not govern editing abilities; those are controlled by issueIndex.js
      *
      * @return bool
-     * @throws ConfigurationException
+     * @throws \ConfigurationException
      */
     function _hasAccess()
     {
         $user    =& \User::singleton();
         $db      = \Database::singleton();
-        $issueID = $_GET['issueID'];
+        $issueID = $this->issueID;
 
         if (!$issueID) {
             return true;
@@ -135,4 +129,29 @@ class Issue extends \NDB_Form
         }
     }
 
+    /**
+     * Handle the incoming request for an issue. This extracts URLs of the form
+     * /issue_tracker/issue/3 and extracts the issueID so that it's accessible
+     * from the rest of the code as a class variable.
+     *
+     * @param ServerRequestInterface $request The incoming client request
+     *
+     * @return ResponseInterface The PSR15 response.
+     */
+    public function handle(ServerRequestInterface $request) : ResponseInterface
+    {
+        $results = [];
+        preg_match('#/issue/([0-9])+$#', $request->getURI()->getPath(), $results);
+        $this->issueID = $results[1] ?? null;
+        if (empty($this->issueID)) {
+            // Should probably be a bad request, but we don't have a 400.tpl
+            // template.
+            return new \Loris\Http\Error($request, 404, "Issue not found");
+        }
+        // FIXME: This should negotiate the content type it returns (JSON vs HTML)
+        // based on the HTTP Accept header, and determine whether to update or
+        // display based on whether it's a PUT or GET request in order to remove
+        // the ajax/EditIssue.php hack.
+        return parent::handle($request);
+    }
 }
