@@ -26,7 +26,7 @@ if ($_POST['action'] == 'addpermission'
     if (!empty($_POST['data_release_id']) && empty($_POST['data_release_version'])) {
         $userid          = $_POST['userid'];
         $data_release_id = $_POST['data_release_id'];
-        $success         = $DB->insert(
+        $success         = $DB->insertIgnore(
             'data_release_permissions',
             array(
              'userid'          => $userid,
@@ -46,9 +46,9 @@ if ($_POST['action'] == 'addpermission'
                     WHERE version=:drv",
             array('drv' => $data_release_version)
         );
-        
+
         foreach ($IDs as $ID) {
-            $success = $DB->insert(
+            $success = $DB->insertIgnore(
                 'data_release_permissions',
                 array(
                  'userid'          => $userid,
