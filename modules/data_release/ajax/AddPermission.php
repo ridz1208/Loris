@@ -46,13 +46,13 @@ if ($_POST['action'] == 'addpermission'
                     WHERE version=:drv",
             array('drv' => $data_release_version)
         );
-
         foreach ($IDs as $ID) {
+
             $success = $DB->insertIgnore(
                 'data_release_permissions',
                 array(
                  'userid'          => $userid,
-                 'data_release_id' => $ID['id'],
+                 'data_release_id' => $ID,
                 )
             );
         }
