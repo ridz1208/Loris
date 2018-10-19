@@ -90,12 +90,11 @@ class Data_Release extends \NDB_Menu_Filter
 
         $results = $DB->pselect(
             "SELECT 
-                DISTINCT users.UserID, 
-                version 
+                DISTINCT u.UserID, version 
              FROM users u
                 LEFT JOIN data_release_permissions drp ON (u.ID=drp.userid) 
                 LEFT JOIN data_release dr ON (drp.data_release_id=dr.id)
-             ORDER BY users.UserID, 
+             ORDER BY u.UserID, 
                 version",
             array()
         );

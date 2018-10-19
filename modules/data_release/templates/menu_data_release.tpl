@@ -60,6 +60,11 @@
                                 </select>
                             </div>
                         </div>
+                      <div class="col-xs-12 form-group">
+                        <br>
+                        <br>
+                        <label class="col-xs-8">Choose a specific file or an entire release below:</label>
+                      </div>
                         <div class="col-xs-12 form-group">
                             <label class="col-xs-4" for="data_release_id">Data Release ID</label>
                             <div class="col-xs-8">
@@ -70,6 +75,9 @@
                                     {/foreach}
                                 </select>
                             </div>
+                        </div>
+                        <div class="col-xs-12 form-group text-center">
+                          <label >OR</label>
                         </div>
                         <div class="col-xs-12 form-group">
                             <label class="col-xs-4" for="data_release_id">Data Release Version</label>
@@ -128,14 +136,14 @@
                                            {else}
                                                <input type='checkbox' name='permissions_{$k}[]' value='{$vv}'>{$vv}</input>
                                            {/if}
-                                           {break} 
+                                           {break}
                                         {/foreach}
                                     {/foreach}
 
                                     </td>
                                 </tr>
                                 {/foreach}
-                            </tbody>                        
+                            </tbody>
                         </table>
                         <input type="hidden" name = "action" id = "manageaction" value = "managepermissions">
                     </div>
@@ -148,11 +156,10 @@
         </div>
     </div>
 </div>
-
-<br>
-<br>
-
 {/if}
+
+<br>
+<br>
 
 <table class="table table-hover table-primary table-bordered table-data_release dynamictable" border="0">
     <thead>

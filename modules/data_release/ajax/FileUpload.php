@@ -57,10 +57,11 @@ if ($_POST['action'] == 'upload'
                 array('UserID' => $user->getUsername())
             );
             $ID      = $DB->pselectOne(
-                "SELECT id FROM data_release WHERE "
-                . "file_name=:file_name AND "
-                . "version=:version AND "
-                . "upload_date=:upload_date",
+                "SELECT id 
+                        FROM data_release 
+                        WHERE file_name=:file_name 
+                            AND version=:version 
+                            AND upload_date=:upload_date",
                 array(
                  'file_name'   => $fileName,
                  'version'     => $version,

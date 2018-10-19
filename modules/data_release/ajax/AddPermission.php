@@ -33,6 +33,7 @@ if ($_POST['action'] == 'addpermission'
              'data_release_id' => $data_release_id,
             )
         );
+
     } elseif (empty($_POST['data_release_id'])
         && !empty($_POST['data_release_version'])
     ) {
@@ -40,11 +41,12 @@ if ($_POST['action'] == 'addpermission'
         $data_release_version = $_POST['data_release_version'];
 
         $IDs = $DB->pselectCol(
-            "SELECT id FROM data_release WHERE "
-            . "version=:data_release_version",
-            array('data_release_version' => $data_release_version)
+            "SELECT id 
+                    FROM data_release 
+                    WHERE version=:drv",
+            array('drv' => $data_release_version)
         );
-
+        
         foreach ($IDs as $ID) {
             $success = $DB->insert(
                 'data_release_permissions',
@@ -85,8 +87,8 @@ if ($_POST['action'] == 'addpermission'
                     );
                     foreach ($data_release_ids as $data_release_id) {
                         $success = $DB->run(
-                            "INSERT IGNORE INTO data_release_permissions VALUES "
-                            . "($userid, {$data_release_id['id']})"
+                            "INSERT IGNORE INTO data_release_permissions 
+                                    VALUES ($userid, {$data_release_id['id']})"
                         );
                     }
                 }
