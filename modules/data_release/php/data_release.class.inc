@@ -97,7 +97,7 @@ class Data_Release extends \NDB_Menu_Filter
                 LEFT JOIN data_release dr ON (drp.data_release_id=dr.id)
              ORDER BY u.UserID, 
                 version",
-	            array()
+            array()
         );
         foreach ($results as $row) {
             if (!isset($manage_permissions[$row['UserID']])) {
