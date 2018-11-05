@@ -77,15 +77,18 @@ class Data_Release extends \NDB_Menu_Filter
             "ID"
         );
 
-        $results          = $DB->pselect(
+        $results = $DB->pselect(
             "SELECT id, file_name, version FROM data_release",
             array()
         );
-        $data_release_ids = array();
+
+        $data_release_ids      = array();
         $data_release_versions = array();
+
         foreach ($results as $row) {
-            $data_release_ids[$row['id']]
-                          = $row['file_name']." - ".$row['version'];
+            $data_release_ids[$row['id']]           = $row['file_name']
+                . " - "
+                . $row['version'];
             $data_release_versions[$row['version']] = $row['version'];
         }
 
