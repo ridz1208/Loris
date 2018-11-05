@@ -132,9 +132,9 @@
                                     {foreach from = $data_release_versions item=vv key=kk}
                                         {foreach from = $elem key=key item=value}
                                            {if in_array($vv, $elem)}
-                                               <input type='checkbox' name='permissions_{$k}' value='{$vv}' checked>{$vv}</input>
+                                               <input type='checkbox' name='permissions_{$k}[]' value='{$vv}' checked>{$vv}</input>
                                            {else}
-                                               <input type='checkbox' name='permissions_{$k}' value='{$vv}'>{$vv}</input>
+                                               <input type='checkbox' name='permissions_{$k}[]' value='{$vv}'>{$vv}</input>
                                            {/if}
                                            {break}
                                         {/foreach}
