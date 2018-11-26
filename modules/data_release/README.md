@@ -11,8 +11,8 @@ be made available as the dataset grows.
 
 ## Intended users
 
-- Researchers and analysis teams
-- Data coordinator that manages access to and uploads data releases
+- Researchers and analysis teams.
+- Data coordinator that manages access to and uploads data releases.
 
 
 ## Scope
