@@ -6,7 +6,7 @@ Ensure that regular users can see the data release module without the
 
 ## Upload File
 1. Give the user the `data_release_upload` *(Data Release: Upload file)* permission. 
- Ensure the user can upload new files to the module
+ Ensure the user can upload new files to the module.
  
 2. As the 'superuser', click on the 'Upload File' button to upload a file 
  and ensure the uploaded file is available in the list of files.
