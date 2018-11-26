@@ -32,7 +32,7 @@ permission was added for him/her.
 
 Ensure that a 'superuser' can see the 'Upload File' and 'Add 
 Permission' buttons at the top of the module, as well as the list of already 
-uploaded files
+uploaded files.
 
 ## Sort table
  
