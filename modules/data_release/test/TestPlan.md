@@ -9,7 +9,7 @@ Ensure that regular users can see the data release module without the
  Ensure the user can upload new files to the module
  
 2. As the 'superuser', click on the 'Upload File' button to upload a file 
- and ensure the uploaded file is available in the list of files
+ and ensure the uploaded file is available in the list of files.
  
 ## Permissions
 
