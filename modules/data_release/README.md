@@ -27,9 +27,8 @@ web interface.
 
 ## Permissions
 
-- Only users with `data_release_upload` an superusers can upload anything, 
-no one else has upload permission.
-- Only users with `data_release_edit_file_access` and superusers can grant 
+- Users with `data_release_upload` and superusers can upload anything.
+- Users with `data_release_edit_file_access` and superusers can grant 
 permissions whether by "version" or specific "file_name".
 - Once a user is granted permission on any data release, they will be able
   to see the data release and download it directly from the module.
@@ -51,9 +50,9 @@ Note: At the moment, the only way to remove a user's permission to a specific
 
 ## Other notes:
 
-- Uploads are stored under the modules/data_release/user_uploads directory which 
-can easily be symlinked to another location if necessary, but please create and 
-make sure it is writable by your web server
+- Uploads are stored under the `modules/data_release/user_uploads` directory which 
+can easily be symlinked to another location if necessary, ensure that it can be written 
+to by your web server.
 - Remove permissions by deleting rows in the data_release_permissions table
-- Upload date will automatically be added during file upload
+- Upload date will automatically be added during file upload.
 
