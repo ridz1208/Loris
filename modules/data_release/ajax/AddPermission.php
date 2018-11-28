@@ -96,7 +96,8 @@ if ($_POST['action'] == 'addpermission'
         }
         $DB->_PDO->commit();
         header("HTTP/1.1 303 See Other");
-        //addpermissionSuccess=true/false does not currently do anything on the front-end
+        //addpermissionSuccess=true/false 
+        //does not currently do anything on the front-end
         //currently just a placeholder displaying if the operation succeeded or not
         header("Location: {$baseURL}/data_release/?addpermissionSuccess=true");
     } catch (Exception $e) {
