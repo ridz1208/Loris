@@ -50,7 +50,7 @@
                 <div class="modal-body">
                     <div class="row">
                         <div class="col-xs-12 form-group">
-                            <label class="col-xs-4" for="userid">User ID</label>
+                            <label class="col-xs-4" for="userid">User</label>
                             <div class="col-xs-8">
                                 <select name="userid" id = "userid" class = "form-fields form-control input-sm">
                                 <option value=""> </option>
@@ -66,7 +66,7 @@
                         <label class="col-xs-8">Choose a specific file or an entire release below:</label>
                       </div>
                         <div class="col-xs-12 form-group">
-                            <label class="col-xs-4" for="data_release_id">Data Release ID</label>
+                            <label class="col-xs-4" for="data_release_id">Data Release File</label>
                             <div class="col-xs-8">
                                 <select name="data_release_id" id = "data_release_id" class = "form-fields form-control input-sm">
                                 <option value=""> </option>
@@ -128,19 +128,17 @@
                                         {$k}
                                         <!--<input type="hidden" name="{$k}" value="{$k}" readonly>{$k}</input>-->
                                     </td>
-                                    <td>
+                                  <td>
                                     {foreach from = $data_release_versions item=vv key=kk}
-                                        {foreach from = $elem key=key item=value}
-                                           {if in_array($vv, $elem)}
-                                               <input type='checkbox' name='permissions_{$k}[]' value='{$vv}' checked>{$vv}</input>
-                                           {else}
-                                               <input type='checkbox' name='permissions_{$k}[]' value='{$vv}'>{$vv}</input>
-                                           {/if}
-                                           {break}
-                                        {/foreach}
+                                      {if in_array($vv, $elem)}
+                                        <input type='checkbox' name='permissions_{$k}[]' value='{$vv}' checked>{$vv}</input>
+                                      {else}
+                                        <input type='checkbox' name='permissions_{$k}[]' value='{$vv}'>{$vv}</input>
+                                      {/if}
+                                      <br>
                                     {/foreach}
 
-                                    </td>
+                                  </td>
                                 </tr>
                                 {/foreach}
                             </tbody>
@@ -149,7 +147,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-primary" id = "manageButton" role="button" aria-disabled="false">Manage Permissions</button>
+                    <button class="btn btn-primary" id = "manageButton" role="button" aria-disabled="false">Save</button>
                     <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
                 </div>
             </form>

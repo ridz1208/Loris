@@ -77,38 +77,77 @@ class Data_Release extends \NDB_Menu_Filter
             "ID"
         );
 
-        $results = $DB->pselect(
-            "SELECT id, file_name, version FROM data_release",
+        $versionedFiles = $DB->pselect(
+            "SELECT id, file_name, version 
+                  FROM data_release
+                  WHERE version IS NOT NULL AND version <> ''",
             array()
         );
 
         $data_release_ids      = array();
         $data_release_versions = array();
 
-        foreach ($results as $row) {
+        foreach ($versionedFiles as $row) {
             $data_release_ids[$row['id']]           = $row['file_name']
                 . " - "
                 . $row['version'];
             $data_release_versions[$row['version']] = $row['version'];
         }
 
-        $results = $DB->pselect(
-            "SELECT 
-                DISTINCT u.UserID, version 
+        $userFileAccess = $DB->pselect(
+            "SELECT u.UserID, drp.data_release_id, version 
              FROM users u
                 LEFT JOIN data_release_permissions drp ON (u.ID=drp.userid) 
-                LEFT JOIN data_release dr ON (drp.data_release_id=dr.id)
-             ORDER BY u.UserID, 
-                version",
+                LEFT JOIN data_release dr ON (drp.data_release_id=dr.id)",
             array()
         );
-        foreach ($results as $row) {
-            if (!isset($manage_permissions[$row['UserID']])) {
-                $version = array();
+
+        //in order to have a checked box a user must have permission to see all
+        //files belonging to a release version
+
+        //array to hold checked checkboxes in the manage permissions menu
+        $userFileAccessFormatted = array();
+        foreach ($userFileAccess as $row) {
+            $userID = $row['UserID'];
+            $version = $row['version'] ?? null;
+            $releaseFileID = $row['data_release_id'] ?? null;
+            if (isset($version) && $version !== '') {
+                $userFileAccessFormatted[$userID][$version][] = $releaseFileID;
+            } else {
+                $userFileAccessFormatted[$userID] = array();
             }
-            $version[] = $row['version'];
-            $manage_permissions[$row['UserID']] = $version;
         }
+
+        //format array in the form $version=>(array of all files with that version)
+        $vFFormatted = array();
+        foreach ($versionedFiles as $fileRow) {
+            $vFFormatted[$fileRow['version']][] = $fileRow['id'];
+        }
+
+        //now we can compare the $userFileAccessFormatted to $versionedFilesFormatted
+        //to identify which checkboxes should be checked
+        $manage_permissions = array();
+        foreach ($userFileAccessFormatted as $userID=>$userVersions) {
+            if (empty($userVersions)) {
+                $manage_permissions[$userID] = array();
+            }
+            foreach ($userVersions as $versionName=>$versionFiles) {
+                if (empty(array_diff($vFFormatted[$versionName], $versionFiles))) {
+                    $manage_permissions[$userID][]=$versionName;
+                }
+            }
+        }
+
+        foreach ($userFileAccess as $row) {
+            $manage_permissions_old[$row['UserID']][] = $row['version'];
+        }
+
+//        var_dump($userFileAccess);
+//        print_r($userFileAccessFormatted);
+//        print_r($vFFormatted);
+//        print_r($manage_permissions_old);
+//        print_r($manage_permissions);
+
 
         $this->tpl_data['user_upload']      = $userUpload;
         $this->tpl_data['user_edit_access'] = $userEditAccess;

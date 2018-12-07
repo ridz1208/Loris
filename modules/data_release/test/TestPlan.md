@@ -13,20 +13,33 @@ Ensure that regular users can see the data release module without the
  
 ## Permissions
 
-1. Give the user the `data_release_edit_permissions` *(Data Release: Give user 
+1. Give the user the `data_release_edit_file_access` *(Data Release: Give user 
 permission to view files)* permission.
 
 2. Click on the 'Add Permission' button.
 
-3. Select another 'User ID' (that you have access to and is not a 'superuser').
+3. Select another 'User' (that you have access to and is not a 'superuser').
  
-4. Select a 'Data Release ID' (ideally a file that the 'User ID' has no 
+4. Select a 'Data Release File' (ideally a file that the 'User' has no 
 access to yet). Note that at least one file needs to be uploaded in the 
 module to be able to set permissions to access a file, otherwise, the drop 
-down for 'Data Release ID' will remain empty).
+down for 'Data Release File' will remain empty).
  
-5. ensure that this 'User ID' can now see the file now that the 
+5. ensure that this 'User' can now see the file now that the 
 permission was added for him/her.
+
+6. Click on the 'Manage Permissions' button.
+
+7. Try adding/removing permissions to specific release versions for specific users.
+
+8. Ensure that when a box is unchecked, the user's access to any of the release 
+files with that version is revoked.
+
+9. Ensure that when a box is checked, the user is granted access to all files with 
+that release version.
+
+10. Ensure that an unmodified checkbox does not give or revoke any access permissions 
+from the user.
 
 ## Superuser
 
