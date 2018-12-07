@@ -87,11 +87,18 @@ class Data_Release extends \NDB_Menu_Filter
         $data_release_ids      = array();
         $data_release_versions = array();
 
+        // TODO clean the 2 forloops below !!!!!
         foreach ($versionedFiles as $row) {
             $data_release_ids[$row['id']]           = $row['file_name']
                 . " - "
                 . $row['version'];
             $data_release_versions[$row['version']] = $row['version'];
+        }
+
+        //format array in the form $version=>(array of all files with that version)
+        $vFFormatted = array();
+        foreach ($versionedFiles as $fileRow) {
+            $vFFormatted[$fileRow['version']][] = $fileRow['id'];
         }
 
         $userFileAccess = $DB->pselect(
@@ -105,6 +112,7 @@ class Data_Release extends \NDB_Menu_Filter
         //in order to have a checked box a user must have permission to see all
         //files belonging to a release version
 
+        //TODO: add these to a function which could be called from the ajax scripts to avoid code duplication
         //array to hold checked checkboxes in the manage permissions menu
         $userFileAccessFormatted = array();
         foreach ($userFileAccess as $row) {
@@ -116,12 +124,6 @@ class Data_Release extends \NDB_Menu_Filter
             } else {
                 $userFileAccessFormatted[$userID] = array();
             }
-        }
-
-        //format array in the form $version=>(array of all files with that version)
-        $vFFormatted = array();
-        foreach ($versionedFiles as $fileRow) {
-            $vFFormatted[$fileRow['version']][] = $fileRow['id'];
         }
 
         //now we can compare the $userFileAccessFormatted to $versionedFilesFormatted
@@ -137,17 +139,6 @@ class Data_Release extends \NDB_Menu_Filter
                 }
             }
         }
-
-        foreach ($userFileAccess as $row) {
-            $manage_permissions_old[$row['UserID']][] = $row['version'];
-        }
-
-//        var_dump($userFileAccess);
-//        print_r($userFileAccessFormatted);
-//        print_r($vFFormatted);
-//        print_r($manage_permissions_old);
-//        print_r($manage_permissions);
-
 
         $this->tpl_data['user_upload']      = $userUpload;
         $this->tpl_data['user_edit_access'] = $userEditAccess;
