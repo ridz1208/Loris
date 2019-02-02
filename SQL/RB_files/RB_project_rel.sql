@@ -1,0 +1,11 @@
+SET FOREIGN_KEY_CHECKS=0;
+TRUNCATE TABLE `project_rel`;
+LOCK TABLES `project_rel` WRITE;
+INSERT INTO `project_rel` (`ProjectID`, `SubprojectID`) VALUES (1,11);
+INSERT INTO `project_rel` (`ProjectID`, `SubprojectID`) VALUES (1,12);
+INSERT INTO `project_rel` (`ProjectID`, `SubprojectID`) VALUES (2,13);
+INSERT INTO `project_rel` (`ProjectID`, `SubprojectID`) VALUES (2,14);
+INSERT INTO `project_rel` (`ProjectID`, `SubprojectID`) VALUES (3,11);
+INSERT INTO `project_rel` (`ProjectID`, `SubprojectID`) VALUES (3,13);
+UNLOCK TABLES;
+SET FOREIGN_KEY_CHECKS=1;

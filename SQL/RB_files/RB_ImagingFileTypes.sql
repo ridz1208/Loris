@@ -1,0 +1,14 @@
+SET FOREIGN_KEY_CHECKS=0;
+TRUNCATE TABLE `ImagingFileTypes`;
+LOCK TABLES `ImagingFileTypes` WRITE;
+INSERT INTO `ImagingFileTypes` (`type`, `description`) VALUES ('grid_0','MNI BIC non-linear field for non-linear transformation');
+INSERT INTO `ImagingFileTypes` (`type`, `description`) VALUES ('mnc','MINC file');
+INSERT INTO `ImagingFileTypes` (`type`, `description`) VALUES ('nii','NIfTI file');
+INSERT INTO `ImagingFileTypes` (`type`, `description`) VALUES ('nrrd','NRRD file format (used by DTIPrep)');
+INSERT INTO `ImagingFileTypes` (`type`, `description`) VALUES ('obj','3D imaging format');
+INSERT INTO `ImagingFileTypes` (`type`, `description`) VALUES ('txt','text file');
+INSERT INTO `ImagingFileTypes` (`type`, `description`) VALUES ('vertstat','file describing the cortical thickness in a single column');
+INSERT INTO `ImagingFileTypes` (`type`, `description`) VALUES ('xfm','transformation matrix file');
+INSERT INTO `ImagingFileTypes` (`type`, `description`) VALUES ('xml','XML file');
+UNLOCK TABLES;
+SET FOREIGN_KEY_CHECKS=1;
