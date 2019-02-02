@@ -1,7 +1,6 @@
 SET FOREIGN_KEY_CHECKS=0;
 TRUNCATE TABLE `mri_scanner`;
 LOCK TABLES `mri_scanner` WRITE;
-INSERT INTO `mri_scanner` (`ID`, `Manufacturer`, `Model`, `Serial_number`, `Software`, `CandID`) VALUES (0,NULL,NULL,NULL,NULL,NULL);
 INSERT INTO `mri_scanner` (`ID`, `Manufacturer`, `Model`, `Serial_number`, `Software`, `CandID`) VALUES (1,'SIEMENS','TrioTim','35008','syngo MR B15',284119);
 INSERT INTO `mri_scanner` (`ID`, `Manufacturer`, `Model`, `Serial_number`, `Software`, `CandID`) VALUES (2,'SIEMENS','TrioTim','35182','syngo MR B15',843091);
 INSERT INTO `mri_scanner` (`ID`, `Manufacturer`, `Model`, `Serial_number`, `Software`, `CandID`) VALUES (3,'SIEMENS','TrioTim','35140','syngo MR B15',846734);
