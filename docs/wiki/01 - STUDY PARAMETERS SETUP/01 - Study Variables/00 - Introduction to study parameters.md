@@ -49,4 +49,4 @@ Tips:
  
  - If your dashboard loads but no other modules load, ensure that your `/var/apache2/apache2.conf` file is set to `AllowOverride All` in the section `<Directory /var/www/>` to enable re-write rules (based on `htdocs/.htaccess`)
  
- - ensure your `smarty/templates_c` directory is writable by apache run `composer update` to ensure your dependencies (including smarty) are up-to-date
+ - Ensure your `smarty/templates_c` directory is Apache-writable by running `composer update`. This will also update your dependencies.
