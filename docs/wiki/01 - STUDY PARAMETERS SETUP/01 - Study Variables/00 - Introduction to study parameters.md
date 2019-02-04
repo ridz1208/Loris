@@ -21,7 +21,7 @@ Most configuration settings are managed via LORIS' front-end Configuration Modul
 
 > For setup troubleshooting, ConfigSettings under the `Paths` and `WWW` sections are important
 
-View **path** settings (subset of configuration settings), the following query can be run in the MySQL command line: 
+To view **path** settings (subset of configuration settings), the following query can be run in the MySQL command line: 
 
    ```sql
       SELECT c.ConfigID, cs.Name, cs.Label, c.Value, cs.Description FROM Config c LEFT JOIN ConfigSettings cs ON (c.ConfigID = cs.ID) JOIN ConfigSettings csp ON (cs.Parent = csp.ID) WHERE csp.Name = 'paths';
