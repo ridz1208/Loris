@@ -27,7 +27,7 @@ To view **path** settings (subset of configuration settings), the following quer
       SELECT c.ConfigID, cs.Name, cs.Label, c.Value, cs.Description FROM Config c LEFT JOIN ConfigSettings cs ON (c.ConfigID = cs.ID) JOIN ConfigSettings csp ON (cs.Parent = csp.ID) WHERE csp.Name = 'paths';
    ```
 
-View all **www** settings (subset of configuration settings), using the following query: 
+To view all **www** settings (subset of configuration settings), using the following query: 
    
    ```sql
       SELECT c.ConfigID, cs.Name, cs.Label, c.Value, cs.Description FROM Config c LEFT JOIN ConfigSettings cs ON (c.ConfigID = cs.ID) JOIN ConfigSettings csp ON (cs.Parent = csp.ID) WHERE csp.Name = 'www';
