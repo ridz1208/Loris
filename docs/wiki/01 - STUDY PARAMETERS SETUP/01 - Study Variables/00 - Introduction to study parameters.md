@@ -40,7 +40,6 @@ To view all **www** settings (subset of configuration settings), using the follo
       UPDATE Config SET Value='$yourHostName' WHERE ConfigID=(SELECT ID FROM ConfigSettings WHERE Name='host');
    ```
 
-Tips: 
 
  - ConfigSetting **host** value should not terminate in a slash.  E.g. "http://localhost" not "http://localhost/". To fix, run: (for http) 
 `UPDATE Config SET Value='http://localhost' WHERE ConfigID=(SELECT ID FROM ConfigSettings WHERE Name='host');
