@@ -23,7 +23,7 @@
  * @license  Loris license
  * @link     https://www.github.com/aces/Loris-Trunk/
  */
-require_once __DIR__ . '/../generic_includes.php';
+require_once __DIR__ . '/generic_includes.php';
 
 $config = NDB_Config::singleton();
 $databaseInfo = $config->getSetting('database');
@@ -38,7 +38,7 @@ $tableNames = $DB->pselectCol("
 
 // Loop through all tables to generate insert statements for each.
 foreach ($tableNames as $tableName) {
-    $filename = __DIR__ . "/../../test/RBfiles/RB_$tableName.sql";
+    $filename = __DIR__ . "/../SQL/RB_files/RB_$tableName.sql";
     exec('mysqldump '.$databaseInfo['database'].' '.
         '--complete-insert '.
         '--no-create-db '.
@@ -47,6 +47,7 @@ foreach ($tableNames as $tableName) {
         '--compact '.
         '--add-locks '.
         '--verbose '.
+        '--tz-utc '.
         $tableName .
         ' | sed -E \'s/LOCK TABLES (`[^`]+`)/SET FOREIGN_KEY_CHECKS=0;\nTRUNCATE TABLE \1;\nLOCK TABLES \1/g\''.
         ' > '. $filename .
