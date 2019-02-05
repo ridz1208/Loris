@@ -42,7 +42,8 @@ To view all **www** settings (subset of configuration settings), using the follo
 
 
  - ConfigSetting **host** value should not terminate in a slash.  E.g. "http://localhost" not "http://localhost/". To fix, run: (for http) 
-`UPDATE Config SET Value='http://localhost' WHERE ConfigID=(SELECT ID FROM ConfigSettings WHERE Name='host');
+```sql
+UPDATE Config SET Value='http://localhost' WHERE ConfigID=(SELECT ID FROM ConfigSettings WHERE Name='host');
 
  - If you get an error after clicking "Submit" or "Save data" on a form, check that ***url*** Config setting is set for your host. (Previous iterations of LORIS recommended setting this to the empty string)  Run: `UPDATE Config SET Value='$yourhost' WHERE ConfigID=(SELECT ID FROM ConfigSettings WHERE Name='url');`
  
