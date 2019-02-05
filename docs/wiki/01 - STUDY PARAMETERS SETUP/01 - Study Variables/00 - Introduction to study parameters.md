@@ -41,9 +41,9 @@ Most configuration settings are managed via LORIS' front-end Configuration Modul
    ```
 
 
- - ConfigSetting **host** value should not terminate in a slash.  E.g. "http://localhost" not "http://localhost/". To fix, run: (for http) 
+ - ConfigSetting **url** value should not terminate in a slash.  E.g. "http(s)://localhost" not "http(s)://localhost/". To fix, run: 
    ```sql
-   UPDATE Config SET Value='http://localhost' WHERE ConfigID=(SELECT ID FROM ConfigSettings WHERE Name='host');
+   UPDATE Config SET Value='http(s)://localhost' WHERE ConfigID=(SELECT ID FROM ConfigSettings WHERE Name='host');
    ```
 
  - If you get an error after clicking "Submit" or "Save data" on a form, check that ***url*** Config setting is set for your host. (Previous iterations of LORIS recommended setting this to the empty string)  Run: 
