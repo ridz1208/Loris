@@ -4,7 +4,7 @@
 ### Overview
 This page covers how to set up Loris with basic parameters for research data. 
 
-Most configuration settings are managed via LORIS' front-end Configuration Module (Admin menu). These configuration settings are stored and loaded from the Database `Config` and `ConfigSettings` tables. Some other configuration settings are also found in the file _project/config.xml_.  
+Most configuration settings are managed via LORIS's front-end Configuration Module (Admin menu). These configuration settings are stored and loaded from the Database `Config` and `ConfigSettings` tables. Some other configuration settings are also found in the file _project/config.xml_.  
 
   > Note: Settings found in _config.xml_ take precedence over the Configuration Module.  Older projects should ensure there is no overlap in settings between this file and the ConfigSettings table.
 
