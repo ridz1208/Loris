@@ -2629,5 +2629,10 @@ class NDB_BVL_Instrument extends NDB_Page
             )
         );
     }
+
+    public function isJSONData() : bool
+    {
+        return $this->jsonData;
+    }
 }
 
