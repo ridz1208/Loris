@@ -417,7 +417,7 @@ class NDB_BVL_Instrument extends NDB_Page
 
         // set the defaults (call private method _setDefaultsArray
         // which could be overridden if necessary)
-        $defaults = $this->_setDefaultsArray($defaults[0] ?? array());
+        $defaults = $this->_setDefaultsArray($defaults ?? array());
 
         // merge in the localDefaults property so that simple
         // additions to the defaults array no longer requires
@@ -1495,11 +1495,8 @@ class NDB_BVL_Instrument extends NDB_Page
      */
     function getDataEntryCompletionStatus(): string
     {
-        $db = \Database::singleton();
-
-        $query = "SELECT Data_entry_completion_status
-            FROM $this->table WHERE CommentID=:CID";
-        return $db->pselectOne($query, array('CID' => $this->getCommentID()));
+        $data = NDB_BVL_Instrument::loadInstanceData($this);
+        return $data["Data_entry_completion_status"];
     }
 
 
@@ -1521,17 +1518,7 @@ class NDB_BVL_Instrument extends NDB_Page
             );
         }
 
-        $db = \Database::singleton();
-
-        if ($this->jsonData !== true) {
-            // FIXME: Is this even required at all? If it is, we need to
-            // handle it in the JSON data case too.
-            $db->update(
-                $this->table,
-                array('Data_entry_completion_status' => $status),
-                array('CommentID' => $this->getCommentID())
-            );
-        }
+        $this->_save(array("Data_entry_completion_status"=>$status));
     }
 
     /**
@@ -2091,7 +2078,7 @@ class NDB_BVL_Instrument extends NDB_Page
      * @return array The age of the candidate in an array containing years, months
      *         and days.
      */
-    function getCandidateAge(array $date = array()): array
+    function getCandidateAge(string $date = ''): array
     {
         $dates = array(
                   'Date_taken' => $this->getFieldValue('Date_taken'),

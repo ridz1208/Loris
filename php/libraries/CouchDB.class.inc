@@ -206,7 +206,7 @@ class CouchDB
     private function __construct(
         string $database = '',
         string $host = '',
-        string $port = '',
+        int $port = 0,
         string $user = '',
         string $password = ''
     ) {
@@ -432,7 +432,7 @@ class CouchDB
      */
     function _postURL(
         string $url,
-        array $data,
+        string $data,
         array $headers = array(),
         bool $printValue = false
     ): ?string {
