@@ -49,5 +49,10 @@ INSERT INTO `permissions` (`permID`, `code`, `description`, `categoryID`) VALUES
 INSERT INTO `permissions` (`permID`, `code`, `description`, `categoryID`) VALUES (46,'issue_tracker_developer','Can re-assign issues, mark issues as closed, comment on all, edit issues.',2);
 INSERT INTO `permissions` (`permID`, `code`, `description`, `categoryID`) VALUES (47,'imaging_browser_phantom_allsites','Can access only phantom data from all sites in Imaging Browser',2);
 INSERT INTO `permissions` (`permID`, `code`, `description`, `categoryID`) VALUES (48,'imaging_browser_phantom_ownsite','Can access only phantom data from own site in Imaging Browser',2);
+INSERT INTO `permissions` (`permID`, `code`, `description`, `categoryID`) VALUES (49,'data_release_upload','Data Release: Upload file',2);
+INSERT INTO `permissions` (`permID`, `code`, `description`, `categoryID`) VALUES (50,'data_release_edit_file_access','Data Release: Grant other users view-file permissions',2);
+INSERT INTO `permissions` (`permID`, `code`, `description`, `categoryID`) VALUES (51,'publication_view','Publication - Access to module',2);
+INSERT INTO `permissions` (`permID`, `code`, `description`, `categoryID`) VALUES (52,'publication_propose','Publication - Propose a project',2);
+INSERT INTO `permissions` (`permID`, `code`, `description`, `categoryID`) VALUES (53,'publication_approve','Publication - Approve or reject proposed publication projects',2);
 UNLOCK TABLES;
 SET FOREIGN_KEY_CHECKS=1;

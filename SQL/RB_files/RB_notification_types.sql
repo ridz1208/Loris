@@ -9,10 +9,11 @@ INSERT INTO `notification_types` (`NotificationTypeID`, `Type`, `private`, `Desc
 INSERT INTO `notification_types` (`NotificationTypeID`, `Type`, `private`, `Description`) VALUES (16,'hardcopy request',0,'Hardcopy requests');
 INSERT INTO `notification_types` (`NotificationTypeID`, `Type`, `private`, `Description`) VALUES (17,'visual bvl qc',0,'Timepoints selected for visual QC');
 INSERT INTO `notification_types` (`NotificationTypeID`, `Type`, `private`, `Description`) VALUES (18,'mri qc status',0,'MRI QC Status change');
-INSERT INTO `notification_types` (`NotificationTypeID`, `Type`, `private`, `Description`) VALUES (19,'minc insertion',1,'Insertion of the mincs into the mri-table');
+INSERT INTO `notification_types` (`NotificationTypeID`, `Type`, `private`, `Description`) VALUES (19,'minc insertion',1,'Insertion of a MINC file into the MRI tables (files/parameter_file)');
 INSERT INTO `notification_types` (`NotificationTypeID`, `Type`, `private`, `Description`) VALUES (20,'tarchive loader',1,'calls specific Insertion Scripts');
 INSERT INTO `notification_types` (`NotificationTypeID`, `Type`, `private`, `Description`) VALUES (21,'tarchive validation',1,'Validation of the dicoms After uploading');
 INSERT INTO `notification_types` (`NotificationTypeID`, `Type`, `private`, `Description`) VALUES (22,'mri upload runner',1,'Validation of DICOMS before uploading');
 INSERT INTO `notification_types` (`NotificationTypeID`, `Type`, `private`, `Description`) VALUES (23,'mri upload processing class',1,'Validation and execution of DicomTar.pl and TarchiveLoader');
+INSERT INTO `notification_types` (`NotificationTypeID`, `Type`, `private`, `Description`) VALUES (24,'imaging non minc file insertion',1,'Insertion of a non-MINC file into the MRI tables (files/parameter_file)');
 UNLOCK TABLES;
 SET FOREIGN_KEY_CHECKS=1;
