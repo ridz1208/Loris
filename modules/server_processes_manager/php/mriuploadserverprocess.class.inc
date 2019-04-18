@@ -31,12 +31,6 @@ class MriUploadServerProcess extends AbstractServerProcess
     const PROCESS_TYPE = 'mri_upload';
 
     /**
-     * Basename of the file used to set the environment variables before the
-     * upload can take place.
-     */
-    const ENVIRONMENT_BASENAME = 'environment';
-
-    /**
      * Path of the imaging upload script (relative the MRI files base path
      * found in the config).
      */
@@ -62,6 +56,20 @@ class MriUploadServerProcess extends AbstractServerProcess
      * @var string
      */
     private $_mriCodePath;
+
+    /**
+     * Path of the environment file (relative to $_mriCodePath).
+     *
+     * @var string
+     */
+    private $_environmentFile;
+
+    /**
+     * Path of the prod file (relative to $_mriCodePath/dicom-archive/.loris-mri).
+     *
+     * @var string
+     */
+    private $_prodFile;
 
     /**
      * Builds a new MriUploadServerProcess
@@ -95,15 +103,9 @@ class MriUploadServerProcess extends AbstractServerProcess
             );
         }
 
-        try {
-            $this->_mriCodePath = $config->getSetting('MRICodePath');
-        } catch(\ConfigurationException $exception) {
-            error_log(
-                "Unable to construct MriUploadTask: 
-                 config setting MRICodePath undefined"
-            );
-            throw $exception;
-        }
+        $this->_mriCodePath     = $config->getSetting('MRICodePath');
+        $this->_prodFile        = $config->getSetting('MriConfigFile');
+        $this->_environmentFile = $config->getSetting('EnvironmentFile');
 
         // Check that paths exist before using.
         if (!is_dir($this->_mriCodePath)) {
@@ -138,16 +140,17 @@ class MriUploadServerProcess extends AbstractServerProcess
     public function getShellCommand()
     {
         // Sanitize variables before using in exec statement.
-        $env            = $this->_mriCodePath . '/' . self::ENVIRONMENT_BASENAME;
+        $env            = $this->_mriCodePath . '/' . $this->_environmentFile;
         $env            = escapeshellarg($env);
         $uploadScript   = $this->_mriCodePath . '/' . self::IMAGING_UPLOAD_FILE_PATH;
         $uploadScript   = escapeshellarg($uploadScript);
         $uploadId       = escapeshellarg($this->_mriUploadId);
         $sourceLocation = escapeshellarg($this->_sourceLocation);
+        $prodFile       = escapeshellarg($this->_prodFile);
         return "source $env ;"
                . " $uploadScript"
                . " -upload_id $uploadId"
-               . " -profile prod $sourceLocation";
+               . " -profile $prodFile $sourceLocation";
     }
 
     /**

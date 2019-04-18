@@ -1,6 +1,6 @@
 /* exported FormElement, SelectElement, TagsElement, SearchableDropdown, TextareaElement,
 TextboxElement, DateElement, NumericElement, FileElement, StaticElement, LinkElement,
-ButtonElement, LorisElement
+CheckboxElement, ButtonElement, LorisElement
 */
 
 /**
@@ -148,10 +148,10 @@ FormElement.defaultProps = {
 class SearchableDropdown extends React.Component {
   constructor() {
     super();
+    this.state = {currentInput: ''};
     this.getKeyFromValue = this.getKeyFromValue.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.handleBlur = this.handleBlur.bind(this);
-    this.getTextInputValue = this.getTextInputValue.bind(this);
   }
 
   getKeyFromValue(value) {
@@ -163,11 +163,12 @@ class SearchableDropdown extends React.Component {
 
   handleChange(e) {
     let value = this.getKeyFromValue(e.target.value);
-    // if not in strict mode and key value is not defined (i.e., not in options)
+    // if not in strict mode and key value is undefined (i.e., not in options prop)
     // set value equal to e.target.value
     if (!this.props.strictSearch && value === undefined) {
       value = e.target.value;
     }
+    this.setState({currentInput: e.target.value});
     this.props.onUserInput(this.props.name, value);
   }
 
@@ -178,14 +179,19 @@ class SearchableDropdown extends React.Component {
       let options = this.props.options;
       if (Object.values(options).indexOf(value) === -1) {
         // empty string out both the hidden value as well as the input text
-        document.querySelector(`input[name="${this.props.name + '_input'}"]`).value = '';
+        this.setState({currentInput: ''});
         this.props.onUserInput(this.props.name, '');
       }
     }
   }
 
-  getTextInputValue() {
-    return document.querySelector(`input[name="${this.props.name + '_input'}"]`).value;
+  componentDidUpdate(prevProps) {
+    // need to clear out currentInput for when props.value gets wiped
+    // if the previous value prop contained data and the current one doesn't
+    // clear currentInput
+    if (prevProps.value && !this.props.value) {
+      this.setState({currentInput: ''});
+    }
   }
 
   render() {
@@ -217,15 +223,14 @@ class SearchableDropdown extends React.Component {
     }
 
     // determine value to place into text input
-    let value;
+    let value = '';
     // use value in options if valid
-    if (this.props.value !== undefined) {
-      if (Object.keys(options).indexOf(this.props.value) > -1) {
-        value = options[this.props.value];
-        // else, use input text value
-      } else {
-        value = this.getTextInputValue();
-      }
+    if (this.props.value !== undefined &&
+      Object.keys(options).indexOf(this.props.value) > -1) {
+      value = options[this.props.value];
+      // else, use input text value
+    } else if (this.state.currentInput) {
+      value = this.state.currentInput;
     }
 
     return (
@@ -1286,6 +1291,86 @@ LinkElement.defaultProps = {
 };
 
 /**
+ * Checkbox Component
+ * React wrapper for a <input type="checkbox"> element.
+ */
+class CheckboxElement extends React.Component {
+  constructor() {
+    super();
+    this.handleChange = this.handleChange.bind(this);
+  }
+
+  handleChange(e) {
+    this.props.onUserInput(this.props.name, e.target.checked);
+  }
+
+  render() {
+    let disabled = this.props.disabled ? 'disabled' : null;
+    let required = this.props.required ? 'required' : null;
+    let errorMessage = null;
+    let requiredHTML = null;
+    let elementClass = 'row form-group';
+    let label = null;
+
+    // Add required asterix
+    if (required) {
+      requiredHTML = <span className="text-danger">*</span>;
+    }
+
+    // Add error message
+    if (this.props.errorMessage) {
+      errorMessage = <span>{this.props.errorMessage}</span>;
+      elementClass = 'row form-group has-error';
+    }
+
+    return (
+      <div className={elementClass}>
+        <label className="col-sm-3 control-label" htmlFor={this.props.id}>
+          {this.props.label}
+          {requiredHTML}
+        </label>
+        <div className={this.props.inputClass}>
+          <input
+            type="checkbox"
+            className="input-sm"
+            name={this.props.name}
+            id={this.props.id}
+            checked={this.props.value}
+            required={required}
+            disabled={disabled}
+            onChange={this.handleChange}
+          />
+          {errorMessage}
+        </div>
+      </div>
+    );
+  }
+}
+
+CheckboxElement.propTypes = {
+  name: React.PropTypes.string.isRequired,
+  label: React.PropTypes.string.isRequired,
+  value: React.PropTypes.string,
+  id: React.PropTypes.string,
+  disabled: React.PropTypes.bool,
+  required: React.PropTypes.bool,
+  errorMessage: React.PropTypes.string,
+  onUserInput: React.PropTypes.func
+};
+
+CheckboxElement.defaultProps = {
+  value: '',
+  id: null,
+  disabled: false,
+  required: false,
+  errorMessage: '',
+  inputClass: 'col-sm-9',
+  onUserInput: function() {
+    console.warn('onUserInput() callback is not set');
+  }
+};
+
+/**
  * Button component
  * React wrapper for <button> element, typically used to submit forms
  */
@@ -1378,6 +1463,9 @@ class LorisElement extends React.Component {
       case 'link':
         elementHtml = (<LinkElement {...elementProps} />);
         break;
+      case 'advcheckbox':
+        elementHtml = (<CheckboxElement {...elementProps} />);
+        break;
       default:
         console.warn(
           "Element of type " + elementProps.type + " is not currently implemented!"
@@ -1401,6 +1489,7 @@ window.NumericElement = NumericElement;
 window.FileElement = FileElement;
 window.StaticElement = StaticElement;
 window.LinkElement = LinkElement;
+window.CheckboxElement = CheckboxElement;
 window.ButtonElement = ButtonElement;
 window.LorisElement = LorisElement;
 
@@ -1417,6 +1506,7 @@ export default {
   FileElement,
   StaticElement,
   LinkElement,
+  CheckboxElement,
   ButtonElement,
   LorisElement
 };
