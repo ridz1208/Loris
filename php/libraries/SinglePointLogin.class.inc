@@ -230,14 +230,15 @@ class SinglePointLogin
         $this->_username
             = isset($decodedArray['user'])
                 ? $decodedArray['user'] : 'Unknown';
-        return isset($decodedArray['user']);
+        return isset($decodedArray['user'])
+            && !$this->accountLocked($decodedArray['user']);
     }
 
     /**
      * Checks whether a given username and password are valid
      *
      * @param string $username The username to validate
-     * @param string $password The username to validate
+     * @param string $password The password to validate
      * @param bool   $redirect If this flag is true, this
      *                         function may instead print
      *                         out a login or password expiry
@@ -245,7 +246,7 @@ class SinglePointLogin
      *                         If false, it won't provide any output
      *                         in those situation.
      *
-     * @return bool true if the username and password are valid
+     * @return bool False unless account is valid and password correct.
      * @access public
      */
     function passwordAuthenticate($username, $password, $redirect = true)
@@ -308,86 +309,202 @@ class SinglePointLogin
                   GROUP BY UserID";
         $row   = $DB->pselectRow($query, array('username' => $username));
 
-        if (($row['User_count'] ?? 0) == 1) {
-            // validate passsword
-            $oldhash = $row['Password_hash'];
-            if (password_verify($password, $oldhash)) {
-                if (password_needs_rehash($oldhash, PASSWORD_DEFAULT)) {
-                    $user =& User::factory($username);
-                    $user->updatePassword($password);
-                }
-
-                if ($row['Active'] == 'N'
-                    || $this->disabledDueToInactivity($username, 365)
-                ) {
-                    $this->_lastError = "Your account has been deactivated."
-                        . " Please contact your project administrator to"
-                        . " reactivate this account.";
-                    $this->insertFailedDetail(
-                        "user account not active",
-                        $setArray
-                    );
-
-                    return false;
-                }
-
-                // check if the account is longer active
-                $date       = new DateTime();
-                $currentDay = $date->getTimestamp();
-
-                if (($row['active_to'] != null)
-                    && ($currentDay > strtotime($row['active_to']))
-                ) {
-                    $this->_lastError = "Your account has expired."
-                        . " Please contact your project administrator to re-activate"
-                        . " this account.";
-                    return false;
-
-                }
-
-                // check if the account is active
-                if (($row['active_from'] != null)
-                    && ($currentDay < strtotime($row['active_from']))
-                ) {
-                    $this->_lastError = "Your account is not active yet."
-                        ." According to our records it will be active from 
-			{$row['active_from']}"
-                        . " Please contact your project administrator";
-                    return false;
-
-                }
-
-                if ($row['Pending_approval'] == 'Y') {
-                    $this->_lastError = "Your account has not yet been activated."
-                        . " Please contact your project administrator to activate"
-                        . " this account.";
-                    $this->insertFailedDetail("user account pending", $setArray);
-                    return false;
-                }
-
-                // save the new password if the last password expired
-                if ($row['Expired']) {
-                    $success = $this->save();
-
-                    if ($success == false) {
-                        if ($redirect) {
-                            $this->showPasswordExpiryScreen();
-                        }
-                        return false;
-                    }
-                }
-
-                // user is valid
-                $this->_username = $row['UserID'];
-
-                $DB->insert('user_login_history', $setArray);
-                return true;
-            }
+        if (intval($row['User_count'] ?? 0) !== 1) {
+            /* Display generic failure message to front-end so that an
+             * attacker will have a harder time knowing the difference
+             * between a bad username and a bad password.
+             */
+            $this->_lastError = "Incorrect username or password.";
+            return false;
         }
+        /* Check whether a user's account is locked due to too many bad login
+         * attempts before actually trying to authenticate their credentials.
+         */
+        if ($this->accountLocked($username)) {
+            $this->_lastError = 'This account is currently suspended due '
+                . 'to too many bad login attempts.';
+            $this->insertFailedDetail('Account locked', $setArray);
+            return false;
+        }
+        // Validate passsword
+        $oldhash = $row['Password_hash'];
+        if (password_verify($password, $oldhash)) {
+            // Rehash according to latest standards if necessary.
+            if (password_needs_rehash($oldhash, PASSWORD_DEFAULT)) {
+                $user = \User::factory($username);
+                $user->updatePassword($password);
+            }
 
-        // bad usename or password
-        $this->_lastError = "Incorrect email or password";
+            if ($row['Active'] == 'N'
+                || $this->disabledDueToInactivity($username, 365)
+            ) {
+                $this->_lastError = "Your account has been deactivated."
+                    . " Please contact your project administrator to"
+                    . " reactivate this account.";
+                $this->insertFailedDetail(
+                    "user account not active",
+                    $setArray
+                );
+
+                return false;
+            }
+
+            // check if the account is no longer active
+            $date       = new DateTime();
+            $currentDay = $date->getTimestamp();
+
+            if (($row['active_to'] != null)
+                && ($currentDay > strtotime($row['active_to']))
+            ) {
+                $this->_lastError = "Your account has expired."
+                    . " Please contact your project administrator to re-activate"
+                    . " this account.";
+                return false;
+
+            }
+
+            // Check whether the account is expired.
+            $date       = new DateTime();
+            $currentDay = $date->getTimestamp();
+
+            if (($row['active_to'] != null)
+                && ($currentDay > strtotime($row['active_to']))
+            ) {
+                $this->_lastError = "Your account has expired."
+                    . " Please contact your project administrator to re-activate"
+                    . " this account.";
+                return false;
+            }
+
+            // Check if the account is active.
+            if (($row['active_from'] != null)
+                && ($currentDay < strtotime($row['active_from']))
+            ) {
+                $this->_lastError = "Your account is not active yet."
+                    ." According to our records it will be active from 
+            {$row['active_from']}"
+                . " Please contact your project administrator";
+                return false;
+            }
+
+            // Check whether account needs to be approved by an admin
+            if ($row['Pending_approval'] == 'Y') {
+                $this->_lastError = "Your account has not yet been activated."
+                    . " Please contact your project administrator to activate"
+                    . " this account.";
+                $this->insertFailedDetail("user account pending", $setArray);
+                return false;
+            }
+            if ($row['Active'] == 'N'
+                || $this->disabledDueToInactivity($username, 365)
+            ) {
+                $this->_lastError = "Your account has been deactivated."
+                    . " Please contact your project administrator to"
+                    . " reactivate this account.";
+                $this->insertFailedDetail(
+                    "user account not active",
+                    $setArray
+                );
+
+                return false;
+            }
+
+            // Save the new password if the last password expired
+            if ($row['Expired']) {
+                $success = $this->save();
+
+                if ($success == false) {
+                    if ($redirect) {
+                        $this->showPasswordExpiryScreen();
+                    }
+                    return false;
+                }
+            }
+            // Allow a user to login if none of the previous cases have occurred
+            $this->_username = $row['UserID'];
+
+            $DB->insert('user_login_history', $setArray);
+            return true;
+        }
+        /* When the password is wrong, log this detail for rate-limiting
+         * purposes.
+         */
+        $this->insertFailedDetail(
+            "Bad password",
+            $setArray
+        );
+
+        // Fail by default with a generic error message
+        $this->_lastError = "Incorrect username or password.";
         return false;
+    }
+
+    /**
+     * Determines whether a user's account is locked due to too many failed
+     * attempts.
+     *
+     * @param string $username The user account to check.
+     *
+     * @return bool
+     */
+    function accountLocked(string $username): bool
+    {
+        /* A user is locked out if they have made X attempts in the last Y
+         * minutes or X' attempts in the last Y' minutes.
+         * The reason for using two time windows is to provide some flexibility:
+         * legitimate locked-out users to try again in a short time while also
+         * preventing attackers from simply trying another X login attempts
+         * after Y minutes.
+         */
+
+        /* These represent X and X' above, but with more helpful names.
+         * These values represent the maximum number of attempts a user may make
+         * to login before being locked out.
+         */
+        $shortLockoutThreshold = 10;
+        $longLockoutThreshold  = 15;
+        // These represent Y and Y' above, but with more helpful names.
+        $shortWindowInMinutes = 15;
+        $longWindowInMinutes  = 60;
+
+        // SQL code to run.
+        $query  = "SELECT COUNT(loginhistoryID) as loginattempts " .
+            "FROM user_login_history " .
+            "WHERE userID = :username " .
+            "AND IP_address = :ip " .
+            "AND Success = 'N' " .
+            "AND Login_timestamp > ( " .
+            "SELECT IF( MAX(Login_timestamp) > DATE_SUB(NOW(), ".
+            "INTERVAL :timeWindowInMinutes MINUTE), " .
+                "MAX(Login_timestamp), DATE_SUB(NOW(), " .
+                "INTERVAL :timeWindowInMinutes MINUTE) " .
+            ") " .
+            "FROM user_login_history " .
+            "WHERE userID = :username " .
+            "AND Success = 'Y'" .
+        ");";
+        $params = array(
+                   'username'            => $username,
+                   'timeWindowInMinutes' => $shortWindowInMinutes,
+                   'ip'                  => $_SERVER['REMOTE_ADDR'],
+                  );
+
+        // Query DB for login attempts.
+        $database  = \NDB_Factory::singleton()->database();
+        $statement = $database->prepare($query);
+
+        $shortFailCount = intval(
+            $database->execute($statement, $params)[0]['loginattempts']
+        );
+
+        $params['timeWindowInMinutes'] = $longWindowInMinutes;
+
+        $longFailCount = intval(
+            $database->execute($statement, $params)[0]['loginattempts']
+        );
+
+        return $shortFailCount > $shortLockoutThreshold
+            || $longFailCount > $longLockoutThreshold;
     }
 
     /**
