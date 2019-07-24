@@ -12,6 +12,9 @@ function formatColumn(column, cell, rowData) {
     var url = loris.BaseURL + "/" + rowData[1] + "/";
     return <td><a href ={url}>{cell}</a></td>;
   }
+  if (column === "DoB") {
+      return <td>{$.datepicker.formatDate('dd-M-yy', $.datepicker.parseDate('yy-mm-dd', cell))}</td>;
+  }
   if (column === 'Feedback') {
     switch (cell) {
       case "1": return <td style ={{background: "#E4A09E"}}>opened</td>;

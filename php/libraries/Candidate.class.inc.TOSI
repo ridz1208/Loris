@@ -12,6 +12,13 @@
  * @link     https://www.github.com/aces/Loris-Trunk/
  */
 
+
+require_once(__DIR__."/../../php/libraries/CandIDGenerator.php");
+require_once(__DIR__."/../../php/libraries/ExternalIDGenerator.php");
+require_once(__DIR__."/../../php/libraries/IdentifierGenerator.php");
+require_once(__DIR__."/../../php/libraries/PSCIDGenerator.php");
+require_once(__DIR__."/../../php/libraries/SiteIDGenerator.php");
+
 /* Define constants used by the file */
 // error codes
 define('CANDIDATE_INVALID', 1);
@@ -19,12 +26,6 @@ define('PSCID_NOT_SPECIFIED', 2);
 define('PSCID_NOT_UNIQUE', 3);
 define('PSCID_INVALID_STRUCTURE', 4);
 define('EDC_NOT_SPECIFIED', 5);
-
-// id ranges...
-define('CANDIDATE_MIN_CANDID', 100000);
-define('CANDIDATE_MAX_CANDID', 999999);
-define('CANDIDATE_MIN_PSCID', 1000);
-define('CANDIDATE_MAX_PSCID', 9999);
 
 /**
  * Wrapper around a candidate in Loris. Mostly, it gets information
@@ -183,8 +184,8 @@ class Candidate
      * @param string $dateOfBirth date of birth written as YYYY-MM-DD
      * @param string $edc         estimated date of confinement written as YYYY-MM-DD
      * @param string $gender      gender, either 'Male' or 'Female'
-     * @param string $PSCID       PSCID specified by the user, if available
      * @param string $guid        GUID value derived from candidate's personally identifiable information
+     * @param string $PSCID       PSCID specified by the user, if available
      *
      * @return int   $candID      candidate id of the new candidate
      * @throws Exception
@@ -194,14 +195,12 @@ class Candidate
         $centerID, $dateOfBirth, $edc, $gender, $PSCID = null, $guid = null
     ) {
         $factory = NDB_Factory::singleton();
-        $db      = $factory->database();
+	$db      = $factory->database();
 
-        $site =& Site::singleton($centerID);
+        $user ="admin";
+        #$user =& User::singleton($_SESSION['State']->getUsername());
+        $site = \Site::singleton($centerID);
 
-        $user =& User::singleton($_SESSION['State']->getUsername());
-
-        // generate candid
-        $candID = Candidate::_generateCandID();
 
         // figure out how to generate PSCID
         $config        = $factory->config();
@@ -232,21 +231,12 @@ class Candidate
                 );
             }
 
-            // check pscid uniqueness
-            if ($db->pselectOne(
-                "SELECT count(PSCID) FROM candidate WHERE PSCID=:PID",
-                array('PID' => $PSCID)
-            ) > 0
-            ) {
-                throw new Exception("PSCID not unique", PSCID_NOT_UNIQUE);
-            }
         } else {
-            $PSCID = Candidate::_generatePSCID($site->getSiteAlias());
+            $PSCID = (new \PSCIDGenerator($site->getSiteAlias()))->generate();
         }
 
-        // insert the new candidate into the database
+        // Insert the new candidate into the database if everything is fine.
         $setArray = array(
-                     'CandID'          => $candID,
                      'CenterID'        => $centerID,
                      'PSCID'           => $PSCID,
                      'DoB'             => $dateOfBirth,
@@ -255,25 +245,49 @@ class Candidate
                      'Date_active'     => date('Y-m-d'),
                      'Date_registered' => date('Y-m-d'),
                      'Entity_type'     => 'Human',
-                     'RegisteredBy'    => $user->getUsername(),
-                     'UserID'          => $user->getUsername(),
+                     #'RegisteredBy'    => $user->getUsername(),
+                     #'UserID'          => $user->getUsername(),
+                     'RegisteredBy'    => 'admin',
+                     'UserID'          => 'admin',
+                     
+                     #'ProjectID'            => $projectID,
                     );
 
         if ($config->getSetting('useExternalID') === 'true') {
-            $externalID = Candidate::_generateExternalID();
+            $externalID = (new \ExternalIDGenerator())->generate();
             $setArray['ExternalID'] = $externalID;
         }
 
-        $db->insert('candidate', $setArray);
-
+        // Generate a new CandID and insert it into the database.
+        $generator = new \CandIDGenerator();
+        // declare the variable to avoid static analysis warnings
+        $invalidID = false;
+        do {
+            // Reset on each iteration
+            $invalidID = false;
+            // Generate candid and insert into setArray
+            $candID = $generator->generate();
+            $setArray['CandID'] = (string) $candID;
+            try {
+                \Database::singleton()->insert('candidate', $setArray);
         $setArray = array(
                      'CandID'     => $candID,
                      'GUID' => $guid,
                     );
         $db->insert('candidate_guid', $setArray);
 
-        // return the new candid
-        return $candID;
+            } catch (\DatabaseException | \DomainException $e) {
+                // Occurs in the case of a race condition where another CandID
+                // with the same value has been inserted into the DB before this
+                // one.
+                $invalidID = true;
+            }
+        } while ($invalidID);
+
+        // Return the new CandID
+        // FIXME This class should be refactored to use the new CandID class
+        // instead of returning an integer.
+        return intval((string) $candID);
     }
 
     /**
@@ -355,10 +369,7 @@ class Candidate
         if (is_null($var)) {
             return $this->candidateInfo;
         } else {
-            if (isset($this->candidateInfo[$var])) {
-                return $this->candidateInfo[$var];
-            }
-            return null;
+            return $this->candidateInfo[$var] ?? null;
         }
     }
 
@@ -374,6 +385,7 @@ class Candidate
      */
     public function setData($var, $value=null)
     {
+
         if (!is_array($var)) {
             $setData = array($var => $value);
         } else {
@@ -706,8 +718,8 @@ class Candidate
     }
 
 
-
     /**
+
     * Generates a new random CandID
     *
     * @return integer An unused random 6 digit candidate id
@@ -952,6 +964,8 @@ class Candidate
                     }
                     break;
 
+
+
                 case 'siteAbbrev':
                     $arrays[] = array($siteAbbrev);
                     break;
@@ -960,9 +974,54 @@ class Candidate
         }
 
         return $arrays;
+#=======   SHOULD WE KEPT THIS PART???
+    /**
+     * Gets the participant_status options from participant_status_options table
+     *
+     * @return array Options array suitable for use in QuickForm select
+     *               element
+     */
+/*    static function getParticipantStatusOptions(): array
+    {
+        $DB           =& Database::singleton();
+        $options      = $DB->pselect(
+            "SELECT ID,Description
+            FROM participant_status_options
+            WHERE parentID IS NULL",
+            array()
+        );
+        $option_array = array();
+        foreach ($options as $option) {
+            $option_array[$option['ID']] = $option['Description'];
+        }
+        return $option_array;
     }
 
-
+    /**
+     * Gets the participant_status options suboptions from participant_status_options
+     *
+     * @param int $parentID parent ID of the participant status option
+     *
+     * @return array Options array suitable for use in QuickForm select
+     *               element
+     */
+/*    static function getParticipantStatusSubOptions(int $parentID): array
+    {
+        $DB           =& Database::singleton();
+        $options      = $DB->pselect(
+            "SELECT ID,Description 
+            FROM participant_status_options 
+            WHERE parentID=:pid",
+            array('pid' => $parentID)
+        );
+        $option_array = array();
+        foreach ($options as $option) {
+            $option_array[$option['ID']] = $option['Description'];
+        }
+        return $option_array;
+*/        
+#>>>>>>> 6aefd81... [Core: Candidate] Improve ID generation (CandID, PSCID, ExternalID) (#4241)
+    }
 
 }
 ?>

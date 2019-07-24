@@ -72,6 +72,7 @@ class Database
         $host,
         $trackChanges = true
     ) {
+
         try {
             $this->PDO = new PDO(
                 "mysql:host=$host;charset=UTF8",
@@ -79,6 +80,10 @@ class Database
                 $password
             );
             $this->PDO->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_WARNING);
+
+            $this->PDO->exec("USE $database");
+            return true;
+
 
             $userperms = $this->PDO->query(
                 "SELECT

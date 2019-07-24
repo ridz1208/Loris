@@ -114,11 +114,11 @@ case 'validaterootaccount':
     $tpl_data['Page'] = "MySQLUserPrompt";
     break;
 case 'createmysqlaccount':
-    if ($installer->CreateMySQLAccount($_POST) === false) {
-        $tpl_data['error'] = $installer->GetLastError();
-        $tpl_data['Page']  = "MySQLUserPrompt";
-        break;
-    }
+    //if ($installer->CreateMySQLAccount($_POST) === false) {
+    //    $tpl_data['error'] = $installer->GetLastError();
+    //    $tpl_data['Page']  = "MySQLUserPrompt";
+    //    break;
+    //}
 
     if ($installer->ResetFrontEndAdmin($_POST) === false) {
         $tpl_data['error'] = $installer->GetLastError();

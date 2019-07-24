@@ -95,7 +95,7 @@
                    <!-- toggle feedback in mobile view -->
 
 
-                    <a class="navbar-brand" href="{$baseurl}/">LORIS{if $sandbox}: DEV{/if}</a>
+                    <a class="navbar-brand" href="{$baseurl}/">Intake Form{if $sandbox}: DEV{/if}</a>
                </div>
                <div class="collapse navbar-collapse" id="example-navbar-collapse">
                     <ul class="nav navbar-nav">
@@ -298,12 +298,14 @@
                                                                     Age During Visit
                                                                 </th>
                                                             *}
+                                                            {*
                                                             <th>
                                                                 Within Optimal
                                                             </th>
                                                             <th>
                                                                 Within Permitted
                                                             </th>
+                                                            *}
                                                             {if $SupplementalSessionStatuses }
                                                                 {foreach from=$timePoint.status item=status key=name}
                                                                     <th>
@@ -358,6 +360,7 @@
                                                                     {$timePoint.WindowInfo.AgeDays}
                                                                 </td>
                                                             *}
+                                                            {*
                                                             <td>
                                                                 {if $timePoint.WindowInfo.Optimum}
                                                                     Yes
@@ -372,6 +375,7 @@
                                                                     No
                                                                 {/if}
                                                             </td>
+                                                            *}
                                                             {if $SupplementalSessionStatuses }
                                                                 {foreach from=$timePoint.status item=status}
                                                                     <td>

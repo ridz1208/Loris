@@ -119,8 +119,11 @@ class NDB_Client
             . "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
             . "font-src 'self' data:; "
             . "img-src 'self' data:; "
+            //. "connect-src 'self' *.aviscuriosa.com *.loris.ca; "  //chrome rejects the real hostname, so had to resort to the wildcard
+            . "connect-src 'self' *.loris.ca; "  //chrome rejects the real hostname, so had to resort to the wildcard
             . $config_additions
         );
+//
         // start php session
         session_start();
 

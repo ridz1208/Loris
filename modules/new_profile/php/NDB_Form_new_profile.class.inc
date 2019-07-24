@@ -10,6 +10,7 @@
  * @license  http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
  * @link     https://github.com/aces/Loris
  */
+
 /**
  * New_profile
  *
@@ -34,19 +35,20 @@ class NDB_Form_New_Profile extends NDB_Form
         $user =& User::singleton();
 
         $site_arr = $user->getData('CenterIDs');
-        foreach ($site_arr as $key=>$val) {
-            $site[$key]        = & Site::singleton($val);
+        foreach ($site_arr as $key => $val) {
+            $site[$key] = &Site::singleton($val);
             $isStudySite[$key] = $site[$key]->isStudySite();
-            $isDCCSite[$key]   = $site[$key]->getCenterName();
+            $isDCCSite[$key] = $site[$key]->getCenterName();
         }
         $oneIsStudySite = in_array("1", $isStudySite);
-        $oneIsDCCSite   = in_array("DCC", $isDCCSite);
+        $oneIsDCCSite = in_array("DCC", $isDCCSite);
         if ($oneIsStudySite or $oneIsDCCSite) {
             return $user->hasPermission('data_entry');
         }
 
         return false;
     }
+
     /**
      * Processes the values and saves to database
      *
@@ -57,9 +59,9 @@ class NDB_Form_New_Profile extends NDB_Form
     function _process($values)
     {
         // set up the arguments to Candidate::createNew
-        $user   =& User::singleton();
+        $user =& User::singleton();
         $config =& NDB_Config::singleton();
-        $dob    = empty($values['dob1']) ? null : $values['dob1'];
+        $dob = empty($values['dob1']) ? null : $values['dob1'];
 
         $edc = null;
         if ($config->getSetting('useEDC') == "true") {
@@ -67,27 +69,29 @@ class NDB_Form_New_Profile extends NDB_Form
         }
 
         // create the candidate
-        $DB        = \Database::singleton();
-        $site_arr  = $user->getData('CenterIDs');
+        $DB = \Database::singleton();
+        $site_arr = $user->getData('CenterIDs');
         $num_sites = count($site_arr);
 
-        if ($num_sites >1) {
+        if ($num_sites > 1) {
             $candID = Candidate::createNew(
                 $values['psc'],
                 $dob,
                 $edc,
                 $values['gender'],
-                $values['PSCID'] ?? null
+                $values['PSCID'] ?? null,
+                $values['guid']
             );
         } else {
             $centerIDs = $user->getData('CenterIDs');
-            $centerID  = $centerIDs[0];
-            $candID    = Candidate::createNew(
+            $centerID = $centerIDs[0];
+            $candID = Candidate::createNew(
                 $centerID,
                 $dob,
                 $edc,
                 $values['gender'],
-                $values['PSCID'] ?? null
+                $values['PSCID'] ?? null,
+                $values['guid']
             );
         }
 
@@ -102,12 +106,42 @@ class NDB_Form_New_Profile extends NDB_Form
         //------------------------------------------------------------
 
         $this->tpl_data['success'] = true;
-        $this->tpl_data['candID']  = $candID;
-        $this->tpl_data['PSCID']   = $candidate->getPSCID();
+        $this->tpl_data['candID'] = $candID;
+        $this->tpl_data['PSCID'] = $candidate->getPSCID();
 
         // freeze it, just in case
         $this->form->freeze();
+
+        if ($this->user_site_has_pii_access()) {
+            //update PII with pscid, candid
+            $pii_base_url = $config->getSetting('pii_api_base_url');
+            $pii_url = $pii_base_url . '/api/loris_update_patient';
+            $pii_api_key = $config->getSetting('pii_api_key');
+
+            $pii_postdata = http_build_query([
+                'api_token' => $pii_api_key,
+                'guid' => $values['guid'],
+                'tosi_id' => $candidate->getPSCID(),
+                'candidate_id' => $candidate->getCandID()]);
+
+            $pii_opts = array('http' =>
+                array(
+                    'method' => 'POST',
+                    'header' => 'Content-type: application/x-www-form-urlencoded',
+                    'content' => $pii_postdata
+                )
+            );
+
+            $pii_context = stream_context_create($pii_opts);
+
+            $result = file_get_contents($pii_url, false, $pii_context);
+
+            if ($result === FALSE) {
+                throw new \LorisException("Error updating patient identifiers in the PII system.  Contact system administrators.");
+            }
+        }
     }
+
     /**
      * New profile function
      *
@@ -115,20 +149,22 @@ class NDB_Form_New_Profile extends NDB_Form
      */
     function new_profile()//@codingStandardsIgnoreLine
     {
-        $config    =& NDB_Config::singleton();
+
+        $config =& NDB_Config::singleton();
         $startYear = $config->getSetting('startYear');
-        $endYear   = $config->getSetting('endYear');
-        $ageMax    = $config->getSetting('ageMax');
-        $ageMin    = $config->getSetting('ageMin');
+        $endYear = $config->getSetting('endYear');
+        $ageMax = $config->getSetting('ageMax');
+        $ageMin = $config->getSetting('ageMin');
         $dobFormat = $config->getSetting('dobFormat');
 
+
         $dateOptions = array(
-                        'language'       => 'en',
-                        'format'         => $dobFormat,
-                        'addEmptyOption' => true,
-                        'minYear'        => $startYear - $ageMax,
-                        'maxYear'        => $endYear - $ageMin,
-                       );
+            'language' => 'en',
+            'format' => $dobFormat,
+            'addEmptyOption' => true,
+            //'minYear'        => $startYear - $ageMax,
+            //'maxYear'        => $endYear - $ageMin,
+        );
 
         $dateAttributes = ['class' => 'form-control input-sm input-date'];
 
@@ -139,28 +175,38 @@ class NDB_Form_New_Profile extends NDB_Form
             $dateOptions,
             $dateAttributes
         );
-        $this->addBasicDate(
-            'dob2',
-            'Confirm Date of Birth',
-            $dateOptions,
-            $dateAttributes
-        );
-        $this->addRule(
-            array(
-             'dob1',
-             'dob2',
-            ),
-            'Date of birth fields must match',
-            'compare'
-        );
+//        $this->addBasicDate(
+//            'dob2',
+//            'Confirm Date of Birth',
+//            $dateOptions,
+//            $dateAttributes
+//        );
+//        $this->addRule(
+//            array(
+//             'dob1',
+//             'dob2',
+//            ),
+//            'Date of birth fields must match',
+//            'compare'
+//        );
 
         // date of birth rules
         $this->addRule('dob1', 'Date of Birth is required', 'required');
-        $this->addRule(
-            'dob2',
-            'Date of Birth confirmation is required',
-            'required'
-        );
+//        $this->addRule(
+//            'dob2',
+//            'Date of Birth confirmation is required',
+//            'required'
+//        );
+
+        $this->form->addFormRule(function ($values) use ($ageMin, $ageMax) {
+            $value = $values['dob1'];
+            if (trim($value) != "") {
+                $age = (new DateTime())->diff(new DateTime($value))->y;
+                if ($age < $ageMin || $age > $ageMax) {
+                    return ['dob1' => "This study requires participants between the ages of $ageMin and $ageMax."];
+                }
+            }
+        });
 
         if ($config->getSetting('useEDC') == "true") {
             // add expected date of confinement
@@ -180,8 +226,8 @@ class NDB_Form_New_Profile extends NDB_Form
             // expected date of confinement rules
             $this->addRule(
                 array(
-                 'edc1',
-                 'edc2',
+                    'edc1',
+                    'edc2',
                 ),
                 'EDC fields must match',
                 'compare'
@@ -199,22 +245,22 @@ class NDB_Form_New_Profile extends NDB_Form
 
         // add gender
         $genderOptions = array(
-                          ''       => '',
-                          'Male'   => 'Male',
-                          'Female' => 'Female',
-                         );
-        $this->addSelect('gender', 'Gender', $genderOptions);
+            '' => '',
+            'Male' => 'Male',
+            'Female' => 'Female',
+        );
+        $this->addSelect('gender', 'Sex', $genderOptions);
 
         // gender rules
-        $this->addRule('gender', 'Gender is required', 'required');
+        $this->addRule('gender', 'Sex is required', 'required');
 
         // add sites for users with more than one site affiliation
         $user =& User::singleton();
-        $DB   = \Database::singleton();
+        $DB = \Database::singleton();
         $user_list_of_sites = $user->getData('CenterIDs');
-        $num_sites          = count($user_list_of_sites);
+        $num_sites = count($user_list_of_sites);
 
-        if ($num_sites >1) {
+        if ($num_sites > 1) {
             $psc_labelOptions = array(null => '');
             foreach ($user_list_of_sites as $key => $siteID) {
                 $center = $DB->pselectRow(
@@ -234,8 +280,15 @@ class NDB_Form_New_Profile extends NDB_Form
             $this->addBasicText('PSCID', 'PSCID');
         }
 
+        //ncote: add a CSRF token for the subsequent "API" call for requesting a token from the PII system
+        // ideally, all forms would generate and verify a CSRF token
+        $this->addHidden("csrf_token", FSG_Utility::get_user_csrf_token());
+
         $this->form->addFormRule(array(&$this, '_validate'));
+
+        $this->tpl_data['pii_api_base_url'] = $config->getSetting('pii_api_base_url');
     }
+
     /**
      * Validate function
      *
@@ -248,11 +301,11 @@ class NDB_Form_New_Profile extends NDB_Form
         $errors = array();
 
         $config =& NDB_Config::singleton();
-        $user   = \User::singleton();
+        $user = \User::singleton();
 
-        if ($values['dob1'] != $values['dob2']) {
-            $errors['dob1'] = 'Date of Birth fields must match.';
-        }
+//        if ($values['dob1'] != $values['dob2']) {
+//            $errors['dob1'] = 'Date of Birth fields must match.';
+//        }
         if ($config->getSetting('useEDC') == "true") {
             if (strlen(implode($values['edc1'])) > 2
                 && !Utility::_checkDate($values['edc1'])
@@ -265,17 +318,22 @@ class NDB_Form_New_Profile extends NDB_Form
         }
 
         if (empty($values['gender'])) {
-            $errors['gender'] = 'Gender is required.';
+            $errors['gender'] = 'Sex is required.';
         }
+
+        if (empty($values['guid'])) {
+            $errors['guid'] = 'GUID is required';
+        }
+
 
         $PSCIDsettings = $config->getSetting('PSCID');
         if ($PSCIDsettings['generation'] == 'user') {
             $db =& Database::singleton();
             if (empty($values['psc'])) { // user is in only one site
-                $user      =& User::singleton();
+                $user =& User::singleton();
                 $centerIDs = $user->getData('CenterIDs');
-                $centerID  = $centerIDs[0];
-                $site      =& Site::singleton($centerID);
+                $centerID = $centerIDs[0];
+                $site =& Site::singleton($centerID);
             } else {
                 // user has multiple sites,
                 // so validate PSCID against the Site selected
@@ -291,18 +349,18 @@ class NDB_Form_New_Profile extends NDB_Form
             ) {
                 $errors['PSCID'] = 'PSCID does not match the required structure';
             } elseif ($db->pselectOne(
-                "SELECT count(PSCID) FROM candidate WHERE PSCID=:V_PSCID",
-                array('V_PSCID' => $values[PSCID])
-            ) > 0
+                    "SELECT count(PSCID) FROM candidate WHERE PSCID=:V_PSCID",
+                    array('V_PSCID' => $values[PSCID])
+                ) > 0
             ) {
-                    $errors['PSCID'] = 'PSCID has already been registered';
+                $errors['PSCID'] = 'PSCID has already been registered';
             }
         }
 
         // validate site entered
         $site = $values['psc'];
         $user_list_of_sites = $user->getData('CenterIDs');
-        $num_sites          = count($user_list_of_sites);
+        $num_sites = count($user_list_of_sites);
         if ($num_sites > 1 && (empty($site) || !$user->hasCenter($site))) {
             $errors['psc'] = "Site must be selected from the available dropdown.";
         }
@@ -315,5 +373,18 @@ class NDB_Form_New_Profile extends NDB_Form
         return $errors;
     }
 
+    function user_site_has_pii_access() {
+        //must be from a site that is allowed to talk to the PII
+
+        $config = NDB_Config::singleton();
+        //get user's sites
+        $user_sites = User::singleton()->getCenterIDs();
+        //get allowed sites
+        $allowed_sites = $config->getSetting('pii_centre_ids');
+        //intersect
+        return count(array_intersect($user_sites, $allowed_sites)) != 0;
+    }
+
 }
+
 ?>

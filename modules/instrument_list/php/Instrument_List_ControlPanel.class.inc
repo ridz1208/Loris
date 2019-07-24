@@ -396,9 +396,15 @@ Class Instrument_List_ControlPanel extends TimePoint
             }
         }
 
+
+        //ncote: only show "Incomplete", and "Pass" (label as "Complete")
+
         // loop through the options
         $i = 0;
         foreach ($this->_statusOptions AS $option) {
+            if ($option !== 'In Progress' && $option !== 'Pass') {  //ncote: use only these two
+                continue;
+            }
             // skip the null case and do not show Withdrawal option
             // for Approval stage
             if (is_null($option)
