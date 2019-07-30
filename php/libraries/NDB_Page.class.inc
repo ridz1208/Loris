@@ -689,6 +689,7 @@ class NDB_Page
                   $baseurl . "/js/util/queryString.js",
                   $baseurl . '/js/components/Form.js',
                   $baseurl . '/js/components/Markdown.js',
+                  $baseurl . '/js/datepicker-fixes.js',
                  );
         return $files;
     }

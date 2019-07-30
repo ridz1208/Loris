@@ -42,18 +42,23 @@ foreach ($files AS $file) {
     $fp   =fopen($file, "r");
     $data =fread($fp, filesize($file));
     fclose($fp);
-    preg_match("/class (.+) extends NDB_BVL_Instrument/", $data, $matches);
+    
+    echo "Reading file $file\n";
+    preg_match("/class (.+) extends /", $data, $matches);
     if (empty($matches[1])) {
-        echo "File '$file' does not contain an instrument.\n";
+        echo "File '$file' does not contain a class.\n";
         continue;
     }
-    echo "Reading file $file\n";
     $className =$matches[1];
     echo "Instrument found: $matches[1]\n";
     echo "Requiring file...\n";
     include_once $file;
     echo "Instantiating new object...\n";
     $obj =new $className;
+    if (!is_subclass_of($obj, 'NDB_BVL_Instrument')) {
+        echo "File '$filename' does not contain an instrument.  Must be a (possibly-indirect) subclass of NDB_BVL_Instrument\n";
+        continue;
+    }
     echo "Initializing instrument object...\n";
     $obj->setup(null, null);
 
@@ -142,6 +147,7 @@ function parseElements($elements, $groupLabel="")
             break;
 
         case "text":
+        case "file":  //we'll just save the path here, but saving the actual file data requires special handling in instruments
             $output .="text{@}".$element['name']."{@}".$label."\n";
             break;
 
@@ -212,7 +218,6 @@ function parseElements($elements, $groupLabel="")
             $output .="time{@}".$element['name']."{@}".$label."\n";
             break;
         case "html":
-        case "file":
         case "hidden":
                 // skip because it's useless
                 echo "SKIP: skipping quickform element type: ".$element['type']."\n";

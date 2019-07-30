@@ -493,11 +493,14 @@ class NDB_BVL_Instrument extends NDB_Page
             $success = $this->_setDataEntryCompletionStatus(
                 $dataEntryCompletionStatus
             );
+
+            //ncote: redirect to next test/instrument in the test battery or to the instrument list if this is the last instrument
+            $this->redirectToNextInstrument();
         } else {
             $submittedData = $this->form->getSubmitValues();
 
             if (count($submittedData)) {
-
+                //var_export($this->form->errors);  //TODO: remove this
                 // the form WAS submitted but validate() failed...
                 // main error message
                 $this->form->addElement('static', 'mainError');
@@ -771,6 +774,7 @@ class NDB_BVL_Instrument extends NDB_Page
      */
     function _addMetadataFields()
     {
+
         $config      =& NDB_Config::singleton();
         $dateOptions = array(
                         'language'         => 'en',
@@ -1137,9 +1141,17 @@ class NDB_BVL_Instrument extends NDB_Page
             //in the group are empty.
             $flag = true;
             if (is_array($elvalue)) {
-                foreach ($elvalue AS $val) {
-                    if ($val === "") {
+                //ncote: handle file upload
+                if (array_key_exists('tmp_name', $elvalue)) {  //assume it's a file upload field
+                    if ($elvalue['tmp_name'] === "") {
                         $flag = false;
+                    }
+                }
+                else {
+                    foreach ($elvalue AS $val) {
+                        if ($val === "") {
+                            $flag = false;
+                        }
                     }
                 }
             }
@@ -1268,6 +1280,10 @@ class NDB_BVL_Instrument extends NDB_Page
                 //explicitly cast the controller value as an array
                 if (!is_array($elements[$rule[0]])) {
                     $elements[$rule[0]] = array($elements[$rule[0]]);
+                }
+                //ncote: handle file uploads specially: we take tmp_name as the controller value
+                if (is_array($elements[$rule[0]]) && array_key_exists('tmp_name', $elements[$rule[0]])) {
+                    $elements[$rule[0]] = array($elements[$rule[0]]['tmp_name']);
                 }
                 //Foreach controller value run the rule.
                 foreach ($elements[$rule[0]] as $controller_value) {
@@ -2497,6 +2513,56 @@ class NDB_BVL_Instrument extends NDB_Page
     function validate($values)
     {
         return $this->determineDataEntryAllowed();
+    }
+
+    function redirectToNextInstrument()
+    {
+        //ncote: redirect to next test/instrument in the test battery or to the instrument list if this is the last instrument
+        $factory = NDB_Factory::singleton();
+        $baseURL = $factory->settings()->getBaseURL();
+        $url = $baseURL;
+        $nextInstrument = $this->nextInstrumentInBattery();
+        $candID = isset($_REQUEST["candID"]) ? $_REQUEST['candID'] : '';
+        $sessionID = $this->getSessionId();
+        if ($nextInstrument) {
+
+            //show the instrument
+            // .../instr_clinical_data_als/?commentID=472410DCC00001121527262982&sessionID=1&candID=472410
+            $url .= '/' . $nextInstrument['Test_name'] . '/?commentID=' . $nextInstrument['CommentID'] . '&sessionID=' . $sessionID . '&candID=' . $candID;
+        } else {
+            //show the instrument list
+            //instrument_list/?candID=472410&sessionID=1
+            $url .= '/instrument_list/?candID=' . $candID . '&sessionID=' . $sessionID;
+        }
+
+        header("Location: $url", true, 303);
+    }
+
+    //ncote
+    //returns the next instrument in the battery (same structure as NDB_BVL_Battery::getBatteryVerbose)
+    // or null if this is the last instrument
+    function nextInstrumentInBattery()
+    {
+        $battery = new NDB_BVL_Battery();
+        $battery->selectBattery(
+            $this->getSessionId()
+        );
+
+        $instruments = $battery->getBatteryVerbose('visit');  //returns array of ['Test_name'=>..., 'CommentID'=>..., etc...]]
+        $instrumentNames = array_map(function ($instrument) {
+            return $instrument['Test_name'];
+        }, $instruments);
+        $instrumentIndex = array_search($this->testName, $instrumentNames);
+        //var_export([$instruments, $instrumentNames, $instrumentIndex]); die();
+
+        if ($instrumentIndex !== FALSE) {
+            //instrument found, now check whether there is a following instrument
+            return $instrumentIndex == count($instruments) - 1 ? null : $instruments[$instrumentIndex + 1];
+        } else {
+            //error, instrument SHOULD be in the list...
+            throw new LorisException(
+                "Instrument could not be found in current test battery");
+        }
     }
 }
 

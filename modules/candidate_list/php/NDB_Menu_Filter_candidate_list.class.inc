@@ -72,8 +72,8 @@ class NDB_Menu_Filter_Candidate_List extends NDB_Menu_Filter
                           'psc.Name AS Site',
                           'c.CandID AS DCCID',
                           'c.PSCID',
-                          'c.Gender',
-                          'c.Entity_type',
+                          'c.Gender as Sex',
+                          //'c.Entity_type',  // ncote: not needed
                           "COALESCE(pso.Description,'Active') "
                           . " AS Participant_Status",
                          );
@@ -85,7 +85,7 @@ class NDB_Menu_Filter_Candidate_List extends NDB_Menu_Filter
             array(
              'GROUP_CONCAT(DISTINCT sp.title) as Subproject',
              'DATE_FORMAT(c.DoB,\'%Y-%m-%d\') AS DoB',
-             'MAX(s.Scan_done) as scan_Done',
+             //'MAX(s.Scan_done) as scan_Done',  //ncote: not needed
             )
         );
 
@@ -156,9 +156,9 @@ class NDB_Menu_Filter_Candidate_List extends NDB_Menu_Filter
              $VisitCountSQL,
              'max(s.Current_stage)',
              $FeedbackSQL,
-             's.Scan_done',
+             's.Scan_done',  //ncote: not needed
              's.Visit_label',
-             'c.Entity_type',
+             'c.Entity_type',  //ncote: not needed
              'COALESCE(pso.ID, 1)',
             )
         );
@@ -172,7 +172,7 @@ class NDB_Menu_Filter_Candidate_List extends NDB_Menu_Filter
                                      's.SubprojectID',
                                      'c.CenterID',
                                      'c.ProjectID',
-                                     's.Scan_done',
+//                                     's.Scan_done',
                                      's.Visit_label',
                                      'c.Gender',
                                     );
@@ -191,9 +191,9 @@ class NDB_Menu_Filter_Candidate_List extends NDB_Menu_Filter
              'Latest_Visit_Status' => 'max(s.Current_stage)',
              'Feedback'            => $FeedbackSQL,
              'Participant_Status'  => 'COALESCE(pso.ID, 1)',
-             'scan_done'           => 's.Scan_done',
+//             'scan_done'           => 's.Scan_done',
              'Visit_label'         => 's.Visit_label',
-             'Entity_type'         => 'c.Entity_type',
+//             'Entity_type'         => 'c.Entity_type',  //ncote: remove entity type from the filter
             )
         );
 
@@ -208,10 +208,11 @@ class NDB_Menu_Filter_Candidate_List extends NDB_Menu_Filter
      */
     function _setFilterForm()
     {
-        include_once __DIR__
-            . "/../../candidate_parameters/php/"
-            . "NDB_Form_candidate_parameters.class.inc";
-            //+  NDB_Form_candidate_parameters::getParticipantStatusOptions();
+        //ncote: removed to avoid brittle dependency on NDB_Form_candidate_parameters
+        //        include_once __DIR__
+        //            . "/../../candidate_parameters/php/"
+        //            . "NDB_Form_candidate_parameters.class.inc";
+        //    //+  NDB_Form_candidate_parameters::getParticipantStatusOptions();
         // create user object
         $user   =& User::singleton();
         $config =& NDB_Config::singleton();
@@ -259,7 +260,8 @@ class NDB_Menu_Filter_Candidate_List extends NDB_Menu_Filter
                                        );
 
         $participant_status_options = array(null => 'All')
-            +  NDB_Form_candidate_parameters::getParticipantStatusOptions();
+            //+  NDB_Form_candidate_parameters::getParticipantStatusOptions();  //ncote: copied into this class
+            +  self::getParticipantStatusOptions();
         $scan_options = array(
                          null => 'All',
                          'Y'  => 'Yes',
@@ -282,22 +284,23 @@ class NDB_Menu_Filter_Candidate_List extends NDB_Menu_Filter
 
         $this->addSelect(
             'gender',
-            'Gender',
+            'Sex',
             array(
              ''       => 'All',
              'Male'   => 'Male',
              'Female' => 'Female',
             )
         );
-        $this->addSelect(
-            'Entity_type',
-            'Entity Type',
-            array(
-             ''        => '',
-             'Human'   => 'Human',
-             'Scanner' => 'Scanner',
-            )
-        );
+        //ncote: remove entity type from filter
+//        $this->addSelect(
+//            'Entity_type',
+//            'Entity Type',
+//            array(
+//             ''        => '',
+//             'Human'   => 'Human',
+//             'Scanner' => 'Scanner',
+//            )
+//        );
         $this->addSelect(
             'SubprojectID',
             'Subproject',
@@ -316,7 +319,7 @@ class NDB_Menu_Filter_Candidate_List extends NDB_Menu_Filter
             'Participant Status',
             $participant_status_options
         );
-        $this->addSelect('scan_done', 'Scan Done', $scan_options);
+//        $this->addSelect('scan_done', 'Scan Done', $scan_options);  //ncote: not needed
 
         // Project list, if applicable
         if ($config->getSetting("useProjects")==="true") {
@@ -361,7 +364,8 @@ class NDB_Menu_Filter_Candidate_List extends NDB_Menu_Filter
         $subprojectlist = Utility::getSubprojectList();
         $projectlist    = Utility::getProjectList();
 
-        $pOptions = NDB_Form_candidate_parameters::getParticipantStatusOptions();
+        //$pOptions = NDB_Form_candidate_parameters::getParticipantStatusOptions();   //ncote: copied into this class
+        $pOptions = self::getParticipantStatusOptions();
         // print out
         $x = 0;
         foreach ($this->list as $item) {
@@ -437,6 +441,23 @@ class NDB_Menu_Filter_Candidate_List extends NDB_Menu_Filter
              $baseURL . "/candidate_list/js/candidate_list_helper.js",
             )
         );
+    }
+
+    //ncote: added to remove brittle dependency on NDB_Form_Candidate_Parameters
+    static function getParticipantStatusOptions()
+    {
+        $DB           =& Database::singleton();
+        $options      = $DB->pselect(
+            "SELECT ID,Description
+            FROM participant_status_options
+            WHERE parentID IS NULL",
+            array()
+        );
+        $option_array = array();
+        foreach ($options as $option) {
+            $option_array[$option['ID']] = $option['Description'];
+        }
+        return $option_array;
     }
 }
 ?>

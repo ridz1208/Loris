@@ -60,7 +60,8 @@ class NDB_Breadcrumb
                                'create_timepoint' => 'Create Time Point',
                                'instrument_list'  => 'TimePoint Details',
                                'timepoint_list'   => 'Candidate Profile',
-                               'candidate_list'   => 'Access Profile',
+                               'candidate_list'   => 'Access Patient',
+                               'new_profile'      => 'New Patient',
                                'datadict'         => 'Data Dictionary',
                               );
 

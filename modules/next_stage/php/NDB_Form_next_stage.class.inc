@@ -157,12 +157,12 @@ class NDB_Form_Next_Stage extends NDB_Form
             $dateOptions,
             $dateAttributes
         );
-        $this->addBasicDate(
-            'date2',
-            "Retype Date of $stage",
-            $dateOptions,
-            $dateAttributes
-        );
+//        $this->addBasicDate(
+//            'date2',
+//            "Retype Date of $stage",
+//            $dateOptions,
+//            $dateAttributes
+//        );
 
         // let user select subproject *only* if subprojectid is not > 0
         if (!($timePoint->getSubprojectID() > 0)) {
@@ -177,7 +177,15 @@ class NDB_Form_Next_Stage extends NDB_Form
 
         // add date rules
         $this->addRule('date1', 'Date is required', 'required');
-        $this->addRule(array('date1', 'date2'), 'Date fields must match', 'compare');
+//        $this->addRule(array('date1', 'date2'), 'Date fields must match', 'compare');
+
+        // no future date
+        $this->addNoFutureDateRule('date1');
+
+        //later than first visit, but only if we're not on the first visit
+        $this->form->addFormRule(array(&$this, 'validateVisitDate'));
+
+        $this->addRule('date1', 'Date is required', 'required');
 
         $this->form->addFormRule(array(&$this, '_validate'));
     }
@@ -205,9 +213,9 @@ class NDB_Form_Next_Stage extends NDB_Form
             $errors['date1'] .= "Date is not a valid date. \n";
         }
 
-        if ($values['date1'] != $values['date2']) {
-            $errors['date1'] .= "Both Date fields must match. \n";
-        }
+//        if ($values['date1'] != $values['date2']) {
+//            $errors['date1'] .= "Both Date fields must match. \n";
+//        }
 
         // get candidate's DOB or EDC according to SubprojectID
         $candidateBirthDate = $timePoint->getEffectiveDateOfBirth();
@@ -244,5 +252,97 @@ class NDB_Form_Next_Stage extends NDB_Form
         }
         return $errors;
     }
+
+
+    //ncote: copied from FSG_BVL_Instrument
+    //$value: string-formatted date yyyy-mm-dd, potentially with zero month and/or day
+    function isValidIncompleteDate($value)
+    {
+        $completeDate = $this->incompleteDateToCompleteDate($value);
+        if ($completeDate === null) {
+            return false;
+        }
+        return $this->isValidDate($completeDate);
+    }
+
+    function isValidDate($value)
+    {
+        $elements = explode('-', $value);
+        if (count($elements) != 3) {
+            return false;
+        }
+        if (intval($elements[0]) > 9999) {
+            return false;
+        }
+        return (checkdate($elements[1], $elements[2], $elements[0])); //note the argument order: month, day, year !!
+    }
+
+    //$value: string-formatted date yyyy-mm-dd, potentially with zero month and/or day, e.g. 2017-00-00
+    //return value: string-formatted date (not necessarily valid) with 00 month and/or day changed to 01 e.g. 2017-01-01
+    function incompleteDateToCompleteDate($value)
+    {
+        $elements = explode('-', trim($value));
+        if (count($elements) != 3) {
+            return null;
+        }
+
+        //if date is incomplete, we need to set any 00 day or month to 01
+        if ($elements[1] === '00') {
+            $elements[1] = '01';
+        }
+        if ($elements[2] === '00') {
+            $elements[2] = '01';
+        }
+
+        return $elements[0] . '-' . $elements[1] . '-' . $elements[2];
+    }
+
+    //works with partial dates as well
+    function addNoFutureDateRule($element)
+    {
+        $this->customElementRulesSpecifications[$element][] = "NoFutureDate";
+
+        $this->form->addFormRule(function ($values) use ($element) {
+            $value = trim($values[$element]);
+
+            if ($value != '') {
+                //reject invalid dates
+                if (!$this->isValidDate($value)) {
+                    return [$element => 'Invalid date.'];
+                }
+
+                $completeDate = $this->incompleteDateToCompleteDate($value);
+                if (new \DateTime($completeDate) > new \DateTime('now')) {
+                    return [$element => 'The date you have selected is in the future.'];
+                }
+            }
+        });
+    }
+
+    function validateVisitDate($values)
+    {
+        $visitDate = trim($values['date1']);
+        $timePoint = TimePoint::singleton($this->identifier);
+        $candidate = Candidate::singleton($timePoint->getCandID());
+
+
+
+        $firstVisitId = $candidate->getVisitV01Id();
+        if (!$firstVisitId || $timePoint->getSessionID() === $firstVisitId) {
+            return;
+        }
+
+
+        //get visit V01
+        $firstTimePoint = TimePoint::singleton($firstVisitId);
+        $firstVisitDate = $firstTimePoint->getDateOfVisit();
+        //our date must greater than this
+        if ($visitDate != '' && $this->isValidDate($visitDate)) {
+            if (new \DateTime($visitDate) <= new DateTime($firstVisitDate)) {
+                return ['date1' => "Date of visit must be greater than the date of the first visit: " . $firstVisitDate];
+            }
+        }
+    }
+
 }
 ?>

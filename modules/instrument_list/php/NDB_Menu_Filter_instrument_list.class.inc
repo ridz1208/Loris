@@ -79,6 +79,35 @@ class NDB_Menu_Filter_Instrument_List extends NDB_Menu_Filter
         $timePoint =& TimePoint::singleton($_REQUEST['sessionID']);
         $timePoint->select($_REQUEST['sessionID']);
         return $html;
+
+//
+//
+//        //control panel not needed in this project, we only need the link to Start Visit Stage
+//        // and now... the links to set the stage status
+//        //  => perhaps we should bring it back and just remove some items
+//
+//        $factory = NDB_Factory::singleton();
+//        $this->tpl_data['baseurl'] = $factory->settings()->getBaseURL();
+//
+//        $controlPanel = new Instrument_List_ControlPanel(
+//            $_REQUEST['sessionID']
+//        );
+//
+//        $this->tpl_data['next_stage'] = $controlPanel->getNextStage();
+//        $this->tpl_data['access']['next_stage'] = $controlPanel->_displayStartNextStage();
+//
+//        $this->tpl_data['access']['status'] = $this->_displayStatus($controlPanel);
+//
+////        // save possible changes from the control panel...
+//        $success = $controlPanel->save();
+////
+////        // display the control panel
+////        $html = $controlPanel->display();
+////        // I don't know why this is here, but it
+////        // was in main.php, so moved it to be safe.
+////        $timePoint =& TimePoint::singleton($_REQUEST['sessionID']);
+////        $timePoint->select($_REQUEST['sessionID']);
+////        return $html;
     }
     /**
     * Setup function
@@ -314,5 +343,8 @@ class NDB_Menu_Filter_Instrument_List extends NDB_Menu_Filter
             )
         );
     }
+ 
+
+
 }
 ?>

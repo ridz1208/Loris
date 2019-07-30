@@ -15,10 +15,10 @@
         <label class="col-sm-2">Date of {$stage}</label>
         <div class="col-sm-4 col-md-3">{$form.date1.html}</div>
     </div>
-    <div class="form-group row">
-        <label class="col-sm-2">Retype Date of {$stage}</label>
-        <div class="col-sm-4 col-md-3">{$form.date2.html}</div>
-    </div>
+    {*<div class="form-group row">*}
+        {*<label class="col-sm-2">Retype Date of {$stage}</label>*}
+        {*<div class="col-sm-4 col-md-3">{$form.date2.html}</div>*}
+    {*</div>*}
     {if $form.SubprojectID.html != ""}
     <div class="form-group row">
         <label class="col-sm-2">SubprojectID:</label>

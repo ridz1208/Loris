@@ -866,7 +866,7 @@ class LorisForm
             }
         }
 
-        $elmnt = "<input name=\"$el[name]\" type=\"$format\" $cls "
+        $elmnt = "<input autocomplete=\"off\" name=\"$el[name]\" type=\"$format\" $cls "
             . "$minYear $maxYear "
             . "onChange=\"this.setCustomValidity($required)\" "
             . (isset($el['required']) ? "required " : '')
@@ -1121,7 +1121,12 @@ class LorisForm
                 : ''
               )
             . $disabled
-            .">";
+            .">"
+            . (
+                !empty($val)
+                ? ' <a href="' . htmlspecialchars($val) . '">' . htmlspecialchars($val) . '</a>'
+                : ''
+            );
     }
 
     /**
