@@ -67,9 +67,9 @@ class Project extends Endpoint implements \LORIS\Middleware\ETagCalculator
     protected function supportedVersions() : array
     {
         return array(
-                'v0.0.2',
-                'v0.0.3-dev',
-               );
+            'v0.0.2',
+            'v0.0.3-dev',
+        );
     }
 
     /**
@@ -92,7 +92,7 @@ class Project extends Endpoint implements \LORIS\Middleware\ETagCalculator
                     ->withHeader('Allow', $this->allowedMethods());
 
             default:
-                return new \LORIS\Http\Response\MethodNotAllowed(
+                return new \LORIS\Http\Response\JSON\MethodNotAllowed(
                     $this->allowedMethods()
                 );
             }
@@ -114,7 +114,7 @@ class Project extends Endpoint implements \LORIS\Middleware\ETagCalculator
             $handler = new Visits($this->_project);
             break;
         default:
-            return new \LORIS\Http\Response\NotFound();
+            return new \LORIS\Http\Response\JSON\NotFound();
         }
 
         $newrequest = $request

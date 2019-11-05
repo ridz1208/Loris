@@ -1,6 +1,6 @@
 <?php
 /**
- * This file contains the NDB_Menu_Filter_media class
+ * This file contains the Quality_Control class
  *
  * PHP Version 7
  *
@@ -8,13 +8,13 @@
  * @package  Quality_Control
  * @author   Liza Levitis <llevitis.mcin@gmail.com>
  * @license  http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
- * @link     https://www.github.com/aces/CCNA/
+ * @link     https://www.github.com/aces/Loris
  */
 namespace LORIS\quality_control;
 
 /**
- * Main class for quality control module corresponding to /quality_control/ URL
- * Tools section of the LorisMenu.
+ * Main class for quality control module corresponding to /quality_control/
+ * endpoint.
  *
  * PHP Version 7
  *
@@ -22,13 +22,11 @@ namespace LORIS\quality_control;
  * @package  Quality_Control
  * @author   Liza Levitis <llevitis.mcin@gmail.com>
  * @license  http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
- * @link     https://www.github.com/aces/CCNA/
+ * @link     https://www.github.com/aces/Loris
  */
 class Quality_Control extends \NDB_Menu_Filter
 {
-    public $hasWritePermission = false;
-    public $AjaxModule         = true;
-    public $hasHidePermission  = false;
+    public $AjaxModule = true;
     public $fieldOptions;
 
     /**
@@ -41,8 +39,7 @@ class Quality_Control extends \NDB_Menu_Filter
      */
     function _hasAccess(\User $user) : bool
     {
-        //create user object
-        $this->hasHidePermission = $user->hasPermission("superuser");
+        // FIXME This module should have its own permission.
         return $user->hasPermission('data_team_helper');
     }
 
@@ -64,6 +61,7 @@ class Quality_Control extends \NDB_Menu_Filter
             array()
         );
 
+        $all_scan_types = array();
         foreach ($all_scan_types_2d as $row) {
             $type = $row['Scan_type'];
             $all_scan_types[$row['ID']] = $type;
@@ -124,7 +122,7 @@ class Quality_Control extends \NDB_Menu_Filter
                " ) THEN 'In DICOM'".
               " ELSE 'Missing'
            END as tarchive_loc,
-           (SELECT Name FROM Project WHERE ProjectID=c.ProjectID) as project,".
+           (SELECT Name FROM Project WHERE ProjectID=s.ProjectID) as project,".
             " (SELECT title FROM subproject WHERE SubprojectID=s.SubprojectID)
            as subproject,".
             " CASE
@@ -230,43 +228,45 @@ class Quality_Control extends \NDB_Menu_Filter
         }
 
         $scan_location = array(
-                          "In Imaging Browser"    => "Found in Imaging Browser",
-                          "In MRI Violated Scans" => "Found in MRI Violated Scans",
-                          "Missing"               => "Missing",
-                         );
+            "In Imaging Browser"    => "Found in Imaging Browser",
+            "In MRI Violated Scans" => "Found in MRI Violated Scans",
+            "Missing"               => "Missing",
+        );
 
         $this->fieldOptions
             = [
-               'site'             => $siteList,
-               'project'          => $projectList2,
-               'subproject'       => $subprojectList2,
-               'scanType'         => $scan_types,
-               'mRIParameterForm' => array(
-                                      "Incomplete" => "Incomplete",
-                                      "Complete"   => "Complete",
-                                     ),
-               'scanDoneInMRIPF'  => array(
-                                      "Yes" => "Yes",
-                                      "No"  => "No",
-                                     ),
-               'tarchive'         => array(
-                                      "In DICOM" => "In DICOM Archives",
-                                      "Missing"  => "Missing",
-                                     ),
-               'scanLocation'     => $scan_location,
-               'qCStatus'         => array(
-                                      "Pass" => "Pass",
-                                      "Fail" => "Fail",
-                                     ),
-               'uploadedBy'       => $uploaderList,
-               'selected'         => array(
-                                      "True"  => "True",
-                                      "False" => "False",
-                                     ),
-               'visitLabel'       => $visitList,
-              ];
+                'site'             => $siteList,
+                'project'          => $projectList2,
+                'subproject'       => $subprojectList2,
+                'scanType'         => $scan_types,
+                'mRIParameterForm' => array(
+                    "Incomplete" => "Incomplete",
+                    "Complete"   => "Complete",
+                ),
+                'scanDoneInMRIPF'  => array(
+                    "Yes" => "Yes",
+                    "No"  => "No",
+                ),
+                'tarchive'         => array(
+                    "In DICOM" => "In DICOM Archives",
+                    "Missing"  => "Missing",
+                ),
+                'scanLocation'     => $scan_location,
+                'qCStatus'         => array(
+                    "Pass" => "Pass",
+                    "Fail" => "Fail",
+                ),
+                'uploadedBy'       => $uploaderList,
+                'selected'         => array(
+                    "True"  => "True",
+                    "False" => "False",
+                ),
+                'visitLabel'       => $visitList,
+            ];
 
         $scan_types = $this->_getScanTypes();
+        $scans_done = array();
+        $acq_IDs    = array();
         foreach ($scan_types as $scan_type) {
             $query_params        = array('scan_type' => $scan_type);
             $acq_IDs[$scan_type] = $db->pselectOne(
@@ -287,10 +287,10 @@ class Quality_Control extends \NDB_Menu_Filter
         foreach ($scan_types as $scan_type) {
             $scan_types[$scan_type]
                 = $this->_buildQuery(
-                    $scan_type,
-                    $scans_done[$scan_type],
-                    $acq_IDs[$scan_type]
-                );
+                $scan_type,
+                $scans_done[$scan_type],
+                $acq_IDs[$scan_type]
+            );
         }
 
         $query = implode(
@@ -303,24 +303,24 @@ class Quality_Control extends \NDB_Menu_Filter
         $this->query = " FROM ( " . $query . " ) as tmp";
 
         $this->columns = [
-                          'PSCID',
-                          'SessionID',
-                          'cand_id',
-                          'site',
-                          'project',
-                          'subproject',
-                          'visit_label',
-                          'scan_type',
-                          'mri_parameter_form',
-                          'scan_done',
-                          'tarchive_loc',
-                          'scan_location',
-                          'qc_status',
-                          'uploaded_by',
-                          'selected',
-                          'CommentID',
-                          'TarchiveID',
-                         ];
+            'PSCID',
+            'SessionID',
+            'cand_id',
+            'site',
+            'project',
+            'subproject',
+            'visit_label',
+            'scan_type',
+            'mri_parameter_form',
+            'scan_done',
+            'tarchive_loc',
+            'scan_location',
+            'qc_status',
+            'uploaded_by',
+            'selected',
+            'CommentID',
+            'TarchiveID',
+        ];
 
         $this->group_by = 'PSCID,
             SessionID,
@@ -356,7 +356,7 @@ class Quality_Control extends \NDB_Menu_Filter
         return array_merge(
             $deps,
             array(
-             $baseURL . "/quality_control/js/qualityControlIndex.js",
+                $baseURL . "/quality_control/js/qualityControlIndex.js",
             )
         );
     }
