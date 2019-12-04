@@ -9,6 +9,12 @@
 
 set -euo pipefail
 
+# Script must be run from tools directory.
+if [[ "$PWD" != *'/tools' ]]; then
+    echo "Please run this script from the tools directory."
+    exit 1
+fi
+
 # Must be run interactively.
 if ! test -t 0 -a -t 1 -a -t 2 ; then
     echo "This installation program should be run interactively."
@@ -176,6 +182,7 @@ echo "Ubuntu distribution detected."
         echo $yn | tee -a $LOGFILE > /dev/null
         case $yn in
             [Yy]* )
+                export projectname=""
                 while [ "$projectname" == "" ]; do
                         read -p "Please enter your Project name (if unsure, use LORIS) : " projectname
                         echo $projectname | tee -a $LOGFILE > /dev/null

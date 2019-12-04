@@ -37,7 +37,6 @@ class MediaEditForm extends Component {
       success: function(data) {
         let formData = {
           idMediaFile: data.mediaData.id,
-          forSite: data.mediaData.forSite,
           dateTaken: data.mediaData.dateTaken,
           comments: data.mediaData.comments,
           hideFile: data.mediaData.hideFile,
@@ -111,15 +110,6 @@ class MediaEditForm extends Component {
             value={this.state.mediaData.visitLabel}
           />
           <SelectElement
-            name='forSite'
-            label='Site'
-            options={this.state.Data.sites}
-            onUserInput={this.setFormData}
-            ref='forSite'
-            disabled={true}
-            value={this.state.mediaData.forSite}
-          />
-          <SelectElement
             name='instrument'
             label='Instrument'
             options={this.state.Data.instruments}
@@ -143,6 +133,13 @@ class MediaEditForm extends Component {
             onUserInput={this.setFormData}
             ref='comments'
             value={this.state.formData.comments}
+          />
+          <SelectElement
+            name='language'
+            label='Language'
+            options={this.state.Data.language}
+            onUserInput={this.setFormData}
+            value={this.state.formData.language}
           />
           <FileElement
             name='file'
