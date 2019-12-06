@@ -207,11 +207,6 @@ class Visit extends Endpoint implements \LORIS\Middleware\ETagCalculator
             );
         }
 
-        $sessionid = array_search(
-            $visitinfo['Visit'],
-            $this->_candidate->getListOfVisitLabels()
-        );
-
         $centerid = array_search($visitinfo['Site'], \Utility::getSiteList());
 
         if (!in_array($centerid, $user->getCenterIDs())) {
@@ -223,6 +218,11 @@ class Visit extends Endpoint implements \LORIS\Middleware\ETagCalculator
         $subprojectid = array_search(
             $visitinfo['Battery'],
             \Utility::getSubprojectList()
+        );
+
+        $sessionid = array_search(
+            $visitinfo['Visit'],
+            $this->_candidate->getListOfVisitLabels()
         );
 
         if ($sessionid !== false) {
