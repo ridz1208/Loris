@@ -64,18 +64,18 @@ class BatteryManagerForm extends Component {
           name="ageMinDays"
           label="Minimum age (days)"
           onUserInput={setTest}
-          required={true}
           min="0"
           max="99999"
+          required={true}
           value={test.ageMinDays}
         />
         <NumericElement
           name="ageMaxDays"
           label="Maximum age (days)"
           onUserInput={setTest}
-          required={true}
           min="0"
           max="99999"
+          required={true}
           value={test.ageMaxDays}
         />
         <SelectElement

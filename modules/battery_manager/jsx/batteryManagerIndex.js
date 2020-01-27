@@ -28,7 +28,7 @@ class BatteryManagerIndex extends Component {
     this.state = {
       tests: {},
       test: {},
-      show: {testForm: false},
+      show: {testForm: false, editForm: false},
       error: false,
       isLoaded: false,
     };
@@ -66,12 +66,14 @@ class BatteryManagerIndex extends Component {
    * XXX: This should eventually be moved to a library function
    */
   fetchData(url, method, state) {
-    return fetch(url, {credentials: 'same-origin', method: method})
-    .then((resp) => resp.json())
-    .then((data) => this.setState({[state]: data}))
-    .catch((error) => {
-      this.setState({error: true});
-      console.error(error);
+    return new Promise((resolve, reject) => {
+      return fetch(url, {credentials: 'same-origin', method: method})
+      .then((resp) => resp.json())
+      .then((data) => this.setState({[state]: data}, resolve()))
+      .catch((error) => {
+        this.setState({error: true}, reject());
+        console.error(error);
+      });
     });
   }
 
@@ -95,15 +97,17 @@ class BatteryManagerIndex extends Component {
         body: JSON.stringify(dataClone),
       })
       .then((response) => {
-        response.text().then((body) => {
+        response.text()
+        .then((body) => {
           body = JSON.parse(body);
           const status = response.ok ? 'success' : 'error';
           const message = response.ok ? body.message : body.error;
+          response.ok ? resolve() : reject();
           swal.fire(message, '', status);
-        });
+        })
+        .catch(() => reject());
       })
-      .then(() => resolve())
-      .catch((error) => reject(error));
+      .catch(() => reject());
     });
   }
 
@@ -145,7 +149,7 @@ class BatteryManagerIndex extends Component {
       case 'Edit Metadata':
         const editButton = <CTA label='Edit' onUserInput={() => {
           this.loadTest(testId);
-          this.show('testForm');
+          this.show('editForm');
         }}/>;
         result = <td>{editButton}</td>;
         break;
@@ -212,6 +216,7 @@ class BatteryManagerIndex extends Component {
    */
   closeForm() {
     this.hide('testForm');
+    this.hide('editForm');
     this.clearTest();
   }
 
@@ -224,11 +229,12 @@ class BatteryManagerIndex extends Component {
    * @return {object}
    */
   activateTest(testId) {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       const test = this.state.tests.find((test) => test.id === testId);
       test.active = 'Y';
       this.updateTest(test)
-      .then(() => resolve());
+      .then(() => resolve())
+      .then(() => reject());
     });
   }
 
@@ -241,11 +247,12 @@ class BatteryManagerIndex extends Component {
    * @return {object}
    */
   deactivateTest(testId) {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       const test = this.state.tests.find((test) => test.id === testId);
       test.active = 'N';
       this.updateTest(test)
-      .then(() => resolve());
+      .then(() => resolve())
+      .catch(() => reject());
     });
   }
 
@@ -257,7 +264,7 @@ class BatteryManagerIndex extends Component {
    * @return {object} promise
    */
   updateTest(test) {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       this.postData(this.props.testEndpoint+test.id, test, 'PATCH')
       .then(() => {
         const index = this.state.tests
@@ -265,7 +272,8 @@ class BatteryManagerIndex extends Component {
         const tests = this.state.tests;
         tests[index] = test;
         this.setState({tests}, resolve());
-      });
+      })
+      .catch(() => reject());
     });
   }
 
@@ -281,6 +289,7 @@ class BatteryManagerIndex extends Component {
       .then(() => this.postData(this.props.testEndpoint, test, 'POST'))
       .then(() => this.fetchData(this.props.testEndpoint, 'GET', 'tests'))
       .then(() => test.id && this.deactivateTest(test.id))
+      .then(() => this.closeForm())
       .then(() => resolve())
       .catch(() => reject());
     });
@@ -417,20 +426,19 @@ class BatteryManagerIndex extends Component {
       {label: 'Edit Metadata', show: hasPermission('batter_manager_edit')},
     ];
 
-
     const testForm = (
       <Modal
         title="Add New Test"
-        show={show.testForm}
+        show={show.testForm || show.editForm}
         onClose={this.closeForm}
-        onSubmit={() => this.addTest().then(() => this.closeForm())}
+        onSubmit={this.addTest}
         throwWarning={Object.keys(test).length !== 0}
       >
         <BatteryManagerForm
           test={test}
           setTest={this.setTest}
           options={options}
-          add={true}
+          add={show.testForm}
         />
       </Modal>
     );

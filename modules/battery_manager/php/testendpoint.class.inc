@@ -117,7 +117,7 @@ class TestEndpoint implements RequestHandlerInterface
         $test      = new Test($testArray);
 
         // validate instance;
-        $errors = $this->validateInstance($test);
+        $errors = $this->_validateInstance($test);
         if (!empty($errors)) {
             return new \LORIS\Http\Response\JSON\BadRequest(
                 implode(' ', $errors)
@@ -158,7 +158,7 @@ class TestEndpoint implements RequestHandlerInterface
         }
 
         // validate instance
-        $errors = $this->validateInstance($test);
+        $errors = $this->_validateInstance($test);
         if (!empty($errors)) {
             return new \LORIS\Http\Response\JSON\BadRequest(
                 implode(' ', $errors)
