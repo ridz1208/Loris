@@ -9,8 +9,8 @@
  */
 class OutputWrapper
 {
-    // Colours associated with the bash shell.
-    // @see https://misc.flogisoft.com/bash/tip_colors_and_formatting
+    // Colours mapped to ANSI escape codes.
+    // @see https://en.wikipedia.org/wiki/ANSI_escape_code#3/4_bit
     const COLOURS = [
         'red'    => '31',
         'yellow' => '33',
