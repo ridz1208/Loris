@@ -174,7 +174,7 @@ class New_Profile extends \NDB_Form
         $num_sites          = count($user_list_of_sites);
         $psc_labelOptions   = array();
         if ($num_sites > 1) {
-            foreach ($user_list_of_sites as $key => $siteID) {
+            foreach ($user_list_of_sites as $siteID) {
                 $center = $DB->pselectRow(
                     "SELECT CenterID as ID, Name FROM psc WHERE CenterID =:cid",
                     array('cid' => $siteID)
@@ -311,7 +311,7 @@ class New_Profile extends \NDB_Form
         }
 
         // Validate site entered
-        $psc = (int)$values['site'] ?? '';
+        $psc = isset($values['site']) ? (int)$values['site'] : '';
         $user_list_of_sites = $user->getData('CenterIDs');
         $num_sites          = count($user_list_of_sites);
         if ($num_sites > 1 && (empty($psc) || !$user->hasCenter($psc))) {

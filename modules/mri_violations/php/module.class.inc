@@ -61,4 +61,41 @@ class Module extends \Module
     {
         return "MRI Violated Scans";
     }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @param string $type    The type of widgets to get.
+     * @param \User  $user    The user widgets are being retrieved for.
+     * @param array  $options A type dependent list of options to provide
+     *                        to the widget.
+     *
+     * @return \LORIS\GUI\Widget[]
+     */
+    public function getWidgets(string $type, \User $user, array $options) : array
+    {
+        switch($type) {
+        case "usertasks":
+            $factory = \NDB_Factory::singleton();
+            $DB      = $factory->database();
+            $baseURL = $factory->settings()->getBaseURL();
+
+            return [
+                new \LORIS\dashboard\TaskQueryWidget(
+                    $user,
+                    "Violated scan",
+                    $DB,
+                    "SELECT COUNT(*) FROM mri_protocol_violated_scans
+                        LEFT JOIN candidate c USING (CandID)
+                    WHERE 1 = 1 ",
+                    "violated_scans_view_allsites",
+                    "c.RegistrationCenterID",
+                    $baseURL . "/" . $this->getName(),
+                    ""
+                )
+            ];
+
+        }
+        return [];
+    }
 }

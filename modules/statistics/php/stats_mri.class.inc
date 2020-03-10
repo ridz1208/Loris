@@ -248,12 +248,8 @@ class Stats_MRI extends \NDB_Form
         }
 
         //SUBPROJECTS
-        $subprojList ="";
         $subprojects = \Utility::getSubprojectsForProject($currentProject);
-        foreach ($subprojects as $key=>$val) {
-            $subprojList .= $key.",";
-        }
-        $subprojList = substr($subprojList, 0, -1);
+        $subprojList = implode(',', array_keys($subprojects));
         if (!empty($subprojList)) {
             $suproject_query ="AND s.SubprojectID IN ($subprojList)";
         } else {
@@ -516,8 +512,8 @@ class Stats_MRI extends \NDB_Form
                 //no_qc_count is computed by the difference between insertions
                 // and the sum of passed qc and failed qc
                 $Scan_data_results[$key]['no_qc_count'][$row['subID']]
-                    = $Scan_data_results[$key]['no_qc_count'][$row['subID']]-
-                      $row['cnt'];
+                    = intval($Scan_data_results[$key]['no_qc_count'][$row['subID']])
+                    - intval($row['cnt']);
             }
 
             //QC STATUS: FAILED TOTAL
@@ -569,7 +565,7 @@ class Stats_MRI extends \NDB_Form
                 // and the sum of passed qc and failed qc
                 $Scan_data_results[$key]['no_qc_count'][$row['subID']]
                     = $Scan_data_results[$key]['no_qc_count'][$row['subID']]-
-                       $row['cnt'];
+                       intval($row['cnt']);
             }
 
             $Scan_data_results[$key]['no_qc_count']['total']

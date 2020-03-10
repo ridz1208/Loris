@@ -8,11 +8,13 @@ CREATE TABLE `modules` (
 
 INSERT INTO modules (Name, Active) VALUES ('acknowledgements', 'Y');
 INSERT INTO modules (Name, Active) VALUES ('api', 'Y');
+INSERT INTO modules (Name, Active) VALUES ('battery_manager', 'Y');
 INSERT INTO modules (Name, Active) VALUES ('behavioural_qc', 'Y');
 INSERT INTO modules (Name, Active) VALUES ('brainbrowser', 'Y');
 INSERT INTO modules (Name, Active) VALUES ('bvl_feedback', 'Y');
 INSERT INTO modules (Name, Active) VALUES ('candidate_list', 'Y');
 INSERT INTO modules (Name, Active) VALUES ('candidate_parameters', 'Y');
+INSERT INTO modules (Name, Active) VALUES ('candidate_profile', 'Y');
 INSERT INTO modules (Name, Active) VALUES ('configuration', 'Y');
 INSERT INTO modules (Name, Active) VALUES ('conflict_resolver', 'Y');
 INSERT INTO modules (Name, Active) VALUES ('create_timepoint', 'Y');
@@ -36,6 +38,7 @@ INSERT INTO modules (Name, Active) VALUES ('issue_tracker', 'Y');
 INSERT INTO modules (Name, Active) VALUES ('login', 'Y');
 INSERT INTO modules (Name, Active) VALUES ('media', 'Y');
 INSERT INTO modules (Name, Active) VALUES ('meta_docs', 'Y');
+INSERT INTO modules (Name, Active) VALUES ('module_manager', 'Y');
 INSERT INTO modules (Name, Active) VALUES ('mri_violations', 'Y');
 INSERT INTO modules (Name, Active) VALUES ('new_profile', 'Y');
 INSERT INTO modules (Name, Active) VALUES ('next_stage', 'Y');
@@ -45,3 +48,4 @@ INSERT INTO modules (Name, Active) VALUES ('statistics', 'Y');
 INSERT INTO modules (Name, Active) VALUES ('survey_accounts', 'Y');
 INSERT INTO modules (Name, Active) VALUES ('timepoint_list', 'Y');
 INSERT INTO modules (Name, Active) VALUES ('user_accounts', 'Y');
+INSERT INTO modules (Name, Active) VALUES ('electrophysiology_browser', 'Y');

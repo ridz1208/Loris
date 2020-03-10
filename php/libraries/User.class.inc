@@ -201,7 +201,7 @@ class User extends UserPermissions
      * @param string $var Name of variable to get
      *
      * @note   Call without any arguments to get the entire user data array
-     * @return mixed
+     * @return array<array|string>|string
      * @access public
      * @throws LorisException
      */
@@ -533,7 +533,6 @@ class User extends UserPermissions
         );
     }
 
-
     /**
      * Return the last login of this user to the given database.
      *
@@ -558,6 +557,5 @@ class User extends UserPermissions
         }
         return new \DateTime($time);
     }
-
 }
 

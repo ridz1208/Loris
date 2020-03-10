@@ -63,7 +63,17 @@ class Stats_Behavioural extends \NDB_Form
     {
         parent::setup();
 
-        $DB =& \Database::singleton();
+        $factory = \NDB_Factory::singleton();
+        $DB      = $factory->database();
+        $user    = $factory->user();
+
+        //SITES
+        if ($user->hasPermission('access_all_profiles')) {
+            $list_of_sites = \Utility::getSiteList();
+        } else {
+            $list_of_sites = $user->getStudySites();
+        }
+        $sitesString = implode(",", array_keys($list_of_sites));
 
         $centers = $DB->pselect(
             "SELECT CONCAT('C', CenterID) as ID,
@@ -72,7 +82,8 @@ class Stats_Behavioural extends \NDB_Form
                     Name as ShortName
               FROM psc
               WHERE CenterID <> '1'
-                    AND Study_site = 'Y'",
+                    AND Study_site = 'Y'
+	            AND CenterID IN (" . $sitesString . ")",
             array()
         );
 
@@ -115,11 +126,8 @@ class Stats_Behavioural extends \NDB_Form
         $suproject_query = '';
         // Only search for subprojects if $currentProject is a positive int.
         if (is_numeric($currentProject) && intval($currentProject) >= 0) {
-            $subprojList ="";
             $subprojects = \Utility::getSubprojectsForProject($currentProject);
-            foreach ($subprojects as $key=>$val) {
-                $subprojList .= $key.",";
-            }
+            $subprojList = implode(',', array_keys($subprojects));
             $subprojList = substr($subprojList, 0, -1);
             if (!empty($subprojList)) {
                 $suproject_query ="AND s.SubprojectID IN ($subprojList)";
@@ -142,6 +150,7 @@ class Stats_Behavioural extends \NDB_Form
                     AND s.Current_stage <> 'Recycling Bin'
                     AND f.CommentID NOT LIKE 'DDE%'
                     AND s.CenterID <> '1'
+	            AND s.CenterID IN (" . $sitesString . ")
                     $suproject_query
                     $Param_Project
                 GROUP by s.ID, s.CenterID, VLabel, f.Data_Entry",
@@ -190,7 +199,10 @@ class Stats_Behavioural extends \NDB_Form
                 if ($c['all']['total'] != 0) {
                     if (isset($c['all']['complete'])) {
                         $c['all']['percent']
-                            = floor($c['all']['complete'] / $c['all']['total']*100);
+                            = floor(
+                                intval($c['all']['complete'])
+                                / $c['all']['total']*100
+                            );
                     } else {
                         $c['all']['percent'] = 0;
                     }
@@ -199,20 +211,21 @@ class Stats_Behavioural extends \NDB_Form
         }
         // DDE STATS
         $result = $DB->pselect(
-            "SELECT s.CenterID, 
-                f.Data_Entry as Data_Entry, 
-                s.visit_label as VLabel,
-                COUNT(s.CandID) as val
+            "SELECT s.CenterID,
+                    f.Data_Entry as Data_Entry,
+                    s.visit_label as VLabel,
+                    COUNT(s.CandID) as val
                 FROM session as s
-                    JOIN candidate as c ON (s.CandID=c.CandID)
-                    JOIN flag as f ON (f.SessionID=s.ID)
-                WHERE s.Active='Y' 
-                AND s.Current_stage <> 'Recycling Bin'
-                AND f.CommentID LIKE 'DDE%' 
-                AND c.Active='Y'
-                AND s.CenterID <> '1'
-                $suproject_query
-                $Param_Project
+                    JOIN candidate as c ON(s.CandID=c.CandID)
+                    JOIN flag as f ON(f.SessionID=s.ID)
+                WHERE s.Active = 'Y'
+                    AND s.Current_stage <> 'Recycling Bin'
+                    AND f.CommentID LIKE 'DDE%'
+                    AND c.Active = 'Y'
+                    AND s.CenterID <> '1'
+                    AND s.CenterID IN(" . $sitesString . ")
+                    $suproject_query
+                    $Param_Project
                 GROUP BY s.CenterID, VLabel, f.Data_Entry",
             $this->params ?? array()
         );
@@ -256,7 +269,10 @@ class Stats_Behavioural extends \NDB_Form
                 if ($c['all']['total'] != 0) {
                     if (isset($c['all']['complete'])) {
                         $c['all']['percent']
-                            = floor($c['all']['complete'] / $c['all']['total']*100);
+                            = floor(
+                                intval($c['all']['complete'])
+                                / $c['all']['total'] * 100
+                            );
                     } else {
                         $c['all']['percent'] = 0;
                     }
