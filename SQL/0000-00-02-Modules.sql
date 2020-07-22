@@ -40,6 +40,7 @@ INSERT INTO modules (Name, Active) VALUES ('media', 'Y');
 INSERT INTO modules (Name, Active) VALUES ('meta_docs', 'Y');
 INSERT INTO modules (Name, Active) VALUES ('module_manager', 'Y');
 INSERT INTO modules (Name, Active) VALUES ('mri_violations', 'Y');
+INSERT INTO modules (Name, Active) VALUES ('my_preferences', 'Y');
 INSERT INTO modules (Name, Active) VALUES ('new_profile', 'Y');
 INSERT INTO modules (Name, Active) VALUES ('next_stage', 'Y');
 INSERT INTO modules (Name, Active) VALUES ('publication', 'Y');
@@ -50,3 +51,5 @@ INSERT INTO modules (Name, Active) VALUES ('timepoint_list', 'Y');
 INSERT INTO modules (Name, Active) VALUES ('user_accounts', 'Y');
 INSERT INTO modules (Name, Active) VALUES ('electrophysiology_browser', 'Y');
 INSERT INTO modules (Name, Active) VALUES ('meta_docs', 'Y');
+
+ALTER TABLE issues ADD CONSTRAINT `fk_issues_7` FOREIGN KEY (`module`) REFERENCES `modules` (`ID`);
