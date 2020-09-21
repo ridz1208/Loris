@@ -280,7 +280,7 @@ const config = [
   ]),
   lorisModule('user_accounts', ['userAccountsIndex']),
   lorisModule('examiner', ['examinerIndex']),
-  lorisModule('help_editor', ['help_editor']),
+  lorisModule('help_editor', ['help_editor', 'help_editor_helper']),
   lorisModule('brainbrowser', ['Brainbrowser']),
   lorisModule('imaging_uploader', ['index']),
   lorisModule('acknowledgements', ['acknowledgementsIndex']),
