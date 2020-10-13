@@ -8,3 +8,6 @@ js/react.paginator.js
 js/react.savedqueries.js
 js/react.sidebar.js
 js/react.tabs.js
+js/expansionpanels.js
+js/searchabledropdown.js
+js/stepper.js
