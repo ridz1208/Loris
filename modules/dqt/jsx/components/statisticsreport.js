@@ -8,6 +8,7 @@ const StatisticsReport = (props) => {
 
   const [statistics, setStatistics] = useState ({
     participants: '',
+    gender: [],
   });
 
   async function fetchStatistics() {
@@ -56,8 +57,10 @@ const StatisticsReport = (props) => {
         backgroundColor: '#fff',
         border: '1px solid #913887',
       }}>
-        <p align="center"><b style={{color: '#0d346e'}}>Number of participants:</b> {statistics.participants}</p>
-        <PiChartGender data={statistics.participants}/>
+        <p align="center"><b style={{color: '#0d346e'}}>
+          Number of participants:</b> {statistics.participants}
+        </p>
+        <PiChartGender data={statistics.gender}/>
       </div>
     </div>
   ) : (

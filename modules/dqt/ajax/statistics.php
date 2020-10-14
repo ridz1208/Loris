@@ -33,5 +33,8 @@ $cdb         = \NDB_Factory::singleton()->couchDB(
 
 print json_encode([
     'participants' => '1,004,912',
-    'other' => 'hmm'
+    'gender' => [
+        ['label' => 'Females', 'total' => '602656'],
+        ['label' => 'Males', 'total' => '402256'],
+    ]
 ]);
