@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect} from 'react';
 import PropTypes from 'prop-types';
 
 const PiChartGender = (props) => {
@@ -8,11 +8,11 @@ const PiChartGender = (props) => {
   const formatPieData = (data) => {
     let processedData = [];
     for (let i in data) {
-        const siteData = [data[i].label, data[i].total];
-        processedData.push(siteData);
+      const siteData = [data[i].label, data[i].total];
+      processedData.push(siteData);
     }
     return processedData;
-}
+  }
 
   useEffect(() => {
     let recruitmentPieData = formatPieData([
