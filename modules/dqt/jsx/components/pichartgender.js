@@ -17,7 +17,7 @@ const PiChartGender = (props) => {
   }
 
   useEffect(() => {
-    let recruitmentPieData = formatPieData(props.data);;
+    let recruitmentPieData = formatPieData(props.data);
     recruitmentPieChart = c3.generate({
       size: {
         height: 200,
