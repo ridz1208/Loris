@@ -1,5 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import PropTypes from 'prop-types';
+import PiChartGender from "./pichartgender";
 
 const StatisticsReport = (props) => {
 
@@ -57,6 +58,7 @@ const StatisticsReport = (props) => {
       }}>
         <p>Number of participants: {statistics.participants}</p>
         <p>..sample test..</p>
+        <PiChartGender data={statistics.participants}/>
       </div>
     </div>
   ) : (
