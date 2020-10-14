@@ -16,6 +16,7 @@ import {StepperPanel} from './components/stepper';
 import SavedQueriesList from './react.savedqueries';
 import ExpansionPanels from './components/expansionpanels';
 import NoticeMessage from './react.notice';
+import StatisticsReport from "./components/statisticsreport";
 
 /**
  * DataQueryApp component
@@ -1091,6 +1092,9 @@ class DataQueryApp extends Component {
             <p style={{textAlign: 'center', margin: '10px 0 20px 0'}}>
               Data was last updated on {this.props.UpdatedTime}.
             </p>
+            <StatisticsReport
+              loris={loris}
+            />
             <ExpansionPanels
               panels={[
                 {
