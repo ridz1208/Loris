@@ -8,8 +8,10 @@ const PiChartGender = (props) => {
   const formatPieData = (data) => {
     let processedData = [];
     for (let i in data) {
-      const siteData = [data[i].label, data[i].total];
-      processedData.push(siteData);
+      if (data.hasOwnProperty(i)) {
+        const siteData = [data[i].label, data[i].total];
+        processedData.push(siteData);
+      }
     }
     return processedData;
   }
