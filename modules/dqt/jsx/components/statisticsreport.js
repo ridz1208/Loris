@@ -41,11 +41,11 @@ const StatisticsReport = (props) => {
         color: '#fff',
         padding: '18px',
         outline: 'none',
-        fontSize: '1.25em',
+        fontSize: '1.2em',
         textAlign: 'center',
         backgroundColor: '#913887',
       }}>
-        CBIGR Statistics Report
+        Statistics Report
       </div>
       <div style={{
         display: 'block',
