@@ -56,8 +56,7 @@ const StatisticsReport = (props) => {
         backgroundColor: '#fff',
         border: '1px solid #913887',
       }}>
-        <p>Number of participants: {statistics.participants}</p>
-        <p>..sample test..</p>
+        <p align="center"><b style={{color: '#0d346e'}}>Number of participants:</b> {statistics.participants}</p>
         <PiChartGender data={statistics.participants}/>
       </div>
     </div>
