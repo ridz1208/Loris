@@ -27,19 +27,20 @@ const BarChart = (props) => {
       bindto: `#${props.id}`,
       data: {
         columns: barChartData,
-        type: 'bar'
+        type: 'bar',
       },
       axis: {
         x: {
           type : 'categorized',
-          categories: props.data.labels
+          categories: props.data.labels,
         },
         y: {
-          label: 'Candidates registered'
+          label: 'Candidates registered',
+          show: false,
         }
       },
       color: {
-        pattern: props.pattern
+        pattern: props.pattern,
       }
     });
   }, []);

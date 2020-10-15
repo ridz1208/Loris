@@ -66,10 +66,10 @@ const StatisticsReport = (props) => {
             id={'barChartDisease'}
             data={
               {
-                labels: ['Montreal', 'Ottawa', 'Rome'],
+                labels: ['Autism', 'Anxiety', 'OCD'],
                 datasets: {
-                  female: ['87', '85', '159'],
-                  male: ['78', '78', '169']
+                  female: ['500000', '320123', '159000'],
+                  male: ['450000', '932000', '169000']
                 }
               }
             }
