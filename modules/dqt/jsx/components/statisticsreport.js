@@ -64,15 +64,7 @@ const StatisticsReport = (props) => {
         <div style={{display: 'flex', flexWrap: 'wrap'}}>
           <BarChart
             id={'barChartDisease'}
-            data={
-              {
-                labels: ['Autism', 'Anxiety', 'OCD'],
-                datasets: {
-                  female: ['500000', '320123', '159000'],
-                  male: ['450000', '932000', '169000']
-                }
-              }
-            }
+            data={statistics.disease}
             style={{flex: 1}}
           />
           <PieChart
