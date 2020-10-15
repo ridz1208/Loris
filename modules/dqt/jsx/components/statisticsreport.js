@@ -58,19 +58,27 @@ const StatisticsReport = (props) => {
         backgroundColor: '#fff',
         border: '1px solid #913887',
       }}>
-        <p><b style={{color: '#0d346e'}}>
+        <p align={'center'}><b style={{color: '#0d346e'}}>
           Number of participants:</b> {statistics.participants}
         </p>
-        <div style={{display: 'flex'}}>
+        <div style={{display: 'flex', flexWrap: 'wrap'}}>
+          <BarChart
+            id={'barChartDisease'}
+            data={
+              {
+                labels: ['Montreal', 'Ottawa', 'Rome'],
+                datasets: {
+                  female: ['87', '85', '159'],
+                  male: ['78', '78', '169']
+                }
+              }
+            }
+            style={{flex: 1}}
+          />
           <PieChart
             id={'pieChartGender'}
             data={statistics.gender}
-            style={{flex: 1}}
-          />
-          <BarChart
-            id={'barChartDiseases'}
-            data={statistics.gender}
-            style={{flex: 1}}
+            style={{flex: 0.5}}
           />
         </div>
       </div>
