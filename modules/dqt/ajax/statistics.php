@@ -38,7 +38,7 @@ print json_encode([
         ['label' => 'Male', 'total' => '402256'],
     ],
     'disease' => [
-        'label' => ['Autism', 'Anxiety', 'OCD'],
+        'labels' => ['Autism', 'Anxiety', 'OCD'],
         'datasets' => [
             'female' => ['500000', '320123', '159000'],
             'male' => ['450000', '932000', '169000'],
