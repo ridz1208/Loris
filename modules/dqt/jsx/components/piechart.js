@@ -1,11 +1,11 @@
 import React, {useEffect} from 'react';
 import PropTypes from 'prop-types';
 
-const Piechart = (props) => {
+const PieChart = (props) => {
 
   let pieChart;
 
-  const formatPieData = (data) => {
+  const formatPieChartData = (data) => {
     let processedData = [];
     for (let i in data) {
       if (data.hasOwnProperty(i)) {
@@ -17,7 +17,7 @@ const Piechart = (props) => {
   }
 
   useEffect(() => {
-    let pieData = formatPieData(props.data);
+    let pieChartData = formatPieChartData(props.data);
     pieChart = c3.generate({
       size: {
         height: props.height,
@@ -25,11 +25,11 @@ const Piechart = (props) => {
       },
       bindto: `#${props.id}`,
       data: {
-          columns: pieData,
-          type : 'pie',
+        columns: pieChartData,
+        type : 'pie',
       },
       color: {
-          pattern: props.pattern,
+        pattern: props.pattern,
       }
     });
   }, []);
@@ -41,14 +41,14 @@ const Piechart = (props) => {
     </>
   );
 }
-Piechart.propTypes = {
+PieChart.propTypes = {
   id: PropTypes.string.isRequired,
   data: PropTypes.object,
   pattern: PropTypes.array,
   height: PropTypes.number,
   width: PropTypes.number,
 };
-Piechart.defaultProps = {
+PieChart.defaultProps = {
   pattern: [
     '#f4e2f0', '#0c6db0',
   ],
@@ -56,4 +56,4 @@ Piechart.defaultProps = {
   height: 200,
 };
 
-export default Piechart;
+export default PieChart;
