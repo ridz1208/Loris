@@ -204,6 +204,7 @@ class Dqt extends \NDB_Form
             $deps,
             [
                 $baseURL . "/dqt/css/dataquery.css",
+                $baseURL . "/css/c3.css",
             ]
         );
     }
