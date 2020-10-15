@@ -4,7 +4,7 @@ import Piechart from './piechart';
 
 const StatisticsReport = (props) => {
 
-  const [loaded, setLoaded] = useState (false);
+  const [loaded, setLoaded] = useState(false);
 
   const [statistics, setStatistics] = useState ({
     participants: '',
@@ -57,11 +57,11 @@ const StatisticsReport = (props) => {
         backgroundColor: '#fff',
         border: '1px solid #913887',
       }}>
-        <p align="center"><b style={{color: '#0d346e'}}>
+        <p align='center'><b style={{color: '#0d346e'}}>
           Number of participants:</b> {statistics.participants}
         </p>
         <Piechart
-          id={'genderPieChart'}
+          id={'pieChartGender'}
           data={statistics.gender}
         />
       </div>
