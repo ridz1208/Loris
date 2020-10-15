@@ -35,7 +35,9 @@ const PieChart = (props) => {
   }, []);
 
   return (props.data) ? (
-    <div id={props.id}/>
+    <div id={props.id}
+         style={props.style}
+    />
   ) : (
     <>
     </>
@@ -47,6 +49,7 @@ PieChart.propTypes = {
   pattern: PropTypes.array,
   height: PropTypes.number,
   width: PropTypes.number,
+  style: PropTypes.object,
 };
 PieChart.defaultProps = {
   pattern: [

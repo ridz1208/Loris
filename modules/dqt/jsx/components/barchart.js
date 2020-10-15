@@ -45,7 +45,9 @@ const BarChart = (props) => {
   }, []);
 
   return (props.data) ? (
-    <div id={props.id}/>
+    <div id={props.id}
+         style={props.style}
+    />
   ) : (
     <>
     </>
