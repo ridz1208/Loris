@@ -156,14 +156,23 @@ class FieldItem extends Component {
     let criteria;
     let multiselect;
 
+    console.log('hello');
     if (this.props.selected) {
+      console.log('oh no');
       // If field is selected, add active class and visits
       classList += ' active';
+      console.log('this.props.Visits is ');
+      console.log(this.props.Visits);
       multiselect = Object.keys(this.props.Visits).map((visit) => {
+        console.log('visit is');
+        console.log(visit);
+
         let checked = false;
         if (this.props.selectedVisits[visit]) {
           checked = true;
         }
+        console.log('checked is');
+        console.log(checked);
         return (
           <div key={visit} className='checkbox'>
             <label>
@@ -367,7 +376,7 @@ class FieldSelector extends Component {
     } else {
       // Retrieve the data dictionary
       $.get(loris.BaseURL
-        + '/AjaxHelper.php?Module=dataquery&script=datadictionary.php',
+        + '/AjaxHelper.php?Module=dqt&script=datadictionary.php',
         {category: category}, (data) => {
         let cf = this.state.categoryFields;
         cf[category] = data;

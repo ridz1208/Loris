@@ -369,6 +369,7 @@ h4 {
 .fieldVisitsRow {
   cursor: default;
   background: white;
+  color: #000;
   border-radius: 10px;
 }
 
