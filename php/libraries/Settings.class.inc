@@ -61,7 +61,7 @@ class Settings
             return $url;
         }
         $www = $this->_config->getSetting('www');
-        return $www['url'];
+        return isset($www['url']) ? $www['url'] : '';
     }
 
     /**
