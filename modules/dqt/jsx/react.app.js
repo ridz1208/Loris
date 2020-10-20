@@ -1117,7 +1117,7 @@ class DataQueryApp extends Component {
                         "Run Query"</i> and run the query you built. 🙂</p>
                     </>
                   ),
-                  alwaysOpen: true,
+                  alwaysOpen: false,
                 },
                 {
                   title: 'Load Existing Query',
