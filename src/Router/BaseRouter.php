@@ -70,7 +70,7 @@ class BaseRouter extends PrefixRouter implements RequestHandlerInterface
             if ($this->user instanceof \LORIS\AnonymousUser) {
                 $modulename = "login";
             } else {
-                $modulename = "dqt";
+                $modulename = "dashboard";
             }
             $request = $request->withURI($uri->withPath("/"));
         } else if ($path[0] === "/") {
