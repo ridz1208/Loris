@@ -143,6 +143,7 @@
                                 <img width=17 src="{$baseurl}/images/help.gif">
                             </a>
                         </li>
+                        <li><a class="nav-link" href="#" id="btnShowTerms">Terms of Use</a></li>
                         <li class="nav">
                             <a href="#"
                                id="site-affiliations"
@@ -331,5 +332,123 @@
                 </div>
             </div>
         </div>
+        
+        <!-- Terms Modal -->
+        <div class="modal fade" id="termsModal" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false"
+          aria-labelledby="modalCenterTitle" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h4 class="modal-title w-100 text-center" id="modalLongTitle">Terms of Use</h4>
+              </div>
+              <div class="modal-body" style="max-height: 75vh; overflow-y: auto;">
+                <div class="terms-body">
+                  <p class="text-center">(Last Updated on November 11th, 2020)</p>
+                  <h4>The user agrees:</h4>
+                  <ul>
+                    <li>
+                      to obtain required ethics, legal, or other approvals before using C-BIG Materials/Data.
+                    </li>
+                    <li>
+                      to respect any restrictions and conditions on use of C-BIG Materials/Data based on: 
+                      <ol>
+                        <li>participant consents,</li>
+                        <li>ethics approvals, and</li>
+                        <li>the Open Transfer Agreement under which C-BIG Data/Materials were distributed.</li>
+                      </ol>
+                    </li>
+                    <li>
+                      to ensure that Registered Access Data are not distributed to those who have not registered with the C-BIG Repository in accordance with section 9.5.2 of the C-BIG Framework, and to establish appropriate security safeguards.
+                    </li>
+                    <li>
+                      to ensure that Controlled Access Materials/Data are not distributed to anyone who does not have prior permission from the C-BIG Tissue and Data Committee to have access to that Controlled Access Materials/Data, and to establish appropriate security safeguards. 
+                    </li>
+                    <li>
+                      to report any breach of these terms by myself or others to the C-BIG Repository in a timely manner.
+                    </li>
+                    <li>
+                      to acknowledge the C-BIG Repository in any publication relying on C-BIG Materials and Data according to best practices in the field.
+                    </li>
+                    <li>
+                      to include in the Methods section of any publication relying on C-BIG Materials and Data the name, identification number, and/or persistent identifier of the C-BIG Materials/Data upon which it relies.
+                    </li>
+                    <li>
+                      that the C-BIG Repository has the right to change or update these Terms of Use at any time without prior notice to the user. It is the user’s responsibility 
+                    </li>
+                    <li>
+                      to check the C-BIG Repository’s Terms of Use on the C-BIG LORIS instance to ascertain whether the Terms of Use have been changed or updated.
+                    </li>
+                    <li>
+                      that all C-BIG Materials/Data are provided on an “as is” basis, and the C-BIG Repository disclaims all warranties, express or implied, including but not limited to any warranty that the use of resources will not cause injury, infringe any third party rights, or be fit for any particular purpose.
+                    </li>
+                    <li>
+                      that the C-BIG Repository excludes all liability, to the greatest extent permitted by applicable law, with respect to the use or distribution of C-BIG Materials/Data.
+                    </li>
+                  </ul>
+
+                  <h4>The user agrees to not:</h4>
+                  <ul>
+                    <li>
+                      attempt to reidentify any Research Participant.
+                    </li>
+                    <li>
+                      combine C-BIG Materials/Data with other data in such a way so as to increase the risk of any Research Participant being re-identified.
+                    </li>
+                    <li>
+                      claim intellectual property rights, or any other proprietary right, over C-BIG Materials/Data in such a way that could interfere with the freedom of others to access and use C-BIG Materials/Data.
+                    </li>
+                  </ul>
+
+                  <h4>Acknowledgement of C-BIG Community Norms</h4>
+                  <p>I affirm my commitment to the values upon which the C-BIG Repository is based by acknowledging the following:</p>
+                  <ul>
+                    <li>
+                      <strong>Respect</strong> – I acknowledge that C-BIG Data/Materials were contributed by patients and participants and will treat them with the respect I would afford those patients and participants themselves.
+                    </li>
+                    <li>
+                      <strong>Openness</strong> – I acknowledge that C-BIG Data/Materials are distributed in accordance with the principles of open science and will support those principles by sharing any results I generate using those data and materials freely and openly and in accordance with any ethical or legal obligations.
+                    </li>
+                    <li>
+                      <strong>Affordability and Accessibility</strong> – I acknowledge that the C-BIG Repository’s mission is to accelerate the creation of diagnostics and therapies that are affordable and accessible for patients with neurological diseases. I will attempt to further this mission by advocating for any product or service developed based on C-BIG Materials/Data to be distributed widely and at an affordable price.
+                    </li>
+                    <li>
+                      <strong>Credit Sharing</strong> – I acknowledge that all stakeholders in science, including researchers and research participants, deserve recognition for their contributions and will acknowledge those contributions by using best acknowledgement and citation practices.  
+                    </li>
+                    <li>
+                      <strong>Recontribution</strong> -  I acknowledge that, as part of my obligation to the Research Participants who contributed C-BIG Materials/Data, I will recontribute any results I generate using those materials and data to the C-BIG Repository. 
+                    </li>
+                  </ul>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-block btn-lg btn-info" id="btnAcceptTerms">Accept</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Trigger modal -->
+        <script type="text/javascript">
+          cookies = document.cookie;
+          termsAccepted = false;
+          if (cookies) {
+            termsAccepted = cookies.includes('termsAccepted=true');
+          }
+
+          if (!termsAccepted) {
+            $('#termsModal').modal('show')
+          }
+        
+          $(function () {
+            $('#btnAcceptTerms').on('click', function (event) {
+              document.cookie = "termsAccepted=true;max-age=31536000";
+              $('#termsModal').modal('hide')
+            });
+
+            $('#btnShowTerms').on('click', function (event) {
+              $('#termsModal').modal('show')
+            });
+          });
+        </script>
     </body>
 </html>
