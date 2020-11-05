@@ -143,7 +143,7 @@
                                 <img width=17 src="{$baseurl}/images/help.gif">
                             </a>
                         </li>
-                        <li><a class="nav-link" href="#" id="btnShowTerms">Terms of Use</a></li>
+                        <li><a class="nav-link btnShowTerms" href="#">Terms of Use</a></li>
                         <li class="nav">
                             <a href="#"
                                id="site-affiliations"
@@ -373,10 +373,7 @@
                       to include in the Methods section of any publication relying on C-BIG Materials and Data the name, identification number, and/or persistent identifier of the C-BIG Materials/Data upon which it relies.
                     </li>
                     <li>
-                      that the C-BIG Repository has the right to change or update these Terms of Use at any time without prior notice to the user. It is the user’s responsibility 
-                    </li>
-                    <li>
-                      to check the C-BIG Repository’s Terms of Use on the C-BIG LORIS instance to ascertain whether the Terms of Use have been changed or updated.
+                      that the C-BIG Repository has the right to change or update these Terms of Use at any time without prior notice to the user. It is the user’s responsibility to check the C-BIG Repository’s Terms of Use on the C-BIG LORIS instance to ascertain whether the Terms of Use have been changed or updated.
                     </li>
                     <li>
                       that all C-BIG Materials/Data are provided on an “as is” basis, and the C-BIG Repository disclaims all warranties, express or implied, including but not limited to any warranty that the use of resources will not cause injury, infringe any third party rights, or be fit for any particular purpose.
@@ -415,7 +412,7 @@
                       <strong>Credit Sharing</strong> – I acknowledge that all stakeholders in science, including researchers and research participants, deserve recognition for their contributions and will acknowledge those contributions by using best acknowledgement and citation practices.  
                     </li>
                     <li>
-                      <strong>Recontribution</strong> -  I acknowledge that, as part of my obligation to the Research Participants who contributed C-BIG Materials/Data, I will recontribute any results I generate using those materials and data to the C-BIG Repository. 
+                      <strong>Recontribution</strong> – I acknowledge that, as part of my obligation to the Research Participants who contributed C-BIG Materials/Data, I will recontribute any results I generate using those materials and data to the C-BIG Repository.
                     </li>
                   </ul>
                 </div>
@@ -445,7 +442,7 @@
               $('#termsModal').modal('hide')
             });
 
-            $('#btnShowTerms').on('click', function (event) {
+            $(document).on('click','.btnShowTerms', function(){
               $('#termsModal').modal('show')
             });
           });
