@@ -103,6 +103,12 @@ case 'nii.gz':
     $MimeType         = "application/x-nifti-gz";
     $DownloadFilename = basename($File);
     break;
+case 'json':
+    // Case added for BIDS json files
+    $FullPath         = $imagePath . '/' . $File;
+    $MimeType         = "application/json";
+    $DownloadFilename = basename($File);
+    break;
 case 'png':
     $FullPath = $imagePath . '/' . $File;
     $MimeType = "image/png";
