@@ -60,6 +60,12 @@ class AnonymousPageDecorationMiddleware implements MiddlewareInterface {
             'workspace' => $undecorated->getBody(),
         );
 
+        $tpl_data['jsonParams']  = json_encode(
+            array(
+                'BaseURL'   => $this->BaseURL,
+            )
+        );
+
         $smarty = new \Smarty_neurodb;
         $smarty->assign($tpl_data);
 
