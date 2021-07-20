@@ -737,21 +737,11 @@ class Edit_User extends \NDB_Form
         // get user permissions
         $factory     = \NDB_Factory::singleton();
         $editor      = $factory->user();
-        $siteOptions = [];
-        $site        = [];
-
-        // center ID
-        if ($editor->hasPermission('user_accounts_multisite')) {
-            // get the list of study sites - to be replaced by the Site object
-            $siteOptions = \Utility::getSiteList(false);
-        } else {
-            // allow only to add to their own site
-            $site_arr = $editor->getCenterIDs();
-            foreach ($site_arr as $key => $val) {
-                $site["$key"]        =& \Site::singleton($val);
-                $siteOptions["$val"] = $site["$key"]->getCenterName();
-            }
-        }
+        $siteOptions = $this->getSiteOptions(
+            true,
+            ['user_accounts_multisite'],
+            false
+        );
 
         $this->addSelect(
             'CenterIDs',
@@ -763,25 +753,15 @@ class Edit_User extends \NDB_Form
             ]
         );
 
-        // START PROJECT SECTION
-        $editorProjects = $editor->getProjectIDs();
-        $projects       = \Utility::getProjectList();
-        $projectOptions = [];
-        foreach (array_values($editorProjects) as $projectID) {
-            $projectOptions[$projectID->__toString()]
-                = $projects[$projectID->__toString()];
-        }
-
         $this->addSelect(
             'ProjectIDs',
             'Projects',
-            $projectOptions,
+            $this->getProjectOptions(),
             [
                 'multiple' => 'multiple',
                 'required' => true,
             ]
         );
-        // END PROJECT SECTION
 
         if ($editor->hasPermission('examiner_multisite')) {
             $groupA = [];
