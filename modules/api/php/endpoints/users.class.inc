@@ -8,7 +8,6 @@ use \Psr\Http\Message\ServerRequestInterface;
 use \Psr\Http\Message\ResponseInterface;
 use \LORIS\api\Endpoint;
 use \LORIS\Data\Filters\HasAnyPermissionOrUserSiteMatch;
-use \LORIS\StudyEntities\Candidate\CandID;
 
 /**
  * A class for handling the /users endpoint.
