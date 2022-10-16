@@ -18,10 +18,10 @@ class UserController extends \LORIS\Data\ProvisionerInstance
     public function getUserFromUsername(string $username) : User
     {
         $mainQuery = $this->getBaseQuery();
-        $query = $mainQuery." WHERE username=:un";
+        $query     = $mainQuery." WHERE username=:un";
 
-        $userRow = $this->db->pselectRow($query,["un"=>$username]);
-        if(empty($userRow)) {
+        $userRow = $this->db->pselectRow($query, ["un"=>$username]);
+        if (empty($userRow)) {
             throw new \NotFound("User with username: $username not found");
         }
 
@@ -33,8 +33,8 @@ class UserController extends \LORIS\Data\ProvisionerInstance
 
     protected function getAllInstances(): \Traversable
     {
-        $mainQuery=$this->getBaseQuery();
-        $userData = $this->db->pselectWithIndexKey($mainQuery,[],'ID');
+        $mainQuery =$this->getBaseQuery();
+        $userData  = $this->db->pselectWithIndexKey($mainQuery, [], 'ID');
 
         $users = [];
         foreach ($userData as $id=>$userInfo) {
@@ -70,18 +70,18 @@ class UserController extends \LORIS\Data\ProvisionerInstance
         $eagerUser = clone $user;
         // This makes for 3 queries per user, it might be better to query all the
         // data and group it in the future to avoid 3n+1 queries
-        $siteQuery = 'SELECT
-                         p.CenterID,
-                         Name
-                      FROM psc p
-                         JOIN user_psc_rel USING (CenterID)
-                      WHERE UserID=:UID';
-        $projectQuery = 'SELECT
-                         p.ProjectID,
-                         Name
-                      FROM Project p
-                         JOIN user_project_rel USING (ProjectID)
-                      WHERE UserID=:UID';
+        $siteQuery       = 'SELECT
+                                p.CenterID,
+                                Name
+                            FROM psc p
+                                JOIN user_psc_rel USING (CenterID)
+                            WHERE UserID=:UID';
+        $projectQuery    = 'SELECT
+                                p.ProjectID,
+                                Name
+                            FROM Project p
+                                JOIN user_project_rel USING (ProjectID)
+                            WHERE UserID=:UID';
         $permissionQuery = 'SELECT
                                 p.permID,
                                 code
@@ -89,12 +89,12 @@ class UserController extends \LORIS\Data\ProvisionerInstance
                                 JOIN user_perm_rel pr USING (permID)
                             WHERE pr.userID=:UID';
 
-        $siteDB = $this->db->pselectColWithIndexKey(
+        $siteDB       = $this->db->pselectColWithIndexKey(
             $siteQuery,
             ["UID"=>$user->ID],
             'CenterID'
         );
-        $projectDB = $this->db->pselectColWithIndexKey(
+        $projectDB    = $this->db->pselectColWithIndexKey(
             $projectQuery,
             ["UID"=>$user->ID],
             'ProjectID'
@@ -127,17 +127,17 @@ class UserController extends \LORIS\Data\ProvisionerInstance
 
     protected function getInstanceFromSQL($userInfo) : User
     {
-        $user = new User();
-        $user->ID = $userInfo['ID'];
-        $user->username = $userInfo['username'];
+        $user            = new User();
+        $user->ID        = $userInfo['ID'];
+        $user->username  = $userInfo['username'];
         $user->firstName = $userInfo['First_name'];
-        $user->lastName = $userInfo['Last_name'];
+        $user->lastName  = $userInfo['Last_name'];
         $user->institution = $userInfo['Institution'];
-        $user->email = $userInfo['Email'];
-        $user->active = $userInfo['Active'] === 'Y';
+        $user->email       = $userInfo['Email'];
+        $user->active      = $userInfo['Active'] === 'Y';
         $user->passwordChangeRequired = $userInfo['PasswordChangeRequired'] === 1;
-        $user->pendingApproval = $userInfo['Pending_approval'] === 'Y';
-        $user->accountRequestDate = $userInfo['account_request_date'];
+        $user->pendingApproval        = $userInfo['Pending_approval'] === 'Y';
+        $user->accountRequestDate     = $userInfo['account_request_date'];
 
         return $user;
     }

@@ -20,10 +20,26 @@ class User implements \LORIS\Data\DataInstance
 
     public function jsonSerialize()
     {
-        // TODO: Implement jsonSerialize() method.
+        $obj = [
+            'username'               => $this->username,
+            'firstName'              => $this->firstName,
+            'lastName'               => $this->lastName,
+            'institution'            => $this->institution,
+            'email'                  => $this->email,
+            'active'                 => $this->active,
+            'passwordChangeRequired' => $this->passwordChangeRequired,
+            'pendingApproval'        => $this->pendingApproval,
+            'accountRequestDate'     => $this->accountRequestDate,
+            'sites'                  => $this->sites,
+            'projects'               => $this->projects,
+            'permissions'            => $this->permissions,
+        ];
+
+        return $obj;
     }
 
-    public function setSites(array $sites) : void {
+    public function setSites(array $sites) : void
+    {
         foreach ($sites as $site) {
             if (!$site instanceof \Site) {
                 throw new \LorisException("Incorrect Site parameter");
@@ -33,7 +49,8 @@ class User implements \LORIS\Data\DataInstance
         $this->sites = $sites;
     }
 
-    public function setProjects(array $projects) : void {
+    public function setProjects(array $projects) : void
+    {
         foreach ($projects as $project) {
             if (!$project instanceof \Project) {
                 throw new \LorisException("Incorrect Project parameter");
@@ -43,7 +60,8 @@ class User implements \LORIS\Data\DataInstance
         $this->projects = $projects;
     }
 
-    public function setPermissions(array $permissions) : void {
+    public function setPermissions(array $permissions) : void
+    {
         foreach ($permissions as $permission) {
             if (!$permission instanceof \Permission) {
                 throw new \LorisException("Incorrect Permission parameter");

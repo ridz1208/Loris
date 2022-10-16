@@ -177,20 +177,21 @@ class Users extends Endpoint implements \LORIS\Middleware\ETagCalculator
         $user = $request->getAttribute('user');
         $data = json_decode((string) $request->getBody(), true);
 
-        if (!isset($data['Candidate'])) {
+        if (!isset($data['User'])) {
             return new \LORIS\Http\Response\JSON\BadRequest(
                 'There is no Candidate object in the POST data'
             );
         }
 
         $usersites = $user->getSiteNames();
-        if (!in_array($data['Candidate']['Site'], $usersites)) {
+        // check if editor has access to all submitted sites
+        if (count(array_intersect($data['User']['Sites'],$usersites)===count($data['User']['Sites']))) {
             return new \LORIS\Http\Response\JSON\Forbidden(
-                "You are not affiliated with the candidate's site"
+                "You are not affiliated with the all the user's site"
             );
         }
 
-        $projectname = $data['Candidate']['Project'] ?? '';
+        $projectname = $data['User']['Projects'];
         try {
             $project = \NDB_Factory::singleton()->project($projectname);
         } catch (\NotFound $e) {
