@@ -38,6 +38,27 @@ class Site implements
     }
 
     /**
+     * Get Site from name
+     *
+     */
+    static function getSiteFromName(string $name)
+    {
+        //Get ID from Name and return singleton
+        $db = \NDB_Factory::singleton()->database();
+
+        $centerID = $db->pselectOne(
+            "SELECT CenterID FROM psc WHERE Name=:name",
+            ["name"=>$name]
+        );
+
+        if (empty($centerID)) {
+            throw new Exception("No site with name $name found");
+        }
+
+        return SELF::singleton($centerID);
+    }
+
+    /**
      * Select basic Site information and stores it into the object property
      *
      * @param CenterID $centerID The CenterID to load data for
@@ -125,6 +146,7 @@ class Site implements
     {
         return ($this->_siteInfo['Study_site'] == 'Y');
     }
+
 
     /**
      * Implements the AccessibleResource interface for Sites

@@ -23,6 +23,23 @@ class Permission implements \JsonSerializable
         $obj->ID = $permID;
         $obj->code = $data['code'];
         $obj->description = $data['description'];
+
+        return $obj;
+    }
+
+    public static function getPermissionFromCode(string $code) : \Permission
+    {
+        $db = \NDB_Factory::singleton()->database();
+        $permID = $db->pselectOne(
+            "SELECT permID FROM permission WHERE code=:code",
+            ["code"=>$code]
+        );
+
+        if (empty($permID)) {
+            throw new \NotFound("Permission with code $code not found");
+        }
+
+        return SELF::singleton(intval($permID));
     }
 
     public function jsonSerialize()

@@ -4,16 +4,19 @@ namespace LORIS\StudyEntities;
 
 class User implements \LORIS\Data\DataInstance
 {
-    public int $ID;
+    public readonly int $ID;
     public string $username;
     public string $firstName;
     public string $lastName;
     public string $institution;
     public string $email;
-    public bool $active;
-    public bool $passwordChangeRequired;
-    public bool $pendingApproval;
-    public string $accountRequestDate;
+    public string $labPosition;
+    public string $labPI;
+    public ?string $reasonForRequest = null;
+    public bool $active = false;
+    public bool $passwordChangeRequired = false;
+    public bool $pendingApproval = false;
+    public \DateTime $accountRequestDate;
     protected array $sites;
     protected array $projects;
     protected array $permissions;
@@ -26,6 +29,9 @@ class User implements \LORIS\Data\DataInstance
             'lastName'               => $this->lastName,
             'institution'            => $this->institution,
             'email'                  => $this->email,
+            'labPosition'            => $this->labPosition,
+            'labPI'                  => $this->labPI,
+            'reasonForRequest'       => $this->reasonForRequest,
             'active'                 => $this->active,
             'passwordChangeRequired' => $this->passwordChangeRequired,
             'pendingApproval'        => $this->pendingApproval,
@@ -36,6 +42,11 @@ class User implements \LORIS\Data\DataInstance
         ];
 
         return $obj;
+    }
+
+    public function toArray()
+    {
+        return $this->jsonSerialize();
     }
 
     public function setSites(array $sites) : void
@@ -69,6 +80,19 @@ class User implements \LORIS\Data\DataInstance
         }
 
         $this->permissions = $permissions;
+    }
+
+    public function getSites() : array
+    {
+        return $this->sites;
+    }
+    public function getProjects() : array
+    {
+        return $this->projects;
+    }
+    public function getPermissions() : array
+    {
+        return $this->permissions;
     }
 
 

@@ -205,6 +205,34 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProjectRecordings'
+  /users:
+    get:
+      tags:
+        - Users
+      summary: List all users in this LORIS instance
+      responses:
+        '200':
+          description: An object containing the list of users
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Users'
+    post:
+      tags:
+        - Users
+      summary: Create a user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewUser'
+      responses:
+        '201':
+          description: The new user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
   /candidates:
     get:
       tags:
@@ -1352,7 +1380,7 @@ paths:
                 format: binary
 
   '/candidates/{id}/{visit}/recordings':
-    get:  
+    get:
       tags:
         - Electrophysiology
       summary: Get the recording files for that visit
@@ -1381,7 +1409,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Recordings'
   '/candidates/{id}/{visit}/recordings/{filename}':
-    get:  
+    get:
       tags:
         - Electrophysiology
       summary: Get a recording file
@@ -1413,7 +1441,7 @@ paths:
                 type: string
                 format: binary
   '/candidates/{id}/{visit}/recordings/{filename}/metadata':
-    get:  
+    get:
       tags:
         - Electrophysiology
       summary: Get a recording file metadata
@@ -1444,10 +1472,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/RecordingMetadata'
   '/candidates/{id}/{visit}/recordings/{filename}/metadata/{headername}':
-    get:  
+    get:
       tags:
         - Electrophysiology
-      summary: Get a specific metadata from a recording file 
+      summary: Get a specific metadata from a recording file
       parameters:
         - name: id
           in: path
@@ -1481,7 +1509,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/RecordingMetadataSpecific'
   '/candidates/{id}/{visit}/recordings/{filename}/channels':
-    get:  
+    get:
       tags:
         - Electrophysiology
       summary: Get a recording file channels
@@ -1512,7 +1540,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/RecordingChannels'
   '/candidates/{id}/{visit}/recordings/{filename}/electrodes':
-    get:  
+    get:
       tags:
         - Electrophysiology
       summary: Get a recording file electrodes
@@ -1543,7 +1571,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/RecordingElectrodes'
   '/candidates/{id}/{visit}/recordings/{filename}/events':
-    get:  
+    get:
       tags:
         - Electrophysiology
       summary: Get a recording file events
@@ -1574,10 +1602,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/RecordingEvents'
   '/candidates/{id}/{visit}/recordings/{filename}/bidsfiles/archive':
-    get:  
+    get:
       tags:
         - Electrophysiology
-      summary: Get a recording archive with all associated files 
+      summary: Get a recording archive with all associated files
       parameters:
         - name: id
           in: path
@@ -1606,10 +1634,10 @@ paths:
                 type: string
                 format: binary
   '/candidates/{id}/{visit}/recordings/{filename}/bidsfiles/channels':
-    get:  
+    get:
       tags:
         - Electrophysiology
-      summary: Get a recording channels in BIDS format 
+      summary: Get a recording channels in BIDS format
       parameters:
         - name: id
           in: path
@@ -1638,10 +1666,10 @@ paths:
                 type: string
                 format: binary
   '/candidates/{id}/{visit}/recordings/{filename}/bidsfiles/electrodes':
-    get:  
+    get:
       tags:
         - Electrophysiology
-      summary: Get a recording electrodes in BIDS format 
+      summary: Get a recording electrodes in BIDS format
       parameters:
         - name: id
           in: path
@@ -1670,10 +1698,10 @@ paths:
                 type: string
                 format: binary
   '/candidates/{id}/{visit}/recordings/{filename}/bidsfiles/events':
-    get:  
+    get:
       tags:
         - Electrophysiology
-      summary: Get a recording events in BIDS format 
+      summary: Get a recording events in BIDS format
       parameters:
         - name: id
           in: path
@@ -1848,6 +1876,81 @@ components:
           type: string
         Link:
           type: string
+    Users:
+      type: object
+      properties:
+        Users:
+          $ref: '#/components/schemas/User'
+    User:
+      type: object
+      properties:
+        ID:
+          type: integer
+        Username:
+          type: string
+        FirstName:
+          type: string
+        LastName:
+          type: string
+        Institution:
+          type: string
+        Email:
+          type: string
+        Active:
+          type: boolean
+        PasswordChangeRequired:
+          type: boolean
+        PendingApproval:
+          type: boolean
+        AccountRequestDate:
+          type: string
+        Sites:
+          $ref: '#/components/schemas/Sites'
+        Projects:
+          $ref: '#/components/schemas/Projects'
+        Permissions:
+          $ref: '#/components/schemas/Permissions'
+    NewUser:
+      type: object
+      properties:
+        User:
+          type: object
+          properties:
+            Username:
+              type: string
+            FirstName:
+              type: string
+            LastName:
+              type: string
+            Institution:
+              type: string
+            Email:
+              type: string
+            LabPosition:
+              type: string
+            LabPI:
+              type: string
+    Sites:
+      type: object
+      properties:
+        Site:
+          $ref: '#/components/schemas/Site'
+    Site:
+      type: object
+    Projects:
+      type: object
+      properties:
+        Project:
+          $ref: '#/components/schemas/ProjectObj'
+    ProjectObj:
+      type: object
+    Permissions:
+      type: object
+      properties:
+        Permission:
+          $ref: '#/components/schemas/Permission'
+    Permission:
+      type: object
     Candidates:
       type: object
       properties:
@@ -2201,7 +2304,7 @@ components:
           $ref: '#/components/schemas/inline_response_200_5_Meta'
         Value:
           type: string
- 
+
     Project_Meta:
       type: object
       properties:
@@ -2421,7 +2524,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/RecordingElectrode'
-            
+
     RecordingElectrode:
       type: object
       properties:
@@ -2441,7 +2544,7 @@ components:
           type: string
         ElectrodeFilePath:
           type: string
-          
+
     RecordingEvents:
       type: object
       properties:
@@ -2451,7 +2554,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/RecordingTaskEvent'
-            
+
     RecordingTaskEvent:
       type: object
       properties:

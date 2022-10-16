@@ -103,15 +103,22 @@ class User extends UserPermissions implements
             $user_cid[$key] = new \CenterID($val['CenterID']);
             $sitenames[]    = $val['Name'];
         }
-        $row['Sites'] = implode(';', $sitenames);
+        $row['SiteNames'] = implode(';', $sitenames);
 
-        $user_pid = $DB->pselectCol(
-            "SELECT ProjectID FROM user_project_rel upr WHERE upr.UserId=:uid",
+        $user_pid_query = $DB->pselect(
+            "SELECT ProjectID, Name
+            FROM Project p JOIN user_project_rel upr ON (p.ProjectID=upr.ProjectID)
+            WHERE upr.UserID=:uid",
             ['uid' => $row['ID']]
         );
-        foreach ($user_pid as $k=>$pid) {
-            $user_pid[$k] = new ProjectID($pid);
+        $user_pid = [];
+        $projectnames = [];
+        foreach ($user_pid_query as $key=>$val) {
+            $user_pid[$key]    = new ProjectID($val["ProjectID"]);
+            $projectnames[]    = $val['Name'];
         }
+        $row['ProjectNames'] = implode(';', $projectnames);
+
 
         // Get examiner information
         $examiner_check = $DB->pselect(
@@ -291,7 +298,17 @@ class User extends UserPermissions implements
          * CONCATs the site names together in a string using semi-colons.
          * Therefore this string must be split and returned as an array.
          */
-        return explode(';', $this->userInfo['Sites']);
+        return explode(';', $this->userInfo['SiteNames']);
+    }
+
+    /**
+     * Returns an array of sites a user belongs to.
+     *
+     * @return array
+     */
+    function getProjectNames(): array
+    {
+        return explode(';', $this->userInfo['ProjectNames']);
     }
 
     /**

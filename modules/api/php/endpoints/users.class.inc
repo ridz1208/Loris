@@ -4,10 +4,12 @@
  */
 namespace LORIS\api\Endpoints;
 
+use LORIS\Data\Filters\UserSiteMatch;
+use LORIS\Data\Filters\UserProjectMatch;
+use LORIS\StudyEntities\User;
 use \Psr\Http\Message\ServerRequestInterface;
 use \Psr\Http\Message\ResponseInterface;
 use \LORIS\api\Endpoint;
-use \LORIS\Data\Filters\HasAnyPermissionOrUserSiteMatch;
 
 /**
  * A class for handling the /users endpoint.
@@ -146,13 +148,9 @@ class Users extends Endpoint implements \LORIS\Middleware\ETagCalculator
             return $this->_cache;
         }
 
-        $filter = new HasAnyPermissionOrUserSiteMatch(
-            ['user_accounts_multisite']
-        );
-
         $provisioner = (new \UserController())
-            ->filter($filter)
-            ->filter(new \LORIS\Data\Filters\UserProjectMatch());
+            ->filter(new UserSiteMatch())
+            ->filter(new UserProjectMatch());
 
         $users = (new \LORIS\Data\Table())
             ->withDataFrom($provisioner)
@@ -174,56 +172,71 @@ class Users extends Endpoint implements \LORIS\Middleware\ETagCalculator
      */
     private function _handlePOST(ServerRequestInterface $request): ResponseInterface
     {
+        // This is the old user object
         $user = $request->getAttribute('user');
         $data = json_decode((string) $request->getBody(), true);
+        $userController = new \UserController();
 
         if (!isset($data['User'])) {
             return new \LORIS\Http\Response\JSON\BadRequest(
-                'There is no Candidate object in the POST data'
+                'There is no User object in the POST data'
             );
         }
 
         $usersites = $user->getSiteNames();
         // check if editor has access to all submitted sites
-        if (count(array_intersect($data['User']['Sites'],$usersites)===count($data['User']['Sites']))) {
+        // This compares 2 arrays of site names, front end is expected to submit sitenames.
+        if (count(array_intersect($data['User']['Sites'],$usersites)) === count($data['User']['Sites'])) {
             return new \LORIS\Http\Response\JSON\Forbidden(
-                "You are not affiliated with the all the user's site"
+                "You are not affiliated with the all the user's sites"
             );
         }
 
-        $projectname = $data['User']['Projects'];
-        try {
-            $project = \NDB_Factory::singleton()->project($projectname);
-        } catch (\NotFound $e) {
-            return new \LORIS\Http\Response\JSON\BadRequest($e->getMessage());
+        $userprojects = $user->getProjectNames();
+        if (count(array_intersect($data['User']['Projects'],$userprojects)) === count($data['User']['Projects'])) {
+            return new \LORIS\Http\Response\JSON\Forbidden(
+                "You are not affiliated with the all the user's projects"
+            );
         }
 
-        $centerid = array_search(
-            $data['Candidate']['Site'],
-            \Utility::getSiteList()
-        );
+        $targetUser = new User();
+        $targetUser->username = $data['User']['Username'];
+        $targetUser->firstName = $data['User']['FirstName'];
+        $targetUser->lastName = $data['User']['LastName'];
+        $targetUser->institution = $data['User']['Institution'];
+        $targetUser->email = $data['User']['Email'];
+        $targetUser->labPosition = $data['User']['LabPosition'];
+        $targetUser->labPI = $data['User']['LabPI'];
+        $targetUser->active = true;
+        $targetUser->passwordChangeRequired = true;
+        $targetUser->pendingApproval = false;
+        $targetUser->accountRequestDate = new \DateTime();
 
-        $pscid = $data['Candidate']['PSCID'] ?? null;
-
-        $sex = new Sex($data['Candidate']['Sex']);
+        //map sites, projects and permissions
+        $sites = [];
+        $projects = [];
+        $permissions = [];
+        foreach ($data['User']['Sites'] as $sitename) {
+            $sites[] = \Site::getSiteFromName($sitename);
+        }
+        foreach ($data['User']['Projects'] as $projectname) {
+            $projects[] = \Project::singleton($projectname);
+        }
+        foreach ($data['User']['Permissions'] as $permissioname) {
+            $sites[] = \Permission::singleton();
+        }
+        $targetUser->setSites($sites);
+        $targetUser->setProjects($projects);
+        $targetUser->setPermissions($permissions);
 
         try {
-            $candid = \Candidate::createNew(
-                new \CenterID("$centerid"),
-                $data['Candidate']['DoB'],
-                $data['Candidate']['EDC'],
-                $sex,
-                $pscid,
-                $project->getId()
-            );
+            $newUser = $userController->create($targetUser);
         } catch (\LorisException $e) {
             return new \LORIS\Http\Response\JSON\BadRequest($e->getMessage());
         }
 
-        $candidate = \NDB_Factory::singleton()->candidate($candid);
-
-        $body = (new \LORIS\api\Views\Candidate($candidate))->toArray()['Meta'];
-        $link = '/'. $request->getURI()->getPath() . '/' . $candid;
+        $body = $newUser->toArray();
+        $link = '/'. $request->getURI()->getPath() . '/' . $newUser->username;
 
         return (new \LORIS\Http\Response\JsonResponse($body))
             ->withStatus(201)
