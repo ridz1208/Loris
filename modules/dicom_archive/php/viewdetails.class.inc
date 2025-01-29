@@ -51,6 +51,31 @@ class ViewDetails extends \NDB_Form
      */
     function _hasAccess(\User $user) : bool
     {
+        $config           = \NDB_Factory::singleton()->config();
+        $siteprojectperms = $config->getSetting(
+            'useSiteProjectPermissions'
+        );
+        $DB  = $this->loris->getDatabaseConnection();
+        $pid = $DB->pselectOne(
+            "SELECT ProjectID 
+            FROM tarchive t 
+                JOIN session s ON s.ID = t.SessionID 
+            WHERE TarchiveID = :ID",
+            ['ID' => $_REQUEST['tarchiveID']]
+        );
+
+        if ($siteprojectperms === 'true') {
+            // Resource is accessible if project matches user's or project is
+            // null depending on permissions
+            if ($pid === null) {
+                if ($user->hasPermission("dicom_archive_nosessionid")) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+            return $user->hasProject(new \ProjectID($pid));
+        }
         return $user->hasPermission('dicom_archive_view_allsites');
     }
 

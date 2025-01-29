@@ -59,7 +59,24 @@ class Dicom_Archive extends \DataFrameworkMenu
      */
     public function useProjectFilter() : bool
     {
-        return false;
+        // Only enable project filtering if the site project permissions are enabled
+        // to be compatible with projects not requiring a session ID for all DICOMS
+        $config           = \NDB_Factory::singleton()->config();
+        $siteprojectperms = $config->getSetting(
+            'useSiteProjectPermissions'
+        );
+        return $siteprojectperms === 'true';
+    }
+
+    /**
+     * Determines which permissions (if any) allows the user access to resources
+     * where the project is null.
+     *
+     * @return ?array
+     */
+    public function nullProjectPermissionNames() : ?array
+    {
+        return ['dicom_archive_nosessionid'];
     }
 
     /**

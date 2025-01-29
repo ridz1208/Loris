@@ -30,6 +30,7 @@ class DICOMArchiveRowWithSession implements \LORIS\Data\DataInstance,
 {
     protected $DBRow;
     protected $CenterID;
+    protected $ProjectID;
 
     /**
      * Create a new DICOMArchiveRowWithSession.
@@ -37,14 +38,16 @@ class DICOMArchiveRowWithSession implements \LORIS\Data\DataInstance,
      * This DataInstance type represents rows that have a session associated
      * with them (and hence are able to return a CenterID for the row.)
      *
-     * @param array     $row The row (in the same format as \Database::pselectRow
-     *                       returns)
-     * @param \CenterID $cid The centerID affiliated with this row.
+     * @param array      $row The row (in the same format as \Database::pselectRow
+     *                        returns)
+     * @param \CenterID  $cid The centerID affiliated with this row.
+     * @param \ProjectID $pid The ProjectID affiliated with this row.
      */
-    public function __construct(array $row, \CenterID $cid)
+    public function __construct(array $row, \CenterID $cid, \ProjectID $pid)
     {
-        $this->DBRow    = $row;
-        $this->CenterID = $cid;
+        $this->DBRow     = $row;
+        $this->CenterID  = $cid;
+        $this->ProjectID = $pid;
     }
 
     /**
@@ -66,5 +69,16 @@ class DICOMArchiveRowWithSession implements \LORIS\Data\DataInstance,
     public function getCenterID() : \CenterID
     {
         return $this->CenterID;
+    }
+
+    /**
+     * Returns the ProjectID for this row, for filters such as
+     * \LORIS\Data\Filters\UserProjectMatch to match again.
+     *
+     * @return \ProjectID The ProjectID
+     */
+    public function getProjectID(): \ProjectID
+    {
+        return $this->ProjectID;
     }
 }

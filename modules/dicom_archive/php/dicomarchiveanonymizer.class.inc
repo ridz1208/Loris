@@ -101,7 +101,9 @@ class DICOMArchiveAnonymizer implements Mapper
             return new DICOMArchiveRowWithoutSession($newrow);
         } else {
             $cid = $resource->getCenterID();
-            return new DICOMArchiveRowWithSession($newrow, $cid);
+            '@phan-var object $resource';
+            $pid = $resource->getProjectID();
+            return new DICOMArchiveRowWithSession($newrow, $cid, $pid);
         }
     }
 }

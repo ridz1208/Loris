@@ -51,6 +51,7 @@ class DicomArchiveRowProvisioner extends \LORIS\Data\Provisioners\DBRowProvision
             t.TarchiveID AS TarchiveID,
             s.ID AS SessionID,
             s.CenterID AS CenterID,
+            s.ProjectID AS ProjectID,
             m.IsPhantom AS IsPhantom
             FROM tarchive t
                   LEFT JOIN session s ON (s.ID=t.SessionID)
@@ -72,12 +73,14 @@ class DicomArchiveRowProvisioner extends \LORIS\Data\Provisioners\DBRowProvision
      */
     public function getInstance($row) : \LORIS\Data\DataInstance
     {
-        if ($row['CenterID'] !== null) {
+        if ($row['CenterID'] !== null && $row['ProjectID'] !== null) {
             $cid = new \CenterID($row['CenterID']);
+            $pid = new \ProjectID($row['ProjectID']);
             unset($row['CenterID']);
-            return new DICOMArchiveRowWithSession($row, $cid);
+            return new DICOMArchiveRowWithSession($row, $cid, $pid);
         }
         unset($row['CenterID']);
+        unset($row['ProjectID']);
         return new DICOMArchiveRowWithoutSession($row);
     }
 }

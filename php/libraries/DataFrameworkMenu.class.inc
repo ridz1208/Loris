@@ -85,6 +85,17 @@ abstract class DataFrameworkMenu extends NDB_Menu_Filter
     abstract public function useProjectFilter() : bool;
 
     /**
+     * Determines which permissions (if any) allows the user access to resources
+     * where the project is null.
+     *
+     * @return ?array
+     */
+    public function nullProjectPermissionNames() : ?array
+    {
+        return null;
+    }
+
+    /**
      * Items to add to the JSON fieldOptions key, which React components
      * can use for formatting. This is used to send data dependent options
      * to the frontend.
@@ -124,9 +135,18 @@ abstract class DataFrameworkMenu extends NDB_Menu_Filter
         }
 
         if ($this->useProjectFilter()) {
-            $provisioner = $provisioner->filter(
-                new \LORIS\Data\Filters\UserProjectMatch()
-            );
+            // Check if resources with null should be included in the result set
+            if (!empty($this->nullProjectPermissionNames())) {
+                $provisioner = $provisioner->filter(
+                    new \LORIS\Data\Filters\NullProjectOrUserProjectMatch(
+                        $this->nullProjectPermissionNames()
+                    )
+                );
+            } else {
+                $provisioner = $provisioner->filter(
+                    new \LORIS\Data\Filters\UserProjectMatch()
+                );
+            }
         }
         return $provisioner;
     }

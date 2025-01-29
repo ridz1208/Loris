@@ -46,6 +46,14 @@ The `showTransferStatus` configuration option is obsolete and should
 not be used, but determines if a first "Transfer Status" column
 appears in the menu table.
 
+The `useImagingSiteProjectPermissions` This setting enables Site and Project access restrictions 
+for users. If enabled, users accessing the module can only see DICOMs where a 
+session ID has been found and are thus linked to the site and project of the 
+session AND the site and project match the user's. 
+This setting can be PARTIALLY bypassed by the `dicom_archive_nosessionid` 
+permission (partially only because the permission will also append any upload 
+with no site or project)
+
 #### Install Configurations
 
 For downloading large DICOM files, it may be necessary to increase the 
