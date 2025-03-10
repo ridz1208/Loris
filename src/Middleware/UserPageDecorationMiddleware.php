@@ -98,9 +98,16 @@ class UserPageDecorationMiddleware implements MiddlewareInterface
             );
             $menu[$cat] = $val;
         }
+        $title = $this->Config->getSetting('title');
+        if ($request->getServerParams()['HTTP_HOST'] === 'localhost:8083') {
+            $title = 'LOCALHOST';
+        }
+        if ($request->getServerParams()['HTTP_HOST'] === 'archimedes-test.loris.ca') {
+            $title = 'Internal ARCHIMEDES Data Platform';
+        }
         // Basic page outline variables
         $tpl_data += array(
-                      'study_title' => $this->Config->getSetting('title'),
+                      'study_title' => $title,
                       'baseurl'     => $this->BaseURL,
                       'menus'       => $menu,
                       'currentyear' => date('Y'),

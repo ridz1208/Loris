@@ -31,9 +31,16 @@ class AnonymousPageDecorationMiddleware implements MiddlewareInterface
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler) : ResponseInterface
     {
+        $title = $this->Config->getSetting('title');
+        if ($request->getServerParams()['HTTP_HOST'] === 'localhost:8083') {
+            $title = 'Internal ARCHIMEDES Data Platform';
+        }
+        if ($request->getServerParams()['HTTP_HOST'] === 'archimedes-test.loris.ca') {
+            $title = 'Internal ARCHIMEDES Data Platform';
+        }
         // Basic page outline variables
         $tpl_data = array(
-                     'study_title' => $this->Config->getSetting('title'),
+                     'study_title' => $title,
                      'baseurl'     => $this->BaseURL,
                      'currentyear' => date('Y'),
                      'sandbox'     => ($this->Config->getSetting("sandbox") === '1'),

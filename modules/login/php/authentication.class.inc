@@ -94,6 +94,8 @@ class Authentication extends \NDB_Page implements ETagCalculator
     {
         // Parse GET query params.
         $values = $request->getQueryParams();
+        error_log(print_r($request->getServerParams(),true));
+        error_log(print_r($_SESSION,true));
 
         // Login Setup.
         $loginData = [];
@@ -116,8 +118,39 @@ class Authentication extends \NDB_Page implements ETagCalculator
         $loginData['description'] = html_entity_decode(
             $config->getSetting('StudyDescription')
         );
+        if ($request->getServerParams()['HTTP_HOST'] === 'localhost:8083') {
+            $loginData['description'] = preg_replace(
+                '/\C-BIG Repository\b/',
+                'ARCHIMEDES Data Platform',
+                $loginData['description']
+            );
+        }
+        if ($request->getServerParams()['HTTP_HOST'] === 'archimedes-test.loris.ca') {
+            $loginData['description'] = preg_replace(
+                '/\C-BIG Repository\b/',
+                'ARCHIMEDES Data Platform',
+                $loginData['description']
+            );
+        }
+
+
         $loginData['title']       = $config->getSetting('title');
+        if ($request->getServerParams()['HTTP_HOST'] === 'localhost:8083') {
+            $loginData['title'] = 'Internal ARCHIMEDES Data Platform';
+        }
+        if ($request->getServerParams()['HTTP_HOST'] === 'archimedes-test.loris.ca') {
+            $loginData['title'] = 'Internal ARCHIMEDES Data Platform';
+        }
+        
+
+
         $loginData['logo']        = $config->getSetting('studylogo');
+        if ($request->getServerParams()['HTTP_HOST'] === 'localhost:8083') {
+            $loginData['logo'] = 'images/archimedes_logo.png';
+        }
+        if ($request->getServerParams()['HTTP_HOST'] === 'archimedes-test.loris.ca') {
+            $loginData['logo'] = 'images/archimedes_logo.png';
+        }
         $values['login']          = $loginData;
 
         // Request Account Setup.
