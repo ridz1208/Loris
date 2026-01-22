@@ -190,7 +190,14 @@ class DataIteratorBinaryStream implements StreamInterface
         $row = $this->rowgen->current();
         $this->rowgen->next();
 
-        $rowArray        = array_values(json_decode(json_encode($row), true));
+        $rowArray = array_map(function($item) {
+            if (is_array($item)) {
+                // If it's an array, convert to JSON string.
+                return json_encode($item);
+            }
+            return (string)$item;
+        }, $rowArray);        
+
         $rowVal          = join(chr(0x1e), $rowArray) . chr(0x1f);
         $this->position += strlen($rowVal);
 
